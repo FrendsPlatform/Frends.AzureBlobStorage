@@ -4,7 +4,7 @@ FRENDS Task for Downloading a blob from Azure.
 
 - [Installing](#installing)
 - [Task](#task)
-     - [DownloadBlobAsync](#downloadblobasync)
+     - [DownloadBlob](#DownloadBlob)
 - [Building](#building)
 - [Contributing](#contributing)
 - [Change Log](#change-log)
