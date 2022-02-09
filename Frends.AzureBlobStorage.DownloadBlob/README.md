@@ -1,13 +1,18 @@
 # Frends.AzureBlobStorage.DownloadBlob
-
 FRENDS Task for Downloading a blob from Azure.
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT) 
+[![Build](https://github.com/FrendsPlatform/Frends.AzureBlobStorage/actions/workflows/DownloadBlob_build_and_test_on_main.yml/badge.svg)](https://github.com/FrendsPlatform/Frends.AzureBlobStorage/actions)
+![MyGet](https://img.shields.io/myget/frends-tasks/v/Frends.AzureBlobStorage.DownloadBlob)
+![Coverage](https://app-github-custom-badges.azurewebsites.net/Badge?key=FrendsPlatform/Frends.AzureBlobStorage/Frends.AzureBlobStorage.DownloadBlob|main)
 
 - [Installing](#installing)
 - [Task](#task)
      - [DownloadBlob](#DownloadBlob)
 - [Building](#building)
+- [License](#license)
 - [Contributing](#contributing)
-- [Change Log](#change-log)
+- [Changelog](#changelog)
 
 # Installing
 
@@ -20,14 +25,13 @@ Downloads a blob to a file.
 
 ### Properties
 
-| Property            | Type                           | Description                                                                      | Example                      |
-|---------------------|--------------------------------|----------------------------------------------------------------------------------|------------------------------|
-| Connection String   | `string`                       | Connection string to Azure storage                                               | 'UseDevelopmentStorage=true' |
-| Container Name      | `string`                       | Name of the azure blob storage container from where the data will be downloaded. | 'my-container'               |
-| Blob Name           | `string`                       | Name of the blob to be downloaded.                                               | 'donwloadMe.xml'             |
-| Blob Type           | enum: Append, Block or Page    | Azure blob type to download.                                                     | Block                        |
-| Directory           | `string`                       | Download destination directory.                                                  | 'c:\downloads'               |
-| FileExistsOperation | enum: Error, Rename, Overwrite | Action to take if destination file exists. Error: throws exception, Overwrite: writes over existing file, Rename: Renames file by adding '(1)' at the end (example: myFile.txt --> myFile(1).txt) | Error |
+| Property            | Type                           | Description                                                                                                                 | Example                      |
+|---------------------|--------------------------------|-----------------------------------------------------------------------------------------------------------------------------|------------------------------|
+| Connection String   | `string`                       | Connection string to Azure storage                                                                                          | 'UseDevelopmentStorage=true' |
+| Container Name      | `string`                       | Name of the azure blob storage container from where the data will be downloaded.                                            | 'my-container'               |
+| Blob Name           | `string`                       | Name of the blob to be downloaded.                                                                                          | 'downloadMe.xml'             |
+| Directory           | `string`                       | Download destination directory.                                                                                             | 'c:\downloads'               |
+| FileExistsOperation | enum<Error, Rename, Overwrite> | **Error**: Throws exception. **Overwrite**: Writes over existing file. **Rename**: Renames file by adding '(1)' at the end. | Error                        |
 
 ### Returns
 
@@ -61,6 +65,10 @@ Create a nuget package.
 
 `dotnet pack --configuration Release`
 
+# License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
 # Contributing
 When contributing to this repository, please first discuss the change you wish to make via issue, email, or any other method with the owners of this repository before making a change.
 
@@ -72,7 +80,7 @@ When contributing to this repository, please first discuss the change you wish t
 
 NOTE: Be sure to merge the latest from "upstream" before making a pull request!
 
-# Change Log
+# Changelog
 
 | Version | Changes                                                         |
 |---------|-----------------------------------------------------------------|
