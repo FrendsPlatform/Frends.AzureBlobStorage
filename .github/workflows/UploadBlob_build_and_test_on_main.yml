@@ -1,0 +1,21 @@
+name: UploadBlob_build_main
+
+on:
+  push:
+    branches:    
+      - main
+    paths:
+      - 'Frends.AzureBlobStorage.UploadBlob/**'
+  workflow_dispatch:
+    paths:
+      - 'Frends.AzureBlobStorage.UploadBlob/**'
+
+jobs:
+  build:
+    uses: FrendsPlatform/FrendsTasks/.github/workflows/build_main.yml@main
+    with:
+      workdir: Frends.AzureBlobStorage.UploadBlob
+      env_var_name_1: HiQ_AzureBlobStorage_ConnString
+    secrets:
+      badge_service_api_key: ${{ secrets.BADGE_SERVICE_API_KEY }}
+      env_var_value_1: ${{ secrets.HIQ_AZUREBLOBSTORAGE_CONNSTRING }}
