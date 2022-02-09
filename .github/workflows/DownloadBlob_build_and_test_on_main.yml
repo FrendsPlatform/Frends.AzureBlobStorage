@@ -18,5 +18,4 @@ jobs:
       env_var_name_1: HiQ_AzureBlobStorage_ConnString
     secrets:
       badge_service_api_key: ${{ secrets.BADGE_SERVICE_API_KEY }}
-      HIQ_AZUREBLOBSTORAGE_CONNSTRING: ${{ secrets.HiQ_AzureBlobStorage_ConnString }}
       env_var_value_1: ${{ secrets.HIQ_AZUREBLOBSTORAGE_CONNSTRING }}
