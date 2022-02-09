@@ -1,0 +1,7 @@
+{
+  "Tasks": [
+    {
+      "TaskMethod": "Frends.AzureBlobStorage.DownloadBlob.AzureBlobStorage.DownloadBlob"
+    }
+  ]
+}

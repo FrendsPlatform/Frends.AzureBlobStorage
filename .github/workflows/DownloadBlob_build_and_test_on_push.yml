@@ -1,0 +1,21 @@
+name: DownloadBlob_push
+
+on:
+  push:
+    branches-ignore:
+      - main
+    paths:
+      - 'Frends.AzureBlobStorage.DownloadBlob/**'
+  workflow_dispatch:
+    paths:
+      - 'Frends.AzureBlobStorage.DownloadBlob/**'
+
+jobs:
+  build:
+    uses: FrendsPlatform/FrendsTasks/.github/workflows/build_test.yml@main
+    with:
+      workdir: Frends.AzureBlobStorage.DownloadBlob
+    secrets:
+      badge_service_api_key: ${{ secrets.BADGE_SERVICE_API_KEY }}
+      test_feed_api_key: ${{ secrets.TASKS_TEST_FEED_API_KEY }}
+      HIQ_AZUREBLOBSTORAGE_CONNSTRING: ${{ secrets.HiQ_AzureBlobStorage_ConnString }}
