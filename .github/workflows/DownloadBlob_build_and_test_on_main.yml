@@ -17,5 +17,4 @@ jobs:
       workdir: Frends.AzureBlobStorage.DownloadBlob
     secrets:
       badge_service_api_key: ${{ secrets.BADGE_SERVICE_API_KEY }}
-      HiQ_AzureBlobStorage_ConnString: ${{ secrets.HIQ_AZUREBLOBSTORAGE_CONNSTRING }}
-      
+      HIQ_AZUREBLOBSTORAGE_CONNSTRING: ${{ secrets.HiQ_AzureBlobStorage_ConnString }}
