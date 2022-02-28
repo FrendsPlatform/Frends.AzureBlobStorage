@@ -3,6 +3,7 @@ using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure.Storage.Blobs;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Frends.AzureBlobStorage.UploadBlob
@@ -11,17 +12,17 @@ namespace Frends.AzureBlobStorage.UploadBlob
     public class UploadTest
     {
         /// <summary>
-        ///     Connection string for Azure Storage Emulator.
+        /// Connection string for Azure Storage Emulator.
         /// </summary>
         private readonly string _connectionString = Environment.GetEnvironmentVariable("HiQ_AzureBlobStorage_ConnString");
 
         /// <summary>
-        ///     Container name for tests.
+        /// Container name for tests.
         /// </summary>
         private string _containerName;
 
         /// <summary>
-        ///     Some random file for test purposes.
+        /// Some random file for test purposes.
         /// </summary>
         private readonly string _testFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TestFiles", "TestFile.xml");
 
@@ -36,7 +37,7 @@ namespace Frends.AzureBlobStorage.UploadBlob
         public async Task Cleanup()
         {
             // Delete whole container after running tests.
-            var container = Utils.GetBlobContainer(_connectionString, _containerName);
+            var container = GetBlobContainer(_connectionString, _containerName);
             await container.DeleteIfExistsAsync();
         }
 
@@ -45,19 +46,19 @@ namespace Frends.AzureBlobStorage.UploadBlob
         public async Task UploadFileAsync_ShouldThrowArgumentExceptionIfFileWasNotFound()
         {
             await AzureBlobStorage.UploadBlob(
-                new UploadInput {SourceFile = "NonExistingFile"},
-                new DestinationProperties(),
+                new Input {SourceFile = "NonExistingFile"},
+                new Options(),
                 new CancellationToken());
         }
 
         [TestMethod]
         public async Task UploadFileAsync_ShouldUploadFileAsBlockBlob()
         {
-            var input = new UploadInput
+            var input = new Input
             {
                 SourceFile = _testFilePath
             };
-            var options = new DestinationProperties
+            var options = new Options
             {
                 ContainerName = _containerName,
                 BlobType = AzureBlobType.Block,
@@ -67,7 +68,7 @@ namespace Frends.AzureBlobStorage.UploadBlob
                 CreateContainerIfItDoesNotExist = true,
                 FileEncoding = "utf-8"
             };
-            var container = Utils.GetBlobContainer(_connectionString, _containerName);
+            var container = GetBlobContainer(_connectionString, _containerName);
 
             var result = await AzureBlobStorage.UploadBlob(input, options, new CancellationToken());
             var blobResult = container.GetBlobClient("TestFile.xml");
@@ -79,11 +80,11 @@ namespace Frends.AzureBlobStorage.UploadBlob
         [TestMethod]
         public async Task UploadFileAsync_ShouldRenameFileToBlob()
         {
-            var input = new UploadInput
+            var input = new Input
             {
                 SourceFile = _testFilePath
             };
-            var options = new DestinationProperties
+            var options = new Options
             {
                 RenameTo = "RenamedFile.xml",
                 ContainerName = _containerName,
@@ -103,7 +104,7 @@ namespace Frends.AzureBlobStorage.UploadBlob
         [TestMethod]
         public async Task UploadFileAsync_ShouldUploadCompressedFile()
         {
-            var input = new UploadInput
+            var input = new Input
             {
                 SourceFile = _testFilePath,
                 Compress = true,
@@ -113,7 +114,7 @@ namespace Frends.AzureBlobStorage.UploadBlob
             var guid = Guid.NewGuid().ToString();
             var renameTo = guid + ".gz";
 
-            var options = new DestinationProperties
+            var options = new Options
             {
                 ContainerName = _containerName,
                 BlobType = AzureBlobType.Block,
@@ -125,7 +126,7 @@ namespace Frends.AzureBlobStorage.UploadBlob
                 FileEncoding = "utf8",
                 RenameTo = renameTo
             };
-            var container = Utils.GetBlobContainer(_connectionString, _containerName);
+            var container = GetBlobContainer(_connectionString, _containerName);
 
             await AzureBlobStorage.UploadBlob(input, options, new CancellationToken());
             var blobResult = container.GetBlobClient(renameTo);
@@ -136,7 +137,7 @@ namespace Frends.AzureBlobStorage.UploadBlob
         [TestMethod]
         public async Task UploadFileAsync_ContentTypeIsForcedProperly()
         {
-            var input = new UploadInput
+            var input = new Input
             {
                 SourceFile = _testFilePath,
                 Compress = false,
@@ -146,7 +147,7 @@ namespace Frends.AzureBlobStorage.UploadBlob
             var guid = Guid.NewGuid().ToString();
             var renameTo = guid + ".gz";
 
-            var options = new DestinationProperties
+            var options = new Options
             {
                 ContainerName = _containerName,
                 BlobType = AzureBlobType.Block,
@@ -158,7 +159,7 @@ namespace Frends.AzureBlobStorage.UploadBlob
                 FileEncoding = "utf8",
                 RenameTo = renameTo
             };
-            var container = Utils.GetBlobContainer(_connectionString, _containerName);
+            var container = GetBlobContainer(_connectionString, _containerName);
 
             await AzureBlobStorage.UploadBlob(input, options, new CancellationToken());
             var blobResult = container.GetBlobClient(renameTo);
@@ -170,7 +171,7 @@ namespace Frends.AzureBlobStorage.UploadBlob
         [TestMethod]
         public async Task UploadFileAsync_ContentEncodingIsGzipWhenCompressed()
         {
-            var input = new UploadInput
+            var input = new Input
             {
                 SourceFile = _testFilePath,
                 Compress = true,
@@ -180,7 +181,7 @@ namespace Frends.AzureBlobStorage.UploadBlob
             var guid = Guid.NewGuid().ToString();
             var renameTo = guid + ".gz";
 
-            var options = new DestinationProperties
+            var options = new Options
             {
                 ContainerName = _containerName,
                 BlobType = AzureBlobType.Block,
@@ -192,7 +193,7 @@ namespace Frends.AzureBlobStorage.UploadBlob
                 FileEncoding = "utf8",
                 RenameTo = renameTo
             };
-            var container = Utils.GetBlobContainer(_connectionString, _containerName);
+            var container = GetBlobContainer(_connectionString, _containerName);
 
             await AzureBlobStorage.UploadBlob(input, options, new CancellationToken());
             var blobResult = container.GetBlobClient(renameTo);
@@ -200,5 +201,18 @@ namespace Frends.AzureBlobStorage.UploadBlob
 
             Assert.IsTrue(properties.Value.ContentEncoding == "gzip");
         }
+
+        #region HelperMethods
+
+        private static BlobContainerClient GetBlobContainer(string connectionString, string containerName)
+        {
+            // Initialize azure account.
+            var blobServiceClient = new BlobServiceClient(connectionString);
+
+            // Fetch the container client.
+            return blobServiceClient.GetBlobContainerClient(containerName);
+        }
+
+        #endregion
     }
 }
