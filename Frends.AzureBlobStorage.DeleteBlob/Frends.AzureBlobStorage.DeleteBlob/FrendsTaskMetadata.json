@@ -1,0 +1,7 @@
+{
+  "Tasks": [
+    {
+      "TaskMethod": "Frends.AzureBlobStorage.DeleteBlob.AzureBlobStorage.DeleteBlob"
+    }
+  ]
+}

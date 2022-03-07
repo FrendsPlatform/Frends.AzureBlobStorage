@@ -1,0 +1,14 @@
+name: DeleteBlob_release
+
+on:
+  workflow_dispatch:
+    paths:
+      - 'Frends.AzureBlobStorage.DeleteBlob/**'
+
+jobs:
+  build:
+    uses: FrendsPlatform/FrendsTasks/.github/workflows/release.yml@main
+    with:
+      workdir: Frends.AzureBlobStorage.DeleteBlob
+    secrets:
+      feed_api_key: ${{ secrets.TASKS_FEED_API_KEY }}
