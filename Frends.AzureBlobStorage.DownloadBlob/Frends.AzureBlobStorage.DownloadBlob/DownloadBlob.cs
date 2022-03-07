@@ -8,22 +8,22 @@ using System.ComponentModel;
 using Azure.Storage.Blobs;
 
 #pragma warning disable CS1591
+#pragma warning disable CS1573
 
 namespace Frends.AzureBlobStorage.DownloadBlob
 {
-    public class AzureBlobStorage
+    public static class AzureBlobStorage
     {
         /// <summary>
-        ///     Downloads Blob to a file.
-        ///     See https://github.com/FrendsPlatform/Frends.AzureBlobStorage/tree/main/Frends.AzureBlobStorage.DownloadBlob
+        /// Downloads Blob to a file.
+        /// [Documentation](https://github.com/FrendsPlatform/Frends.AzureBlobStorage/tree/main/Frends.AzureBlobStorage.DownloadBlob)
         /// </summary>
-        /// <param name="source"></param>
-        /// <param name="destination"></param>
-        /// <param name="cancellationToken"></param>
+        /// <param name="source">Information about which Blob to download.</param>
+        /// <param name="destination">Information about the download destination.</param>
         /// <returns>Object { string FileName, string Directory, string FullPath}</returns>
-        public static async Task<DownloadBlobOutput> DownloadBlob(
-            [PropertyTab] SourceProperties source,
-            [PropertyTab] DestinationFileProperties destination,
+        public static async Task<Result> DownloadBlob(
+            [PropertyTab] Source source,
+            [PropertyTab] Destination destination,
             CancellationToken cancellationToken)
         {
             var blob = new BlobClient(source.ConnectionString, source.ContainerName, source.BlobName);
@@ -63,7 +63,7 @@ namespace Frends.AzureBlobStorage.DownloadBlob
 
             CheckAndFixFileEncoding(fullDestinationPath, destination.Directory, fileExtension, source.Encoding);
 
-            return new DownloadBlobOutput
+            return new Result
             {
                 Directory = destination.Directory,
                 FileName = fileName,

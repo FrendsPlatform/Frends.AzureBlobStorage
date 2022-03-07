@@ -1,6 +1,5 @@
 ﻿using System;
 using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,30 +9,32 @@ using Azure.Storage;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Blobs.Specialized;
-
-#pragma warning disable CS1591
+using System.IO.Compression;
 
 namespace Frends.AzureBlobStorage.UploadBlob
 {
     public class AzureBlobStorage
     {
         /// <summary>
-        ///     Uploads a single file to Azure blob storage.
-        ///     See https://github.com/FrendsPlatform/Frends.AzureBlobStorage/tree/main/Frends.AzureBlobStorage.UploadBlob
-        ///     Will create given container on connection if necessary.
+        /// Uploads a single file to Azure blob storage.
+        /// Will create given container on connection if necessary.
+        /// [Documentation](https://github.com/FrendsPlatform/Frends.AzureBlobStorage/tree/main/Frends.AzureBlobStorage.UploadBlob)
         /// </summary>
         /// <returns>Object { string Uri, string SourceFile }</returns>
-        public static async Task<UploadOutput> UploadBlob(
-            [PropertyTab] UploadInput input,
-            [PropertyTab] DestinationProperties destinationProperties,
+        public static async Task<Result> UploadBlob(
+            [PropertyTab] Source input,
+            [PropertyTab] Destination destinationProperties,
             CancellationToken cancellationToken)
         {
             // Check that source file exists.
             var fi = new FileInfo(input.SourceFile);
             if (!fi.Exists) throw new ArgumentException($"Source file {input.SourceFile} does not exist", nameof(input.SourceFile));
 
-            // Get container.
-            var container = Utils.GetBlobContainer(destinationProperties.ConnectionString, destinationProperties.ContainerName);
+            // Initialize azure account.
+            var blobServiceClient = new BlobServiceClient(destinationProperties.ConnectionString);
+
+            // Fetch the container client.
+            var container = blobServiceClient.GetBlobContainerClient(destinationProperties.ContainerName);
 
             try
             {
@@ -61,26 +62,22 @@ namespace Frends.AzureBlobStorage.UploadBlob
             }
         }
 
+        #region HelperMethods
+
         private static Encoding GetEncoding(string target)
         {
-            switch (target.ToLower())
+            return target.ToLower() switch
             {
-                case "utf-8":
-                    return Encoding.UTF8;
-                case "utf-32":
-                    return Encoding.UTF32;
-                case "unicode":
-                    return Encoding.Unicode;
-                case "ascii":
-                    return Encoding.ASCII;
-                default:
-                    return Encoding.UTF8;
-            }
+                "utf-32" => Encoding.UTF32,
+                "unicode" => Encoding.Unicode,
+                "ascii" => Encoding.ASCII,
+                _ => Encoding.UTF8,
+            };
         }
 
-        private static async Task<UploadOutput> UploadBlockBlob(
-            UploadInput input,
-            DestinationProperties destinationProperties,
+        private static async Task<Result> UploadBlockBlob(
+            Source input,
+            Destination destinationProperties,
             FileInfo fi,
             string fileName,
             CancellationToken cancellationToken)
@@ -113,18 +110,19 @@ namespace Frends.AzureBlobStorage.UploadBlob
             // Begin and await for upload to complete.
             try
             {
-                using (var stream = Utils.GetStream(input.Compress, input.ContentsOnly, encoding, fi)) await blob.UploadAsync(stream, uploadOptions, cancellationToken);
+                using var stream = GetStream(input.Compress, input.ContentsOnly, encoding, fi);
+                await blob.UploadAsync(stream, uploadOptions, cancellationToken);
             }
             catch (Exception e)
             {
                 throw new Exception("UploadFileAsync: Error occured while uploading file to blob storage", e);
             }
-            return new UploadOutput { SourceFile = input.SourceFile, Uri = blob.Uri.ToString() };
+            return new Result { SourceFile = input.SourceFile, Uri = blob.Uri.ToString() };
         }
 
-        private static async Task<UploadOutput> AppendBlob(
-            UploadInput input,
-            DestinationProperties destinationProperties,
+        private static async Task<Result> AppendBlob(
+            Source input,
+            Destination destinationProperties,
             FileInfo fi,
             string fileName,
             CancellationToken cancellationToken)
@@ -159,19 +157,20 @@ namespace Frends.AzureBlobStorage.UploadBlob
             // Begin and await for upload to complete.
             try
             {
-                using (var stream = Utils.GetStream(false, true, encoding, fi)) await blob.AppendBlockAsync(stream, null, null, progressHandler, cancellationToken);
+                using var stream = GetStream(false, true, encoding, fi);
+                await blob.AppendBlockAsync(stream, null, null, progressHandler, cancellationToken);
             }
             catch (Exception e)
             {
                 throw new Exception("Error occured while appending a block.", e);
             }
 
-            return new UploadOutput { SourceFile = input.SourceFile, Uri = blob.Uri.ToString() };
+            return new Result { SourceFile = input.SourceFile, Uri = blob.Uri.ToString() };
         }
 
-        private static async Task<UploadOutput> UploadPageBlob(
-            UploadInput input,
-            DestinationProperties destinationProperties,
+        private static async Task<Result> UploadPageBlob(
+            Source input,
+            Destination destinationProperties,
             FileInfo fi,
             string fileName,
             CancellationToken cancellationToken)
@@ -192,14 +191,61 @@ namespace Frends.AzureBlobStorage.UploadBlob
             // Begin and await for upload to complete.
             try
             {
-                using (var stream = Utils.GetStream(false, true, encoding, fi)) await blob.UploadPagesAsync(stream, 512L, null, null, progressHandler, cancellationToken);
+                using var stream = GetStream(false, true, encoding, fi);
+                await blob.UploadPagesAsync(stream, 512L, null, null, progressHandler, cancellationToken);
             }
             catch (Exception e)
             {
                 throw new Exception("Error occured while uploading page blob", e);
             }
 
-            return new UploadOutput { SourceFile = input.SourceFile, Uri = blob.Uri.ToString() };
+            return new Result { SourceFile = input.SourceFile, Uri = blob.Uri.ToString() };
         }
+
+        /// <summary>
+        /// Gets correct stream object.
+        /// Does not always dispose, so use using.
+        /// </summary>
+        private static Stream GetStream(bool compress, bool fromString, Encoding encoding, FileInfo file)
+        {
+            var fileStream = File.OpenRead(file.FullName);
+
+            // As uncompressed binary.
+            if (!compress && !fromString) return fileStream;
+
+            byte[] bytes;
+            if (!compress)
+            {
+                using (var reader = new StreamReader(fileStream, encoding)) bytes = encoding.GetBytes(reader.ReadToEnd());
+
+                // As uncompressed string.
+                return new MemoryStream(bytes);
+            }
+
+            using (var outStream = new MemoryStream())
+            {
+                using (var gzip = new GZipStream(outStream, CompressionMode.Compress))
+                {
+                    // As compressed binary.
+                    if (!fromString) fileStream.CopyTo(gzip);
+                    else
+                        using (var reader = new StreamReader(fileStream, encoding))
+                        {
+                            var content = reader.ReadToEnd();
+                            using var encodedMemory = new MemoryStream(encoding.GetBytes(content));
+
+                            // As compressed string.
+                            encodedMemory.CopyTo(gzip);
+                        }
+                }
+                bytes = outStream.ToArray();
+            }
+            fileStream.Dispose();
+
+            var memStream = new MemoryStream(bytes);
+            return memStream;
+        }
+
+        #endregion
     }
 }

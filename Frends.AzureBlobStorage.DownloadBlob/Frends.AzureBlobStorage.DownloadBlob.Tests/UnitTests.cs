@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Azure.Storage.Blobs.Models;
+using Azure.Storage.Blobs;
 
 namespace Frends.AzureBlobStorage.DownloadBlob.Tests
 {
@@ -28,11 +29,11 @@ namespace Frends.AzureBlobStorage.DownloadBlob.Tests
         /// </summary>
         private string _containerName;
 
-        private DestinationFileProperties _destination;
+        private Destination _destination;
 
         private string _destinationDirectory;
 
-        private SourceProperties _source;
+        private Source _source;
 
         /// <summary>
         ///     Some random file for test purposes.
@@ -49,14 +50,14 @@ namespace Frends.AzureBlobStorage.DownloadBlob.Tests
             _containerName = $"test-container{DateTime.Now.ToString("mmssffffff", CultureInfo.InvariantCulture)}";
 
             // Task properties.
-            _source = new SourceProperties
+            _source = new Source
             {
                 ConnectionString = _connectionString,
                 BlobName = _testBlob,
                 ContainerName = _containerName,
                 Encoding = "utf-8"
             };
-            _destination = new DestinationFileProperties
+            _destination = new Destination
             {
                 Directory = _destinationDirectory,
                 FileExistsOperation = FileExistsAction.Overwrite
@@ -65,8 +66,8 @@ namespace Frends.AzureBlobStorage.DownloadBlob.Tests
 
 
             // Setup test material for download tasks.
-
-            var container = Utils.GetBlobContainer(_connectionString, _containerName);
+            var blobServiceClient = new BlobServiceClient(_connectionString);
+            var container = blobServiceClient.GetBlobContainerClient(_containerName);
             var success = await container.CreateIfNotExistsAsync(PublicAccessType.None, null, null, _cancellationToken);
 
             if (success is null) throw new Exception("Could no create blob container");
@@ -81,7 +82,8 @@ namespace Frends.AzureBlobStorage.DownloadBlob.Tests
         public async Task Cleanup()
         {
             // Delete whole container after running tests.
-            var container = Utils.GetBlobContainer(_connectionString, _containerName);
+            var blobServiceClient = new BlobServiceClient(_connectionString);
+            var container = blobServiceClient.GetBlobContainerClient(_containerName);
             await container.DeleteIfExistsAsync(null, _cancellationToken);
 
             // Delete test files and folders.
