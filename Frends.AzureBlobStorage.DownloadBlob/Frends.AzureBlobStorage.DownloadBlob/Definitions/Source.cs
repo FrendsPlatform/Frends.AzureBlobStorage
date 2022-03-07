@@ -11,7 +11,7 @@ namespace Frends.AzureBlobStorage.DownloadBlob
         /// <summary>
         /// Connection string to Azure storage.
         /// </summary>
-        [DefaultValue("UseDevelopmentStorage=true")]
+        [PasswordPropertyText]
         [DisplayFormat(DataFormatString = "Text")]
         public string ConnectionString { get; set; }
 

@@ -11,7 +11,7 @@ namespace Frends.AzureBlobStorage.UploadBlob
         /// <summary>
         /// Connection string to Azure storage.
         /// </summary>
-        [DefaultValue("UseDevelopmentStorage=true")]
+        [PasswordPropertyText]
         [DisplayName("Connection String")]
         [DisplayFormat(DataFormatString = "Text")]
         public string ConnectionString { get; set; }
