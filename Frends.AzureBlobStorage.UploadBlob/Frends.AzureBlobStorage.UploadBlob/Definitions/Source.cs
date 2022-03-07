@@ -6,7 +6,7 @@ namespace Frends.AzureBlobStorage.UploadBlob
     /// <summary>
     /// Input-class for UploadBlob-task.
     /// </summary>
-    public class Input
+    public class Source
     {
         /// <summary>
         /// File which will be uploaded.

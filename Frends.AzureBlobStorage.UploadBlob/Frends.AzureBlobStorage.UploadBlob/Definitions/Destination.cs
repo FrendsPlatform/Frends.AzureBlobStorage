@@ -1,14 +1,12 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-#pragma warning disable CS1591
-
 namespace Frends.AzureBlobStorage.UploadBlob
 {
     /// <summary>
     /// Options-class for UploadBlob-task.
     /// </summary>
-    public class Options
+    public class Destination
     {
         /// <summary>
         /// Connection string to Azure storage.

@@ -12,18 +12,18 @@ using Azure.Storage.Blobs;
 
 namespace Frends.AzureBlobStorage.DownloadBlob
 {
-    public class AzureBlobStorage
+    public static class AzureBlobStorage
     {
         /// <summary>
         /// Downloads Blob to a file.
         /// [Documentation](https://github.com/FrendsPlatform/Frends.AzureBlobStorage/tree/main/Frends.AzureBlobStorage.DownloadBlob)
         /// </summary>
-        /// <param name="source"></param>
-        /// <param name="destination"></param>
+        /// <param name="source">Information about which Blob to download.</param>
+        /// <param name="destination">Information about the download destination.</param>
         /// <returns>Object { string FileName, string Directory, string FullPath}</returns>
         public static async Task<Result> DownloadBlob(
-            [PropertyTab] Input source,
-            [PropertyTab] Options destination,
+            [PropertyTab] Source source,
+            [PropertyTab] Destination destination,
             CancellationToken cancellationToken)
         {
             var blob = new BlobClient(source.ConnectionString, source.ContainerName, source.BlobName);

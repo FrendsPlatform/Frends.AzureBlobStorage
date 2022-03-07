@@ -11,10 +11,6 @@ using Azure.Storage.Blobs.Models;
 using Azure.Storage.Blobs.Specialized;
 using System.IO.Compression;
 
-#pragma warning disable CS1591
-#pragma warning disable CA2208
-#pragma warning disable IDE0066
-
 namespace Frends.AzureBlobStorage.UploadBlob
 {
     public class AzureBlobStorage
@@ -26,8 +22,8 @@ namespace Frends.AzureBlobStorage.UploadBlob
         /// </summary>
         /// <returns>Object { string Uri, string SourceFile }</returns>
         public static async Task<Result> UploadBlob(
-            [PropertyTab] Input input,
-            [PropertyTab] Options destinationProperties,
+            [PropertyTab] Source input,
+            [PropertyTab] Destination destinationProperties,
             CancellationToken cancellationToken)
         {
             // Check that source file exists.
@@ -80,8 +76,8 @@ namespace Frends.AzureBlobStorage.UploadBlob
         }
 
         private static async Task<Result> UploadBlockBlob(
-            Input input,
-            Options destinationProperties,
+            Source input,
+            Destination destinationProperties,
             FileInfo fi,
             string fileName,
             CancellationToken cancellationToken)
@@ -125,8 +121,8 @@ namespace Frends.AzureBlobStorage.UploadBlob
         }
 
         private static async Task<Result> AppendBlob(
-            Input input,
-            Options destinationProperties,
+            Source input,
+            Destination destinationProperties,
             FileInfo fi,
             string fileName,
             CancellationToken cancellationToken)
@@ -173,8 +169,8 @@ namespace Frends.AzureBlobStorage.UploadBlob
         }
 
         private static async Task<Result> UploadPageBlob(
-            Input input,
-            Options destinationProperties,
+            Source input,
+            Destination destinationProperties,
             FileInfo fi,
             string fileName,
             CancellationToken cancellationToken)

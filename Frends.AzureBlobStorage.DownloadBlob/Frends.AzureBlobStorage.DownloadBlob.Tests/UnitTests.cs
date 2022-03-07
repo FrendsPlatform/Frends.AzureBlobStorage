@@ -29,11 +29,11 @@ namespace Frends.AzureBlobStorage.DownloadBlob.Tests
         /// </summary>
         private string _containerName;
 
-        private Options _destination;
+        private Destination _destination;
 
         private string _destinationDirectory;
 
-        private Input _source;
+        private Source _source;
 
         /// <summary>
         ///     Some random file for test purposes.
@@ -50,14 +50,14 @@ namespace Frends.AzureBlobStorage.DownloadBlob.Tests
             _containerName = $"test-container{DateTime.Now.ToString("mmssffffff", CultureInfo.InvariantCulture)}";
 
             // Task properties.
-            _source = new Input
+            _source = new Source
             {
                 ConnectionString = _connectionString,
                 BlobName = _testBlob,
                 ContainerName = _containerName,
                 Encoding = "utf-8"
             };
-            _destination = new Options
+            _destination = new Destination
             {
                 Directory = _destinationDirectory,
                 FileExistsOperation = FileExistsAction.Overwrite

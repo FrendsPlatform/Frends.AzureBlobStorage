@@ -1,14 +1,12 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-#pragma warning disable CS1591
-
 namespace Frends.AzureBlobStorage.DownloadBlob
 {
     /// <summary>
     /// Options-class for DownloadBlob-task.
     /// </summary>
-    public class Options
+    public class Destination
     {
         /// <summary>
         /// Download destination directory.

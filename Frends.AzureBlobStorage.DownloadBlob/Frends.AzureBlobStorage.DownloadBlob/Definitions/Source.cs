@@ -6,7 +6,7 @@ namespace Frends.AzureBlobStorage.DownloadBlob
     /// <summary>
     /// Input-class for DownloadBlob-task.
     /// </summary>
-    public class Input
+    public class Source
     {
         /// <summary>
         /// Connection string to Azure storage.
