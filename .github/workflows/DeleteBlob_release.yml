@@ -1,4 +1,4 @@
-name: UploadBlob_release
+name: DeleteBlob_release
 
 on:
   workflow_dispatch:
@@ -7,6 +7,6 @@ jobs:
   build:
     uses: FrendsPlatform/FrendsTasks/.github/workflows/release.yml@main
     with:
-      workdir: Frends.AzureBlobStorage.UploadBlob
+      workdir: Frends.AzureBlobStorage.DeleteBlob
     secrets:
       feed_api_key: ${{ secrets.TASKS_FEED_API_KEY }}

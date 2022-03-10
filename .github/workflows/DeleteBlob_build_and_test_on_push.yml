@@ -1,18 +1,18 @@
-name: DownloadBlob_push
+name: DeleteBlob_push
 
 on:
   push:
     branches-ignore:
       - main
     paths:
-      - 'Frends.AzureBlobStorage.DownloadBlob/**'
+      - 'Frends.AzureBlobStorage.DeleteBlob/**'
   workflow_dispatch:
 
 jobs:
   build:
     uses: FrendsPlatform/FrendsTasks/.github/workflows/build_test.yml@main
     with:
-      workdir: Frends.AzureBlobStorage.DownloadBlob
+      workdir: Frends.AzureBlobStorage.DeleteBlob
       env_var_name_1: HiQ_AzureBlobStorage_ConnString
     secrets:
       badge_service_api_key: ${{ secrets.BADGE_SERVICE_API_KEY }}

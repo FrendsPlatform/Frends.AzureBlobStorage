@@ -7,8 +7,6 @@ on:
     paths:
       - 'Frends.AzureBlobStorage.UploadBlob/**'
   workflow_dispatch:
-    paths:
-      - 'Frends.AzureBlobStorage.UploadBlob/**'
 
 jobs:
   build:
