@@ -24,16 +24,20 @@ You can install the task via FRENDS UI Task View or you can find the nuget packa
 
 Deletes a blob from a target container. Operation result is seen as successful even if the blob or the container doesn't exist.
 
-### Properties
+### Input
 
-| Property                  | Type                                              | Description                                     | Example                      |
-|---------------------------|---------------------------------------------------|-------------------------------------------------|------------------------------|
-| Connection String         | `string`                                          | Connection string to Azure storage.             | 'UseDevelopmentStorage=true' |
-| Container Name            | `string`                                          | Name of the container where delete blob exists. | 'my-container'               |
-| Blob Name                 | `string`                                          | Name of the blob to delete.                     | 'deleteMe.xml'               |
-| Verify ETag when deleting | `string`                                          | Delete blob only if the ETag matches.           | '0x9FE13BAA3234312'          |
-| Blob Type                 | enum<Append, Block, Page>                         | Azure blob type to read.                        | Block                        |
-| Snapshot delete option    | enum<None, IncludeSnapshots, DeleteSnapshotsOnly> | Defines what should be done with blob snapshots | None                         |
+| Property          | Type     | Description                                     | Example                      |
+|-------------------|----------|-------------------------------------------------|------------------------------|
+| Connection String | `string` | Connection string to Azure storage.             | 'UseDevelopmentStorage=true' |
+| Container Name    | `string` | Name of the container where delete blob exists. | 'my-container'               |
+| Blob Name         | `string` | Name of the blob to delete.                     | 'deleteMe.xml'               |
+
+### Options
+
+| Property                  | Type                                              | Description                                      | Example             |
+|---------------------------|---------------------------------------------------|--------------------------------------------------|---------------------|
+| Verify ETag when deleting | `string`                                          | Delete blob only if the ETag matches.            | '0x9FE13BAA3234312' |
+| Snapshot delete option    | enum<None, IncludeSnapshots, DeleteSnapshotsOnly> | Defines what should be done with blob snapshots. | None                |
 
 ### Returns
 
