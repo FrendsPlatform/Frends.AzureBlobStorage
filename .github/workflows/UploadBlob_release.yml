@@ -2,8 +2,6 @@ name: UploadBlob_release
 
 on:
   workflow_dispatch:
-    paths:
-      - 'Frends.AzureBlobStorage.UploadBlob/**'
 
 jobs:
   build:

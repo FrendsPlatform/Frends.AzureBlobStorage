@@ -2,8 +2,6 @@ name: DeleteBlob_release
 
 on:
   workflow_dispatch:
-    paths:
-      - 'Frends.AzureBlobStorage.DeleteBlob/**'
 
 jobs:
   build:

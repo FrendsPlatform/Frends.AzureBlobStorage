@@ -2,8 +2,6 @@ name: DownloadBlob_release
 
 on:
   workflow_dispatch:
-    paths:
-      - 'Frends.AzureBlobStorage.DownloadBlob/**'
 
 jobs:
   build:

@@ -32,17 +32,14 @@ namespace Frends.AzureBlobStorage.DeleteBlob.Tests
         {
             var input = new Input
             {
-                BlobName = Guid.NewGuid().ToString()
-            };
-            var connection = new Options
-            {
+                BlobName = Guid.NewGuid().ToString(),
+                ContainerName = _containerName,
                 ConnectionString = _connectionString,
-                ContainerName = _containerName
             };
             var container = GetBlobContainer(_connectionString, _containerName);
             await container.CreateIfNotExistsAsync();
 
-            var result = await AzureBlobStorage.DeleteBlob(input, connection, new CancellationToken());
+            var result = await AzureBlobStorage.DeleteBlob(input, new Options(), new CancellationToken());
 
             Assert.IsTrue(result.Success, "DeleteBlob should've returned true when trying to delete non existing blob");
         }
@@ -52,15 +49,12 @@ namespace Frends.AzureBlobStorage.DeleteBlob.Tests
         {
             var input = new Input
             {
-                BlobName = Guid.NewGuid().ToString()
-            };
-            var options = new Options
-            {
+                BlobName = Guid.NewGuid().ToString(),
                 ConnectionString = _connectionString,
                 ContainerName = Guid.NewGuid().ToString()
             };
 
-            var result = await AzureBlobStorage.DeleteBlob(input, options, new CancellationToken());
+            var result = await AzureBlobStorage.DeleteBlob(input, new Options(), new CancellationToken());
 
             Assert.IsTrue(result.Success, "DeleteBlob should've returned true when trying to delete blob in non existing container");
         }

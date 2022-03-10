@@ -9,18 +9,40 @@ namespace Frends.AzureBlobStorage.DeleteBlob
     public class Options
     {
         /// <summary>
-        /// Connection string to Azure storage.
+        /// What should be done with blob snapshots?
         /// </summary>
-        [PasswordPropertyText]
-        [DisplayFormat(DataFormatString = "Text")]
-        public string ConnectionString { get; set; }
+        [DisplayName("Snapshot Delete Option")]
+        [DefaultValue(SnapshotDeleteOption.IncludeSnapshots)]
+        public SnapshotDeleteOption SnapshotDeleteOption { get; set; }
 
         /// <summary>
-        /// Name of the container where delete blob exists.
+        /// Delete blob only if the ETag matches.
+        /// Leave empty if verification is not needed.
         /// </summary>
-        [DisplayName("Blob Container Name")]
-        [DefaultValue("test-container")]
+        [DisplayName("Verify ETag When Deleting")]
+        [DefaultValue("0x9FE13BAA323E5A4")]
         [DisplayFormat(DataFormatString = "Text")]
-        public string ContainerName { get; set; }
+        public string VerifyETagWhenDeleting { get; set; }
+    }
+
+    /// <summary>
+    /// Options for Blob spanshots.
+    /// </summary>
+    public enum SnapshotDeleteOption
+    {
+        /// <summary>
+        /// No specific options.
+        /// </summary>
+        None,
+
+        /// <summary>
+        /// Also delete snapshots of the blob.
+        /// </summary>
+        IncludeSnapshots,
+
+        /// <summary>
+        /// Delete only blob's snapshots.
+        /// </summary>
+        DeleteSnapshotsOnly
     }
 }
