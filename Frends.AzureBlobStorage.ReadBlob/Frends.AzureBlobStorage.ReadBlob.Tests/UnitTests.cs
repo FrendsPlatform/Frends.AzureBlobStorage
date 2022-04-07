@@ -13,10 +13,10 @@ namespace Frends.AzureBlobStorage.ReadBlob
         [OneTimeSetUp]
         public static void Setup()
         {
-            var containername = "blobreadtest";
-            var blobName = "blobtest.txt";
-            var sastoken = "";
-            var uri = $"https://__.blob.core.windows.net/{containername}/{blobName}?";
+            var containername = "test";
+            var blobName = "test.txt";
+            var sastoken = "sp=r&st=2022-04-06T10:17:16Z&se=2022-04-11T18:17:16Z&spr=https&sv=2020-08-04&sr=b&sig=aG5N%2BywcDxb01QF9VZAUiEwTniUawJHZd4OsMFf21ow%3D";
+            var uri = $"https://testsorage01.blob.core.windows.net/{containername}/{blobName}?";
             var localConnectionString = "UseDevelopmentStorage=true";
 
             _source = new Source

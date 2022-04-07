@@ -23,7 +23,7 @@ namespace Frends.AzureBlobStorage.ReadBlob
         private static string ReadBlobContentAsyncTest(Source source, CancellationToken cancellationToken)
         {
             BlobClient blob;
-            var uri = $"https://teemusbfrdstrg.blob.core.windows.net/{source.ContainerName}/{source.BlobName}?";
+            var uri = $"{source.Uri}/{source.ContainerName}/{source.BlobName}?";
 
             if (String.IsNullOrEmpty(source.ConnectionString))
             {
