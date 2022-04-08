@@ -10,9 +10,9 @@
 	<PackageTags>Frends</PackageTags>
 	<PackageLicenseExpression>MIT</PackageLicenseExpression>
 	<GenerateDocumentationFile>true</GenerateDocumentationFile>
-	<Description>FRENDS task to read single blob to Azure.</Description>
+	<Description>FRENDS task to read single blob from Azure.</Description>
 	<PackageProjectUrl>https://frends.com/</PackageProjectUrl>
-	<RepositoryUrl>https://github.com/FrendsPlatform/Frends.AzureBlobStorage/tree/main/Frends.AzureBlobStorage.ReadBlob</RepositoryUrl>
+	<RepositoryUrl>https://github.com/FrendsPlatform/Frends.AzureBlobStorage</RepositoryUrl>
   </PropertyGroup>
 	
   <ItemGroup>

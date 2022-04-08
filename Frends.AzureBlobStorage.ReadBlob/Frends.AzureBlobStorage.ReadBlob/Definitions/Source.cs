@@ -5,10 +5,13 @@ namespace Frends.AzureBlobStorage.ReadBlob.Definitions
 {
     public class Source
     {
+        public AuthenticationMethod AuthenticationMethod { get; set; }
+
         /// <summary>
         ///     The base URI for the storage account.
         ///     Use either URI and SAS Token or Connection string.
         /// </summary>
+        [UIHint(nameof(AuthenticationMethod), "", AuthenticationMethod.Sastoken)]
         [DefaultValue("https://xx.blob.xx.xx.net/")]
         [DisplayFormat(DataFormatString = "Text")]
         public string Uri { get; set; }
@@ -16,6 +19,7 @@ namespace Frends.AzureBlobStorage.ReadBlob.Definitions
         /// <summary>
         ///     A shared access signature. Grants restricted access rights to Azure Storage resources when combined with URI.
         /// </summary>
+        [UIHint(nameof(AuthenticationMethod), "", AuthenticationMethod.Sastoken)]
         [PasswordPropertyText]
         [DisplayFormat(DataFormatString = "Text")]
         public string SasToken { get; set; }
@@ -24,6 +28,7 @@ namespace Frends.AzureBlobStorage.ReadBlob.Definitions
         ///     Connection string to Azure storage.
         ///     Use either URI and SAS Token or Connection string.
         /// </summary>
+        [UIHint(nameof(AuthenticationMethod), "", AuthenticationMethod.Connectionstring)]
         [PasswordPropertyText]
         [DisplayFormat(DataFormatString = "Text")]
         public string ConnectionString { get; set; }
@@ -43,8 +48,7 @@ namespace Frends.AzureBlobStorage.ReadBlob.Definitions
         /// <summary>
         ///     Encoding name in which blob content is read.
         /// </summary>
-        [DefaultValue("UTF8")]
-        [DisplayFormat(DataFormatString = "Text")]
+        [DefaultValue(Encode.UTF8)]
         public Encode Encoding { get; set; }
     }
 }

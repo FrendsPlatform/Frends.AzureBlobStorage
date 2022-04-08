@@ -3,7 +3,7 @@ namespace Frends.AzureBlobStorage.ReadBlob.Definitions
 {
     public class Result
     {
-        public string Content { get; set; }
+        public string Content { get; private set; }
         public Result(string content)
         {
             Content = content;

@@ -33,7 +33,9 @@ namespace Frends.AzureBlobStorage.ReadBlob
         {
             _source = new Source
             {
-                //ConnectionString = _connstring, //Comment this line to test with SAS Token.
+                //AuthenticationMethod = AuthenticationMethod.Connectionstring,
+                AuthenticationMethod = AuthenticationMethod.Sastoken,
+                ConnectionString = _connstring, //Comment this line to test with SAS Token.
                 Uri = $"https://testsorage01.blob.core.windows.net/{_containerName}/{_blobName}?",
                 SasToken = GetServiceSasUriForBlob(),
                 ContainerName = _containerName,
