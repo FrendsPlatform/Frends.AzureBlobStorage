@@ -4,6 +4,7 @@ using System.Threading;
 using System.Text;
 using Azure.Storage.Blobs;
 using Azure;
+using Frends.AzureBlobStorage.ReadBlob.Definitions;
 #pragma warning disable 1591
 namespace Frends.AzureBlobStorage.ReadBlob
 {
@@ -36,29 +37,27 @@ namespace Frends.AzureBlobStorage.ReadBlob
 
             cancellationToken.ThrowIfCancellationRequested();
             var result = blob.DownloadContentAsync(cancellationToken).Result;
-            var encoding = SetStringEncoding(result.Value.Content.ToString(), source.Encoding.ToString());
+            var encoding = SetStringEncoding(result.Value.Content.ToString(), source);
 
             return encoding.ToString();
-
-            throw new Exception("Problems with connecting to Azure Blob Storage. Please check connection settings.");
         }
 
-        private static string SetStringEncoding(string text, string encoding)
+        private static string SetStringEncoding(string text, Source source)
         {
             var bytes = Encoding.UTF8.GetBytes(text);
 
-            switch (encoding.ToLower())
+            switch (source.Encoding)
             {
-                case "utf8":
+                case Encode.UTF8:
                     return Encoding.UTF8.GetString(bytes);
-                case "utf32":
+                case Encode.UTF32:
                     return Encoding.UTF32.GetString(bytes);
-                case "unicode":
+                case Encode.Unicode:
                     return Encoding.Unicode.GetString(bytes);
-                case "ascii":
+                case Encode.ASCII:
                     return Encoding.ASCII.GetString(bytes);
-                default:
-                    throw new Exception("Provided encoding is not supported. Please check supported encodings from Encoding-option.");
+                default: 
+                    return null;
             }
         }
     }

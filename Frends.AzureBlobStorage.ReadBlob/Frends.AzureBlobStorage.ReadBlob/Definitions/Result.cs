@@ -1,5 +1,5 @@
 ﻿#pragma warning disable 1591
-namespace Frends.AzureBlobStorage.ReadBlob
+namespace Frends.AzureBlobStorage.ReadBlob.Definitions
 {
     public class Result
     {

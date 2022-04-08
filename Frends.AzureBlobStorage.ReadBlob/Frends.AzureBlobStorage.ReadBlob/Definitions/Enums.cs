@@ -1,8 +1,9 @@
-﻿using System.ComponentModel;
-#pragma warning disable 1591
-namespace Frends.AzureBlobStorage.ReadBlob
+﻿
+namespace Frends.AzureBlobStorage.ReadBlob.Definitions
 {
-    [DefaultValue("UTF-8")]
+    /// <summary>
+    ///     Encoding name in which blob content is read. 
+    /// </summary>
     public enum Encode
     {
         UTF8,

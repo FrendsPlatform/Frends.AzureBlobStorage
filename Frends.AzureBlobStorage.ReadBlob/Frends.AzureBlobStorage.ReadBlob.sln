@@ -8,6 +8,11 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Frends.AzureBlobStorage.ReadBlob.Tests", "Frends.AzureBlobStorage.ReadBlob.Tests\Frends.AzureBlobStorage.ReadBlob.Tests.csproj", "{8CA92187-8E4F-4414-803B-EC899479022E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{78F7F22E-6E20-4BCE-8362-0C558568B729}"
+	ProjectSection(SolutionItems) = preProject
+		CHANGELOG.md = CHANGELOG.md
+		ReadBlob_build_and_test_on_main.yml = ReadBlob_build_and_test_on_main.yml
+		README.md = README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
