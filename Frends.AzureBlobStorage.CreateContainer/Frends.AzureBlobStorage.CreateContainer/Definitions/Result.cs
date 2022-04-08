@@ -1,23 +1,16 @@
-﻿namespace Frends.AzureBlobStorage.CreateContainer
+﻿namespace Frends.AzureBlobStorage.CreateContainer.Definitions
 {
     /// <summary>
     /// Result-class for DownloadBlob-task.
     /// </summary>
     public class Result
     {
-        /// <summary>
-        /// Name of the downloaded file.
-        /// </summary>
-        public string FileName { get; set; }
+        public string SourceFile { get; private set; }
+        public string Uri { get; private set; }
 
-        /// <summary>
-        /// Directory where the file was downloaded.
-        /// </summary>
-        public string Directory { get; set; }
-
-        /// <summary>
-        /// Full path to the downloaded file.
-        /// </summary>
-        public string FullPath { get; set; }
+        public Result(string source, string uri) {
+            this.SourceFile = source;
+            this.Uri = uri;
+        }
     }
 }

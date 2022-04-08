@@ -1,14 +1,11 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.ComponentModel;
-using Azure.Storage.Blobs;
-
-#pragma warning disable CS1591
-#pragma warning disable CS1573
+using Frends.AzureBlobStorage.CreateContainer.Definitions;
+using static Frends.AzureBlobStorage.CreateContainer.Definitions.Enums;
 
 namespace Frends.AzureBlobStorage.CreateContainer
 {
@@ -21,102 +18,64 @@ namespace Frends.AzureBlobStorage.CreateContainer
         /// <param name="source">Information about which Blob to download.</param>
         /// <param name="destination">Information about the download destination.</param>
         /// <returns>Object { string FileName, string Directory, string FullPath}</returns>
-        public static async Task<Result> CreateContainer(
-            [PropertyTab] Source source,
-            [PropertyTab] Destination destination,
-            CancellationToken cancellationToken)
+        /// <summary>
+        ///     Uploads a single file to Azure blob storage. See https://github.com/CommunityHiQ/Frends.Community.Azure.Blob
+        ///     Will create given container on connection if necessary.
+        /// </summary>
+        /// <returns>Object { string Uri, string SourceFile }</returns>
+        public static async Task<Result> CreateContainer([PropertyTab] Input input,
+            [PropertyTab] Destination destinationProperties, CancellationToken cancellationToken)
         {
-            var blob = new BlobClient(source.ConnectionString, source.ContainerName, source.BlobName);
-            var fullDestinationPath = Path.Combine(destination.Directory, source.BlobName);
-            var fileName = source.BlobName.Split('.')[0];
-            var fileExtension = "";
+            // check for interruptions
+            cancellationToken.ThrowIfCancellationRequested();
 
-            if (source.BlobName.Split('.').Length > 1)
+            // check that source file exists
+            var fi = new FileInfo(input.SourceFile);
+            if (!fi.Exists)
+                throw new ArgumentException($"Source file {input.SourceFile} does not exist", nameof(input.SourceFile));
+
+            // get container
+            var container = Utils.GetBlobContainer(destinationProperties.ConnectionString,
+                destinationProperties.ContainerName);
+
+            // check for interruptions
+            cancellationToken.ThrowIfCancellationRequested();
+            try
             {
-                fileName = string.Join(".", source.BlobName.Split('.').Take(source.BlobName.Split('.').Length - 1).ToArray());
-                fileExtension = "." + source.BlobName.Split('.').Last();
+                if (destinationProperties.CreateContainerIfItDoesNotExist)
+                    await container.CreateIfNotExistsAsync(PublicAccessType.None, null, null, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Checking if container exists or creating new container caused an exception.", ex);
             }
 
-            if (destination.FileExistsOperation == FileExistsAction.Error && File.Exists(fullDestinationPath))
-                throw new IOException("File already exists in destination path. Please delete the existing file or change the \"file exists operation\" to OverWrite.");
-
-            if (destination.FileExistsOperation == FileExistsAction.Rename && File.Exists(fullDestinationPath))
+            string fileName;
+            if (string.IsNullOrWhiteSpace(destinationProperties.RenameTo) && input.Compress)
             {
-                var increment = 1;
-                var incrementedFileName = fileName + "(" + increment.ToString() + ")" + fileExtension;
-
-                while (File.Exists(Path.Combine(destination.Directory, incrementedFileName)))
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-                    increment++;
-                    incrementedFileName = fileName + "(" + increment.ToString() + ")" + fileExtension;
-                }
-
-                fullDestinationPath = Path.Combine(destination.Directory, incrementedFileName);
-                fileName = incrementedFileName;
-                await blob.DownloadToAsync(fullDestinationPath, cancellationToken);
+                fileName = fi.Name + ".gz";
+            }
+            else if (string.IsNullOrWhiteSpace(destinationProperties.RenameTo))
+            {
+                fileName = fi.Name;
             }
             else
             {
-                await blob.DownloadToAsync(fullDestinationPath, cancellationToken);
+                fileName = destinationProperties.RenameTo;
             }
 
-            CheckAndFixFileEncoding(fullDestinationPath, destination.Directory, fileExtension, source.Encoding);
+            // return uri to uploaded blob and source file path
 
-            return new Result
+            switch (destinationProperties.BlobType)
             {
-                Directory = destination.Directory,
-                FileName = fileName,
-                FullPath = fullDestinationPath
-            };
-        }
-
-        #region HelperMethods
-
-        /// <summary>
-        ///     Check if the file encoding matches with given encoding and fix the encoding if it doesn't match.
-        /// </summary>
-        private static void CheckAndFixFileEncoding(string fullPath, string directory, string fileExtension, string targetEncoding)
-        {
-            var encoding = "";
-
-            using (var reader = new StreamReader(fullPath, true))
-            {
-                reader.Read();
-                encoding = reader.CurrentEncoding.BodyName;
-            }
-
-            if (targetEncoding.ToLower() != encoding)
-            {
-                Encoding newEncoding;
-
-                try
-                {
-                    newEncoding = Encoding.GetEncoding(targetEncoding.ToLower());
-                }
-                catch
-                {
-                    throw new Exception("Provided encoding is not supported. Please check supported encodings from Encoding-option.");
-                }
-
-                var tempFilePath = Path.Combine(directory, "encodingTemp" + fileExtension);
-
-                using (var sr = new StreamReader(fullPath, true))
-                using (var sw = new StreamWriter(tempFilePath, false, newEncoding))
-                {
-                    var line = "";
-
-                    while ((line = sr.ReadLine()) != null)
-                    {
-                        sw.WriteLine(line);
-                    }
-                }
-
-                File.Delete(fullPath);
-                File.Copy(tempFilePath, fullPath);
-                File.Delete(tempFilePath);
+                case AzureBlobType.Append:
+                    return await AppendBlob(input, destinationProperties, fi, fileName, cancellationToken);
+                case AzureBlobType.Page:
+                    return await UploadPageBlob(input, destinationProperties, fi, fileName, cancellationToken);
+                default:
+                    return await UploadBlockBlob(input, destinationProperties, fi, fileName, cancellationToken);
             }
         }
-        #endregion
+
     }
 }

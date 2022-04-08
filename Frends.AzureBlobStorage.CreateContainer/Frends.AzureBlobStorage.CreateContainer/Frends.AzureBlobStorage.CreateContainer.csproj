@@ -12,7 +12,7 @@
 	<GenerateDocumentationFile>true</GenerateDocumentationFile>
 	<Description>FRENDS task to create Container to Azure.</Description>
 	<PackageProjectUrl>https://frends.com/</PackageProjectUrl>
-	<RepositoryUrl>https://github.com/FrendsPlatform/Frends.AzureBlobStorage/tree/main/Frends.AzureBlobStorage.DownloadBlob</RepositoryUrl>
+	<RepositoryUrl>https://github.com/FrendsPlatform/Frends.AzureBlobStorage/tree/main/Frends.AzureBlobStorage.CreateContainer</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>
