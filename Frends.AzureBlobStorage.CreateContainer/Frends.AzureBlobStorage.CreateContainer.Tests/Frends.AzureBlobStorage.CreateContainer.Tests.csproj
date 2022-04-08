@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Frends.AzureBlobStorage.DownloadBlob\Frends.AzureBlobStorage.DownloadBlob.csproj" />
+    <ProjectReference Include="..\Frends.AzureBlobStorage.CreateContainer\Frends.AzureBlobStorage.CreateContainer.csproj" />
   </ItemGroup>
 
   <ItemGroup>
