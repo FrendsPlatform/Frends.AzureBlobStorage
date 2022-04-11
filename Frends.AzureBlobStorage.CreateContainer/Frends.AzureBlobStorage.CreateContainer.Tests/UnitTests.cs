@@ -66,7 +66,7 @@ namespace Frends.AzureBlobStorage.CreateContainer.Tests
         [ExpectedException(typeof(Exception))]
         public async Task TestCreateContainer_throws_ClientNotFound()
         {
-            var noAccount = await AzureBlobStorage.CreateContainer(new Input { ConnectionString = "DefaultEndpointsProtocol=https;AccountName=unitTestStorage;AccountKey=abcdefghijklmnopqrstuyxz123456789;EndpointSuffix=core.windows.net", ContainerName = _containerName }, new System.Threading.CancellationToken());
+            var noAccount = await AzureBlobStorage.CreateContainer(new Input { ConnectionString = "DefaultEndpointsProtocol=https;AccountName=unitTestStorage;AccountKey=abcdefghijklmnopqrstuyxz123456789;EndpointSuffix=core.windows.net", ContainerName = _containerName }, new CancellationToken());
         }
     }
 }
