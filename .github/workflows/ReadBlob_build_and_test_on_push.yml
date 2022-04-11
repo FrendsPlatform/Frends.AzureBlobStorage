@@ -1,4 +1,4 @@
-name: ReadBlob_build_main
+name: ReadBlob_build_test
 
 on:
   push:
@@ -10,7 +10,7 @@ on:
 
 jobs:
   build:
-    uses: FrendsPlatform/FrendsTasks/.github/workflows/build_main.yml@main
+    uses: FrendsPlatform/FrendsTasks/.github/workflows/build_test.yml@main
     with:
       workdir: Frends.AzureBlobStorage.ReadBlob
       env_var_name_1: HiQ_AzureBlobStorage_ConnString
