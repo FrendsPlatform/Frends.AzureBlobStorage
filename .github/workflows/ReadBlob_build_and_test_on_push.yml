@@ -1,0 +1,21 @@
+name: ReadBlob_build_test
+
+on:
+  push:
+    branches-ignore: 
+      - main
+    paths:
+      - 'Frends.AzureBlobStorage.ReadBlob/**'
+  workflow_dispatch:
+
+jobs:
+  build:
+    uses: FrendsPlatform/FrendsTasks/.github/workflows/build_test.yml@main
+    with:
+      workdir: Frends.AzureBlobStorage.ReadBlob
+      env_var_name_1: HiQ_AzureBlobStorage_ConnString
+      env_var_name_2: HiQ_AzureBlobStorage_testsorage01AccessKey
+    secrets:
+      badge_service_api_key: ${{ secrets.BADGE_SERVICE_API_KEY }}
+      env_var_value_1: ${{ secrets.HIQ_AZUREBLOBSTORAGE_CONNSTRING }}
+      env_var_value_2: ${{ secrets.HIQ_AZUREBLOBSTORAGE_TESTSORAGE01ACCESSKEY }}
