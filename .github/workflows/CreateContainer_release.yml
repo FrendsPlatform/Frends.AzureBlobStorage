@@ -8,5 +8,7 @@ jobs:
     uses: FrendsPlatform/FrendsTasks/.github/workflows/release.yml@main
     with:
       workdir: Frends.AzureBlobStorage.CreateContainer
+      env_var_name_1: HiQ_AzureBlobStorage_ConnString
     secrets:
       feed_api_key: ${{ secrets.TASKS_FEED_API_KEY }}
+      env_var_value_1: ${{ secrets.HIQ_AZUREBLOBSTORAGE_CONNSTRING }}
