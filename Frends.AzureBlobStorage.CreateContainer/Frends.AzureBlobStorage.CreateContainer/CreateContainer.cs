@@ -11,20 +11,13 @@ namespace Frends.AzureBlobStorage.CreateContainer
     public static class AzureBlobStorage
     {
         /// <summary>
-        /// Downloads Blob to a file.
+        /// Creates a container to Azure blob storage.
         /// [Documentation](https://tasks.frends.com/tasks#frends-tasks/Frends.AzureBlobStorage.CreateContainer)
         /// </summary>
         /// <param name="input">Information about the container destination.</param>
-        /// <returns>Object { string FileName, string Directory, string FullPath}</returns>
-        /// <summary>
-        ///     Creates a container to Azure blob storage.
-        /// </summary>
         /// <returns>Object { string Uri }</returns>
         public static async Task<Result> CreateContainer([PropertyTab] Input input, CancellationToken cancellationToken)
         {
-            // check for interruptions
-            cancellationToken.ThrowIfCancellationRequested();
-
             if(input.ConnectionString == null || input.ContainerName == null)
                 throw new ArgumentNullException("Given parameter can't be empty."); 
 
@@ -34,9 +27,6 @@ namespace Frends.AzureBlobStorage.CreateContainer
 
             try
             {
-                // check for interruptions
-                cancellationToken.ThrowIfCancellationRequested();
-
                 await container.CreateIfNotExistsAsync(PublicAccessType.None, null, null, cancellationToken);
                 return new Result(new BlobClient(input.ConnectionString, input.ContainerName, "").Uri.ToString());
             }

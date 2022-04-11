@@ -11,6 +11,7 @@ namespace Frends.AzureBlobStorage.CreateContainer.Definitions
         [DefaultValue("UseDevelopmentStorage=true")]
         [DisplayName("Connection String")]
         [DisplayFormat(DataFormatString = "Text")]
+        [PasswordPropertyText]
         public string ConnectionString { get; set; }
 
         /// <summary>
