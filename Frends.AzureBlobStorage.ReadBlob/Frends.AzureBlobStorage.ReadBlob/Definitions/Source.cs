@@ -5,11 +5,13 @@ namespace Frends.AzureBlobStorage.ReadBlob.Definitions
 {
     public class Source
     {
+        /// <summary>
+        ///     Authentication method to use when connecting to Azure Storage. Options are connection string and SAS Token.
+        /// </summary>
         public AuthenticationMethod AuthenticationMethod { get; set; }
 
         /// <summary>
         ///     The base URI for the storage account.
-        ///     Use either URI and SAS Token or Connection string.
         /// </summary>
         [UIHint(nameof(AuthenticationMethod), "", AuthenticationMethod.Sastoken)]
         [DefaultValue("https://xx.blob.xx.xx.net/")]
@@ -26,7 +28,6 @@ namespace Frends.AzureBlobStorage.ReadBlob.Definitions
 
         /// <summary>
         ///     Connection string to Azure storage.
-        ///     Use either URI and SAS Token or Connection string.
         /// </summary>
         [UIHint(nameof(AuthenticationMethod), "", AuthenticationMethod.Connectionstring)]
         [PasswordPropertyText]

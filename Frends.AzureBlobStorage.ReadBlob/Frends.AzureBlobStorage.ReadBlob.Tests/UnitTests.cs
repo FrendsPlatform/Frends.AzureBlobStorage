@@ -3,11 +3,13 @@ using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Specialized;
 using Azure.Storage.Sas;
 using Frends.AzureBlobStorage.ReadBlob.Definitions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NUnit.Framework;
 using System;
 using System.IO;
+using Assert = NUnit.Framework.Assert;
 
-namespace Frends.AzureBlobStorage.ReadBlob
+namespace Frends.AzureBlobStorage.ReadBlob.Tests
 {
     [TestFixture]
     public class ReadTest
@@ -22,53 +24,89 @@ namespace Frends.AzureBlobStorage.ReadBlob
         /// </summary>
         private readonly string _connstring = Environment.GetEnvironmentVariable("HiQ_AzureBlobStorage_ConnString");
 
-        private Source _source, _sourcefail;
+        Source source;
         private readonly string _storageaccount = "testsorage01";
         private readonly string _containerName = "test";
         private readonly string _blobName = "test.txt";
 
-
-        [OneTimeSetUp]
-        public void Setup()
+        /// <summary>
+        ///     Test with SAS Token
+        /// </summary>
+        [Test]
+        public void ReadBlobSAS()
         {
-            _source = new Source
+            source = new Source
             {
-                //AuthenticationMethod = AuthenticationMethod.Connectionstring,
                 AuthenticationMethod = AuthenticationMethod.Sastoken,
-                ConnectionString = _connstring, //Comment this line to test with SAS Token.
                 Uri = $"https://testsorage01.blob.core.windows.net/{_containerName}/{_blobName}?",
                 SasToken = GetServiceSasUriForBlob(),
                 ContainerName = _containerName,
                 BlobName = _blobName,
-                Encoding = Encode.UTF8
+                Encoding = Encode.ASCII
             };
 
-            _sourcefail = new Source
+            var result = AzureBlobStorage.ReadBlob(source, default);
+            Assert.IsNotEmpty(result.Content);
+        }
+
+        /// <summary>
+        ///     Test with Connection string
+        /// </summary>
+        [Test]
+        public void ReadBlobConnectionString()
+        {
+            source = new Source
             {
+                AuthenticationMethod = AuthenticationMethod.Connectionstring,
                 ConnectionString = _connstring,
-                ContainerName = "nocontainer",
-                BlobName = "nofile.txt",
-                Encoding = Encode.UTF8
+                ContainerName = _containerName,
+                BlobName = _blobName,
+                Encoding = Encode.ASCII
             };
+
+            var result = AzureBlobStorage.ReadBlob(source, default);
+            Assert.IsNotEmpty(result.Content);
         }
 
         /// <summary>
-        ///     Test with SAS Token or connection string
+        ///     Error handling, missing SAS Token error
         /// </summary>
         [Test]
-        public void ReadBlob()
+        public void ReadBlobSasMissing()
         {
-            var result = AzureBlobStorage.ReadBlob(_source, default);
+            var source = new Source
+            {
+                AuthenticationMethod = AuthenticationMethod.Sastoken,
+                Uri = $"https://testsorage01.blob.core.windows.net/{_containerName}/{_blobName}?",
+                SasToken = "",
+                ContainerName = _containerName,
+                BlobName = _blobName,
+                Encoding = Encode.ASCII
+            };
+
+            var ex = Assert.Throws<Exception>(() => AzureBlobStorage.ReadBlob(source, default));
+            Assert.That(ex.Message.Equals("SAS Token and URI required."));
         }
 
         /// <summary>
-        ///     Error handling
+        ///     Error handling, missing connection string
         /// </summary>
         [Test]
-        public void ReadBlobBadConnection()
+        public void ReadBlobConnectionStringMissing()
         {
-            var result = AzureBlobStorage.ReadBlob(_sourcefail, default);
+            var source = new Source
+            {
+                AuthenticationMethod = AuthenticationMethod.Connectionstring,
+                ConnectionString = "",
+                ContainerName = _containerName,
+                BlobName = _blobName,
+                Encoding = Encode.ASCII
+            };
+
+            var ex = Assert.Throws<Exception>(() => AzureBlobStorage.ReadBlob(source, default));
+            Assert.That(ex.Message.Equals("Connection string required."));
         }
+
 
         /// <summary>
         ///     Generate SAS Token for testfile. Token last for 10 minutes.
@@ -79,7 +117,7 @@ namespace Frends.AzureBlobStorage.ReadBlob
             {
                 BlobContainerName = _containerName,
                 BlobName = _blobName,
-                ExpiresOn = DateTime.UtcNow.AddMinutes(10)
+                ExpiresOn = DateTime.UtcNow.AddMinutes(5)
             };
             blobSasBuilder.SetPermissions(BlobSasPermissions.Read);
             var sasToken = blobSasBuilder.ToSasQueryParameters(new StorageSharedKeyCredential(_storageaccount, _accessKey)).ToString();

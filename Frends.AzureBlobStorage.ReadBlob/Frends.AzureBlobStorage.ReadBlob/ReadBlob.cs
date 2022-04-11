@@ -20,7 +20,7 @@ namespace Frends.AzureBlobStorage.ReadBlob
         public static Result ReadBlob([PropertyTab] Source source, CancellationToken cancellationToken)
         {
             var data = ReadBlobContent(source, cancellationToken);
-            return new Result(data.ToString());
+            return new Result(data);
         }
 
         private static string ReadBlobContent(Source source, CancellationToken cancellationToken)
@@ -41,22 +41,19 @@ namespace Frends.AzureBlobStorage.ReadBlob
                         throw new Exception("SAS Token and URI required.");
                     blob = new BlobClient(new Uri(uri), new AzureSasCredential(source.SasToken));
                     break;
-
-                default:
-                    break;
             }
 
             var result = blob.DownloadContent(cancellationToken).Value;
-            var encoding = SetStringEncoding(result.Content.ToString(), source);
+            var encoding = SetStringEncoding(result.Content.ToString(), source.Encoding);
 
             return encoding.ToString();
         }
 
-        private static string SetStringEncoding(string text, Source source)
+        private static string SetStringEncoding(string text, Encode encoding)
         {
             var bytes = Encoding.UTF8.GetBytes(text);
 
-            switch (source.Encoding)
+            switch (encoding)
             {
                 case Encode.UTF8:
                     return Encoding.UTF8.GetString(bytes);
@@ -66,8 +63,8 @@ namespace Frends.AzureBlobStorage.ReadBlob
                     return Encoding.Unicode.GetString(bytes);
                 case Encode.ASCII:
                     return Encoding.ASCII.GetString(bytes);
-                default: 
-                    return null;
+                default:
+                    return Encoding.UTF8.GetString(bytes);
             }
         }
     }
