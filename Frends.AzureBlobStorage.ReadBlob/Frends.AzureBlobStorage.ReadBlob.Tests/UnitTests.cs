@@ -1,12 +1,8 @@
 ﻿using Azure.Storage;
-using Azure.Storage.Blobs;
-using Azure.Storage.Blobs.Specialized;
 using Azure.Storage.Sas;
 using Frends.AzureBlobStorage.ReadBlob.Definitions;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NUnit.Framework;
 using System;
-using System.IO;
 using Assert = NUnit.Framework.Assert;
 
 namespace Frends.AzureBlobStorage.ReadBlob.Tests
