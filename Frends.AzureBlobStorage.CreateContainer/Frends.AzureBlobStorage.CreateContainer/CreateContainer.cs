@@ -48,11 +48,17 @@ namespace Frends.AzureBlobStorage.CreateContainer
 
         private static BlobContainerClient GetBlobContainer(string connectionString, string containerName)
         {
-            // initialize azure account
-            var blobServiceClient = new BlobServiceClient(connectionString);
+            try
+            {
+                // initialize azure account
+                var blobServiceClient = new BlobServiceClient(connectionString);
 
-            // Fetch the container client
-            return blobServiceClient.AccountName != null ? blobServiceClient.GetBlobContainerClient(containerName) : throw new Exception("Account not found.");
+                // Fetch the container client
+                return blobServiceClient.GetBlobContainerClient(containerName);
+            }
+            catch (Exception ex) {
+                throw new Exception("Fetching an account caused an exception.", ex);
+            }
         }
     }
 }

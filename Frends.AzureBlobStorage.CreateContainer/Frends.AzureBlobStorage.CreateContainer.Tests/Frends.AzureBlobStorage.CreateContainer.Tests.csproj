@@ -25,10 +25,4 @@
     <ProjectReference Include="..\Frends.AzureBlobStorage.CreateContainer\Frends.AzureBlobStorage.CreateContainer.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Content Include="TestFiles\TestFile.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-
 </Project>
