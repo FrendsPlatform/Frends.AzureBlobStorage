@@ -5,11 +5,9 @@
     /// </summary>
     public class Result
     {
-        public string SourceFile { get; private set; }
         public string Uri { get; private set; }
 
-        public Result(string source, string uri) {
-            this.SourceFile = source;
+        public Result(string uri) {
             this.Uri = uri;
         }
     }

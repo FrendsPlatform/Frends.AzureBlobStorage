@@ -1,11 +1,10 @@
 ﻿using System;
-using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.ComponentModel;
 using Frends.AzureBlobStorage.CreateContainer.Definitions;
-using static Frends.AzureBlobStorage.CreateContainer.Definitions.Enums;
+using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
 
 namespace Frends.AzureBlobStorage.CreateContainer
 {
@@ -15,67 +14,45 @@ namespace Frends.AzureBlobStorage.CreateContainer
         /// Downloads Blob to a file.
         /// [Documentation](https://tasks.frends.com/tasks#frends-tasks/Frends.AzureBlobStorage.CreateContainer)
         /// </summary>
-        /// <param name="source">Information about which Blob to download.</param>
-        /// <param name="destination">Information about the download destination.</param>
+        /// <param name="input">Information about the container destination.</param>
         /// <returns>Object { string FileName, string Directory, string FullPath}</returns>
         /// <summary>
-        ///     Uploads a single file to Azure blob storage. See https://github.com/CommunityHiQ/Frends.Community.Azure.Blob
-        ///     Will create given container on connection if necessary.
+        ///     Creates a container to Azure blob storage.
         /// </summary>
-        /// <returns>Object { string Uri, string SourceFile }</returns>
-        public static async Task<Result> CreateContainer([PropertyTab] Input input,
-            [PropertyTab] Destination destinationProperties, CancellationToken cancellationToken)
+        /// <returns>Object { string Uri }</returns>
+        public static async Task<Result> CreateContainer([PropertyTab] Input input, CancellationToken cancellationToken)
         {
             // check for interruptions
             cancellationToken.ThrowIfCancellationRequested();
 
-            // check that source file exists
-            var fi = new FileInfo(input.SourceFile);
-            if (!fi.Exists)
-                throw new ArgumentException($"Source file {input.SourceFile} does not exist", nameof(input.SourceFile));
+            if(input.ConnectionString == null || input.ContainerName == null)
+                throw new ArgumentNullException("Given parameter can't be empty."); 
 
             // get container
-            var container = Utils.GetBlobContainer(destinationProperties.ConnectionString,
-                destinationProperties.ContainerName);
+            var container = GetBlobContainer(input.ConnectionString,
+                input.ContainerName);
 
-            // check for interruptions
-            cancellationToken.ThrowIfCancellationRequested();
             try
             {
-                if (destinationProperties.CreateContainerIfItDoesNotExist)
-                    await container.CreateIfNotExistsAsync(PublicAccessType.None, null, null, cancellationToken);
+                // check for interruptions
+                cancellationToken.ThrowIfCancellationRequested();
+
+                await container.CreateIfNotExistsAsync(PublicAccessType.None, null, null, cancellationToken);
+                return new Result(new BlobClient(input.ConnectionString, input.ContainerName, "").Uri.ToString());
             }
             catch (Exception ex)
             {
-                throw new Exception("Checking if container exists or creating new container caused an exception.", ex);
-            }
-
-            string fileName;
-            if (string.IsNullOrWhiteSpace(destinationProperties.RenameTo) && input.Compress)
-            {
-                fileName = fi.Name + ".gz";
-            }
-            else if (string.IsNullOrWhiteSpace(destinationProperties.RenameTo))
-            {
-                fileName = fi.Name;
-            }
-            else
-            {
-                fileName = destinationProperties.RenameTo;
-            }
-
-            // return uri to uploaded blob and source file path
-
-            switch (destinationProperties.BlobType)
-            {
-                case AzureBlobType.Append:
-                    return await AppendBlob(input, destinationProperties, fi, fileName, cancellationToken);
-                case AzureBlobType.Page:
-                    return await UploadPageBlob(input, destinationProperties, fi, fileName, cancellationToken);
-                default:
-                    return await UploadBlockBlob(input, destinationProperties, fi, fileName, cancellationToken);
+                throw new Exception("Creating a new container caused an exception.", ex);
             }
         }
 
+        private static BlobContainerClient GetBlobContainer(string connectionString, string containerName)
+        {
+            // initialize azure account
+            var blobServiceClient = new BlobServiceClient(connectionString);
+
+            // Fetch the container client
+            return blobServiceClient.AccountName != null ? blobServiceClient.GetBlobContainerClient(containerName) : throw new Exception("Account not found.");
+        }
     }
 }
