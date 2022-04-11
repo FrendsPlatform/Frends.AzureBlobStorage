@@ -4,6 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Globalization;
 using System.Threading.Tasks;
+using System.Threading;
 
 namespace Frends.AzureBlobStorage.CreateContainer.Tests
 {
@@ -39,7 +40,7 @@ namespace Frends.AzureBlobStorage.CreateContainer.Tests
 
         [TestMethod]
         public async Task TestCreateContainer() { 
-            var result = await AzureBlobStorage.CreateContainer(new Input { ConnectionString = _connectionString, ContainerName = _containerName }, new System.Threading.CancellationToken());
+            var result = await AzureBlobStorage.CreateContainer(new Input { ConnectionString = _connectionString, ContainerName = _containerName }, new CancellationToken());
             
             Assert.IsNotNull(result);
             Assert.AreEqual(new BlobClient(_connectionString, _containerName, "").Uri.ToString(), result.Uri);
@@ -49,16 +50,16 @@ namespace Frends.AzureBlobStorage.CreateContainer.Tests
         [ExpectedException(typeof(ArgumentNullException))]
         public async Task TestCreateContainer_throws_ParameterEmpty()
         {
-            var nameEmpty = await AzureBlobStorage.CreateContainer(new Input { ConnectionString = _connectionString, ContainerName = null }, new System.Threading.CancellationToken());
-            var connectionEmpty = await AzureBlobStorage.CreateContainer(new Input { ConnectionString = null, ContainerName = _containerName }, new System.Threading.CancellationToken());
+            var nameEmpty = await AzureBlobStorage.CreateContainer(new Input { ConnectionString = _connectionString, ContainerName = null }, new CancellationToken());
+            var connectionEmpty = await AzureBlobStorage.CreateContainer(new Input { ConnectionString = null, ContainerName = _containerName }, new CancellationToken());
         }
 
         [TestMethod]
         [ExpectedException(typeof(Exception))]
         public async Task TestCreateContainer_throws_ParameterNotValid()
         {
-            var wrongFormat = await AzureBlobStorage.CreateContainer(new Input { ConnectionString = "Not valid parameter", ContainerName = "Valid name" }, new System.Threading.CancellationToken());
-            var noAccount = await AzureBlobStorage.CreateContainer(new Input { ConnectionString = "name=value", ContainerName = "Valid name" }, new System.Threading.CancellationToken());
+            var wrongFormat = await AzureBlobStorage.CreateContainer(new Input { ConnectionString = "Not valid parameter", ContainerName = "Valid name" }, new CancellationToken());
+            var noAccount = await AzureBlobStorage.CreateContainer(new Input { ConnectionString = "name=value", ContainerName = "Valid name" }, new CancellationToken());
         }
 
         [TestMethod]
