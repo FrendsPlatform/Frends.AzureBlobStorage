@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Frends.AzureBlobStorage.DeleteContainer.Definitions;
 using Azure.Storage.Blobs;
+using System.ComponentModel;
 
 namespace Frends.AzureBlobStorage.DeleteContainer
 {
@@ -15,7 +16,7 @@ namespace Frends.AzureBlobStorage.DeleteContainer
         /// <param name="input">Information about the container destination.</param>
         /// <param name="cancellationToken"></param>
         /// <returns>Object { string Success }</returns>
-        public static async Task<Result> DeleteContainer(Input input, CancellationToken cancellationToken)
+        public static async Task<Result> DeleteContainer([PropertyTab] Input input, CancellationToken cancellationToken)
         {
             if (input.ConnectionString == null || input.ContainerName == null)
                 throw new ArgumentNullException("Given parameter can't be empty.");
@@ -23,7 +24,8 @@ namespace Frends.AzureBlobStorage.DeleteContainer
             // get container
             var container = GetBlobContainer(input.ConnectionString, input.ContainerName);
 
-            if (!await container.ExistsAsync(cancellationToken)) return new Result(true);
+            if (!await container.ExistsAsync(cancellationToken) && !input.IfThrow) return new Result(true);
+            else if (!await container.ExistsAsync(cancellationToken) && input.IfThrow) throw new Exception("Container was not found.");
 
             // delete container
             try

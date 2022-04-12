@@ -23,5 +23,13 @@ namespace Frends.AzureBlobStorage.DeleteContainer.Definitions
         [DisplayName("Container Name")]
         [DisplayFormat(DataFormatString = "Text")]
         public string ContainerName { get; set; }
+
+        /// <summary>
+        ///     Throw an error if container isn't found to delete.
+        /// </summary>
+        [DefaultValue(true)]
+        [DisplayName("Throw error if container doesn't exist")]
+        [DisplayFormat(DataFormatString = "Text")]
+        public bool IfThrow { get; set; }
     }
 }
