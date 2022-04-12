@@ -14,6 +14,7 @@ namespace Frends.AzureBlobStorage.DeleteContainer
         /// [Documentation](https://tasks.frends.com/tasks#frends-tasks/Frends.AzureBlobStorage.DeleteContainer)
         /// </summary>
         /// <param name="input">Information about the container destination.</param>
+        /// <param name="options">Options regarding the error handling.</param>
         /// <param name="cancellationToken"></param>
         /// <returns>Object { string Success }</returns>
         public static async Task<Result> DeleteContainer([PropertyTab] Input input, [PropertyTab] Options options, CancellationToken cancellationToken)
@@ -27,9 +28,9 @@ namespace Frends.AzureBlobStorage.DeleteContainer
             var container = GetBlobContainer(input.ConnectionString, input.ContainerName);
 
             // if container not found and set not to throw an error - returns false
-            if (!await container.ExistsAsync(cancellationToken) && !options.IfThrow) return new Result(false, "Container was not found.");
+            if (!await container.ExistsAsync(cancellationToken) && !options.ThrowErrorIfContainerDoesNotExists) return new Result(false, "Container was not found.");
             // if container not found and set to throw an error - throws an Exception
-            else if (!await container.ExistsAsync(cancellationToken) && options.IfThrow) throw new Exception("DeleteContainer: The blob container was not found.");
+            else if (!await container.ExistsAsync(cancellationToken) && options.ThrowErrorIfContainerDoesNotExists) throw new Exception("DeleteContainer: The blob container was not found.");
 
             // delete container
             try

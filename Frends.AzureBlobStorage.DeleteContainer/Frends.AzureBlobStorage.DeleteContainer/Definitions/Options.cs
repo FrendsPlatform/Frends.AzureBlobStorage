@@ -14,6 +14,6 @@ namespace Frends.AzureBlobStorage.DeleteContainer.Definitions
         /// </summary>
         [DefaultValue(false)]
         [DisplayName("Throw error if container doesn't exist")]
-        public bool IfThrow { get; set; }
+        public bool ThrowErrorIfContainerDoesNotExists { get; set; }
     }
 }
