@@ -18,8 +18,10 @@ namespace Frends.AzureBlobStorage.DeleteContainer
         /// <returns>Object { string Success }</returns>
         public static async Task<Result> DeleteContainer([PropertyTab] Input input, [PropertyTab] Options options, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrWhiteSpace(input.ConnectionString) || string.IsNullOrWhiteSpace(input.ContainerName))
-                throw new ArgumentNullException("Given parameter can't be empty.");
+            if (string.IsNullOrWhiteSpace(input.ConnectionString))
+                throw new ArgumentNullException("ConnectionString parameter can't be empty.");
+            else if(string.IsNullOrWhiteSpace(input.ContainerName))
+                throw new ArgumentNullException("ContainerName parameter can't be empty.");
 
             // get container
             var container = GetBlobContainer(input.ConnectionString, input.ContainerName);
