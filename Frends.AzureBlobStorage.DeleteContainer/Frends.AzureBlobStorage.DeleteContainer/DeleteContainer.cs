@@ -16,7 +16,7 @@ namespace Frends.AzureBlobStorage.DeleteContainer
         /// <param name="input">Information about the container destination.</param>
         /// <param name="options">Options regarding the error handling.</param>
         /// <param name="cancellationToken"></param>
-        /// <returns>Object { string Success }</returns>
+        /// <returns>Object { string ContainerWasDeleted, string Message }</returns>
         public static async Task<Result> DeleteContainer([PropertyTab] Input input, [PropertyTab] Options options, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(input.ConnectionString))
