@@ -24,7 +24,9 @@ namespace Frends.AzureBlobStorage.DeleteContainer
             // get container
             var container = GetBlobContainer(input.ConnectionString, input.ContainerName);
 
+            // if container not found and set not to throw an error - returns true
             if (!await container.ExistsAsync(cancellationToken) && !input.IfThrow) return new Result(true);
+            // if container not found and set to throw an error - throws an Exception
             else if (!await container.ExistsAsync(cancellationToken) && input.IfThrow) throw new Exception("Container was not found.");
 
             // delete container
