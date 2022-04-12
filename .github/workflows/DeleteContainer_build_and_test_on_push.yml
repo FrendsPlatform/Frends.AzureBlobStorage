@@ -1,18 +1,18 @@
-name: CreateContainer_push
+name: DeleteContainer_push
 
 on:
   push:
     branches-ignore:
       - main
     paths:
-      - 'Frends.AzureBlobStorage.CreateContainer/**'
+      - 'Frends.AzureBlobStorage.DeleteContainer/**'
   workflow_dispatch:
 
 jobs:
   build:
     uses: FrendsPlatform/FrendsTasks/.github/workflows/build_test.yml@main
     with:
-      workdir: Frends.AzureBlobStorage.CreateContainer
+      workdir: Frends.AzureBlobStorage.DeleteContainer
       env_var_name_1: HiQ_AzureBlobStorage_ConnString
     secrets:
       badge_service_api_key: ${{ secrets.BADGE_SERVICE_API_KEY }}
