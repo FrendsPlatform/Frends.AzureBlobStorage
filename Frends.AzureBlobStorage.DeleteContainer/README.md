@@ -6,8 +6,6 @@ FRENDS Task for Deleting a Container from a blob in Azure.
 ![MyGet](https://img.shields.io/myget/frends-tasks/v/Frends.AzureBlobStorage.DeleteContainer)
 ![Coverage](https://app-github-custom-badges.azurewebsites.net/Badge?key=FrendsPlatform/Frends.AzureBlobStorage/Frends.AzureBlobStorage.DeleteContainer|main)
 
-Returns boolean of action's success.
-
 ## Installing
 
 You can install the Task via frends UI Task View or you can find the NuGet package from the following NuGet feed
