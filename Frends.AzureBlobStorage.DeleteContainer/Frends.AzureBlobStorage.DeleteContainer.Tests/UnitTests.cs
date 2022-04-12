@@ -46,13 +46,13 @@ namespace Frends.AzureBlobStorage.DeleteContainer.Tests
         public async Task TestDeleteContainer() {
             // Test method returns true when container doesn't exist
             var result = await AzureBlobStorage.DeleteContainer(new Input { ConnectionString = _connectionString, ContainerName = _containerName, IfThrow = false}, new CancellationToken());
-            Assert.IsTrue(result.Success);
+            Assert.IsFalse(result.ContainerWasDeleted);
 
             // Test method returns true when container that exists is deleted
             var container = GetBlobServiceClient();
             await container.CreateIfNotExistsAsync(PublicAccessType.None, null, null, new CancellationToken());
             var deleted = await AzureBlobStorage.DeleteContainer(new Input { ConnectionString = _connectionString, ContainerName = _containerName, IfThrow = true }, new CancellationToken());
-            Assert.IsTrue(deleted.Success);
+            Assert.IsTrue(deleted.ContainerWasDeleted);
         }
 
         [TestMethod]
