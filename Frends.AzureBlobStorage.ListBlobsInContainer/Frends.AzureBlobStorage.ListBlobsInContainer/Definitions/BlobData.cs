@@ -34,7 +34,7 @@
         /// Blob's URI.
         /// </summary>
         /// <example>https://storageaccount.blob.core.windows.net/containername/file.txt?</example>
-        public string Uri { get; set; }
+        public string URI { get; set; }
 
 
         /// <summary>

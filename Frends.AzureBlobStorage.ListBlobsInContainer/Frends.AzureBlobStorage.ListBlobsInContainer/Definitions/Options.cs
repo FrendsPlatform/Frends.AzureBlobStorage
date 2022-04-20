@@ -5,7 +5,7 @@ namespace Frends.AzureBlobStorage.ListBlobsInContainer.Definitions
     /// <summary>
     /// Optional values.
     /// </summary>
-    public class Optional
+    public class Options
     {
         /// <summary>
         /// List blobs in a flat listing structure or hierarchically.

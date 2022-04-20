@@ -17,17 +17,17 @@ namespace Frends.AzureBlobStorage.ListBlobsInContainer
         /// [Documentation](https://tasks.frends.com/tasks/frends-tasks/Frends.AzureBlobStorage.ListBlobsInContainer)
         /// </summary>
         /// <param name="source">Source connection parameters.</param>
-        /// <param name="optional">Optional parameters</param>
-        /// <returns>object { string BlobType, string Uri, string Name, string ETag }</returns>
-
-        public static async Task<Result> ListBlobsInContainer([PropertyTab] Source source, [PropertyTab] Optional optional, CancellationToken cancellationToken)
+        /// <param name="options">Options for the task</param>
+        /// <returns>object { string ListingStructure, string Type, string Name, string URI, string ETag }</returns>
+        public static async Task<Result> ListBlobsInContainer([PropertyTab] Source source, [PropertyTab] Options options, CancellationToken cancellationToken)
         {
             var authSas = source.AuthenticationMethod.Equals(AuthenticationMethod.SASToken) ? true : false;
             var blobContainerClient = CreateBlobContainerClient(source);
-            
-            if (optional.ListingStructure.Equals(ListingStructure.Flat))
+
+
+            if (options.ListingStructure is ListingStructure.Flat)
             {
-                var enumerable = blobContainerClient.GetBlobsAsync(BlobTraits.None, BlobStates.None, string.IsNullOrWhiteSpace(optional.Prefix) ? null : optional.Prefix).AsPages();
+                var enumerable = blobContainerClient.GetBlobsAsync(BlobTraits.None, BlobStates.None, string.IsNullOrWhiteSpace(options.Prefix) ? null : options.Prefix, cancellationToken).AsPages();
                 var enumerator = enumerable.GetAsyncEnumerator(cancellationToken);
                 var flatBlobListing = await FlatBlobListing(enumerator, source, authSas, cancellationToken);
                 
@@ -36,7 +36,7 @@ namespace Frends.AzureBlobStorage.ListBlobsInContainer
             }
             else
             {
-                var enumerable = blobContainerClient.GetBlobsByHierarchyAsync(BlobTraits.None, BlobStates.None, "/", string.IsNullOrWhiteSpace(optional.Prefix) ? null : optional.Prefix).AsPages();
+                var enumerable = blobContainerClient.GetBlobsByHierarchyAsync(BlobTraits.None, BlobStates.None, "/", string.IsNullOrWhiteSpace(options.Prefix) ? null : options.Prefix, cancellationToken).AsPages();
                 var enumerator = enumerable.GetAsyncEnumerator(cancellationToken);
                 var hierarchyListing = await ListBlobsHierarchy(enumerator, source, authSas, cancellationToken);
                 return new Result { BlobList = hierarchyListing };
@@ -72,18 +72,18 @@ namespace Frends.AzureBlobStorage.ListBlobsInContainer
             var blobListing = new List<BlobData>();
             try
             {
-                cancellationToken.ThrowIfCancellationRequested();
-                while (await enumerator.MoveNextAsync() && !cancellationToken.IsCancellationRequested)
+                while (await enumerator.MoveNextAsync())
                 {
                     var blobItems = enumerator.Current;
                     foreach (var blobItem in blobItems.Values)
                     {
+                        cancellationToken.ThrowIfCancellationRequested();
                         var blob = authSas ? new BlobClient(new Uri($"{source.URI}/{source.ContainerName}/{blobItem.Name}?")) : new BlobClient(source.ConnectionString, source.ContainerName, blobItem.Name);
                         blobListing.Add(new BlobData
                         {
                             ListingStructure = "Flat",
                             Type = blobItem.Properties.BlobType.ToString(),
-                            Uri = blob.Uri.ToString(),
+                            URI = blob.Uri.ToString(),
                             Name = blob.Name,
                             ETag = blobItem.Properties.ETag.ToString()
                         }) ;
@@ -112,12 +112,12 @@ namespace Frends.AzureBlobStorage.ListBlobsInContainer
 
             try
             {
-                cancellationToken.ThrowIfCancellationRequested();
-                while (await enumerator.MoveNextAsync() && !cancellationToken.IsCancellationRequested)
+                while (await enumerator.MoveNextAsync())
                 {
                     var blobItems = enumerator.Current;
                     foreach (var blobItem in blobItems.Values)
                     {
+                        cancellationToken.ThrowIfCancellationRequested();
                         if (blobItem.IsBlob)
                         {
                             var blob = authSas ? new BlobClient(new Uri($"{source.URI}/{source.ContainerName}/{blobItem.Blob.Name}?")) 
@@ -127,7 +127,7 @@ namespace Frends.AzureBlobStorage.ListBlobsInContainer
                             {
                                 ListingStructure = "Hierarchical",
                                 Type = blobItem.Blob.Properties.BlobType.ToString(),
-                                Uri = blob.Uri.ToString(),
+                                URI = blob.Uri.ToString(),
                                 Name = blobItem.Blob.Name,
                                 ETag = blobItem.Blob.Properties.ETag.ToString()
                             });
@@ -141,7 +141,7 @@ namespace Frends.AzureBlobStorage.ListBlobsInContainer
                             {
                                 ListingStructure = "Hierarchical",
                                 Type = "Directory",
-                                Uri = $"{blob.Uri}/{blobItem.Prefix}",
+                                URI = $"{blob.Uri}/{blobItem.Prefix}",
                                 Name = blobItem.Prefix,
                                 ETag = null
                             });

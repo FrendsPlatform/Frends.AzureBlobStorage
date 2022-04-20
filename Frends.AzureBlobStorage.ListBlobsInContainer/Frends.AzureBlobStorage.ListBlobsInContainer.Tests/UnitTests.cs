@@ -22,7 +22,7 @@ namespace Frends.AzureBlobStorage.ListBlobsInContainer.Tests
         private readonly string _connstring = Environment.GetEnvironmentVariable("HiQ_AzureBlobStorage_ConnString");
 
         Source source;
-        Optional optional;
+        Options options;
         private readonly string _storageaccount = "testsorage01";
         private readonly string _containerName = "test";
 
@@ -42,13 +42,13 @@ namespace Frends.AzureBlobStorage.ListBlobsInContainer.Tests
                 ContainerName = _containerName
             };
 
-            optional = new Optional
+            options = new Options
             {
                 Prefix = null,
                 ListingStructure = ListingStructure.Flat
             };
 
-            var result = AzureBlobStorage.ListBlobsInContainer(source, optional, default);
+            var result = AzureBlobStorage.ListBlobsInContainer(source, options, default);
             Assert.IsNotEmpty(result.Result.BlobList);
         }
 
@@ -67,13 +67,13 @@ namespace Frends.AzureBlobStorage.ListBlobsInContainer.Tests
                 ContainerName = _containerName
             };
 
-            optional = new Optional
+            options = new Options
             {
                 Prefix = null,
                 ListingStructure = ListingStructure.Hierarchical,
             };
 
-            var result = AzureBlobStorage.ListBlobsInContainer(source, optional, default);
+            var result = AzureBlobStorage.ListBlobsInContainer(source, options, default);
             Assert.IsNotEmpty(result.Result.BlobList);
         }
 
@@ -93,13 +93,13 @@ namespace Frends.AzureBlobStorage.ListBlobsInContainer.Tests
                 
             };
 
-            optional = new Optional
+            options = new Options
             {
                 Prefix = "t",
                 ListingStructure = ListingStructure.Flat,
             };
 
-            var result = AzureBlobStorage.ListBlobsInContainer(source, optional, default);
+            var result = AzureBlobStorage.ListBlobsInContainer(source, options, default);
             Assert.IsNotEmpty(result.Result.BlobList);
         }
 
@@ -118,52 +118,16 @@ namespace Frends.AzureBlobStorage.ListBlobsInContainer.Tests
                 
             };
 
-            optional = new Optional
+            options = new Options
             {
                 Prefix = null,
                 ListingStructure = ListingStructure.Flat,
             };
 
-            var ex = Assert.ThrowsAsync<Exception>(async () => await AzureBlobStorage.ListBlobsInContainer(source, optional, default));
+            var ex = Assert.ThrowsAsync<Exception>(async () => await AzureBlobStorage.ListBlobsInContainer(source, options, default));
             Assert.That(ex.Message.Equals("SAS Token and URI required."));
         }
 
-        /// <summary>
-        /// Test with SAS Token and Cancellation token.
-        /// </summary>
-        [Test]
-        public void ListBlobsSASCancel()
-        {
-            CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
-            CancellationToken token = cancellationTokenSource.Token;
-
-            source = new Source
-            {
-                AuthenticationMethod = AuthenticationMethod.SASToken,
-                URI = $"https://{_storageaccount}.blob.core.windows.net",
-                SASToken = GetServiceSasUriForBlob(),
-                ContainerName = _containerName,
-                
-            };
-
-            optional = new Optional
-            {
-                Prefix = null,
-                ListingStructure = ListingStructure.Flat,
-            };
-
-            //Checking if working when not cancelled.
-            while (!token.IsCancellationRequested)
-            {
-                var _result = AzureBlobStorage.ListBlobsInContainer(source, optional, token);
-                Assert.IsNotEmpty(_result.Result.BlobList);
-                cancellationTokenSource.Cancel();
-            }
-
-            //With cancellation.
-            var ex = Assert.ThrowsAsync<Exception>(async () => await AzureBlobStorage.ListBlobsInContainer(source, optional, token));
-            Assert.That(ex.Message.Contains("Operation cancelled."));
-        }
         #endregion SAS
 
         #region ConnectionString
@@ -181,13 +145,13 @@ namespace Frends.AzureBlobStorage.ListBlobsInContainer.Tests
                 ContainerName = _containerName
             };
 
-            optional = new Optional
+            options = new Options
             {
                 Prefix = null,
                 ListingStructure = ListingStructure.Flat,
             };
 
-            var result = AzureBlobStorage.ListBlobsInContainer(source, optional, default);
+            var result = AzureBlobStorage.ListBlobsInContainer(source, options, default);
             Assert.IsNotEmpty(result.Result.BlobList);
         }
 
@@ -204,13 +168,13 @@ namespace Frends.AzureBlobStorage.ListBlobsInContainer.Tests
                 ContainerName = _containerName
             };
 
-            optional = new Optional
+            options = new Options
             {
                 Prefix = "test",
                 ListingStructure = ListingStructure.Flat
             };
 
-            var result = AzureBlobStorage.ListBlobsInContainer(source, optional, default);
+            var result = AzureBlobStorage.ListBlobsInContainer(source, options, default);
             Assert.IsNotEmpty(result.Result.BlobList);
         }
 
@@ -228,13 +192,13 @@ namespace Frends.AzureBlobStorage.ListBlobsInContainer.Tests
 
             };
 
-            optional = new Optional
+            options = new Options
             {
                 Prefix = null,
                 ListingStructure = ListingStructure.Hierarchical
             };
 
-            var result = AzureBlobStorage.ListBlobsInContainer(source, optional, default);
+            var result = AzureBlobStorage.ListBlobsInContainer(source, options, default);
             Assert.IsNotEmpty(result.Result.BlobList);
         }
 
@@ -251,49 +215,14 @@ namespace Frends.AzureBlobStorage.ListBlobsInContainer.Tests
                 ContainerName = _containerName,
             };
 
-            optional = new Optional
+            options = new Options
             {
                 Prefix = "t",
                 ListingStructure = ListingStructure.Hierarchical
             };
 
-            var ex = Assert.ThrowsAsync<Exception>(async () => await AzureBlobStorage.ListBlobsInContainer(source, optional, default));
+            var ex = Assert.ThrowsAsync<Exception>(async () => await AzureBlobStorage.ListBlobsInContainer(source, options, default));
             Assert.That(ex.Message.Equals("Connection string required."));
-        }
-
-        /// <summary>
-        /// Test with connection string and Cancellation token.
-        /// </summary>
-        [Test]
-        public void ListBlobsCSCancel()
-        {
-            CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
-            CancellationToken token = cancellationTokenSource.Token;
-
-            source = new Source
-            {
-                AuthenticationMethod = AuthenticationMethod.ConnectionString,
-                ConnectionString = _connstring,
-                ContainerName = _containerName,
-            };
-
-            optional = new Optional
-            {
-                Prefix = null,
-                ListingStructure = ListingStructure.Hierarchical
-            };
-
-            //Checking if working when not cancelled.
-            while (!token.IsCancellationRequested)
-            {
-                var _result = AzureBlobStorage.ListBlobsInContainer(source, optional, token);
-                Assert.IsNotEmpty(_result.Result.BlobList);
-                cancellationTokenSource.Cancel();
-            }
-
-            //With cancellation.
-            var ex = Assert.ThrowsAsync<Exception>(async () => await AzureBlobStorage.ListBlobsInContainer(source, optional, token));
-            Assert.That(ex.Message.Contains("Operation cancelled."));
         }
 
         #endregion ConnectionString

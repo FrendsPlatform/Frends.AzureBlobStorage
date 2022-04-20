@@ -24,7 +24,7 @@ namespace Frends.AzureBlobStorage.ListBlobsInContainer.Definitions
         /// <summary>
         /// A shared access signature for Azure storage container. Grants restricted access rights to Azure Storage resources when combined with URI.
         /// </summary>
-        /// <example>sv=2021-04-10&se=2022-04-10T10%3A431Z&sr=c&sp=l&sig=ZJg983RovE%2BZXI</example>
+        /// <example>sv=2021-04-10&amp;se=2022-04-10T10%3A431Z&amp;sr=c&amp;sp=l&amp;sig=ZJg983RovE%2BZXI</example>
         [UIHint(nameof(AuthenticationMethod), "", AuthenticationMethod.SASToken)]
         [PasswordPropertyText]
         public string SASToken { get; set; }
