@@ -3,7 +3,7 @@
 namespace Frends.AzureBlobStorage.ListBlobsInContainer.Definitions
 {
     /// <summary>
-    /// Optional values.
+    /// Options for the task.
     /// </summary>
     public class Options
     {
