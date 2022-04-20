@@ -3,20 +3,19 @@
   <PropertyGroup>
 	<TargetFrameworks>net6.0</TargetFrameworks>
 	<Version>1.0.0</Version>
-	<Authors>Frends</Authors>
+	<Authors>Frends / ttossavainen</Authors>
 	<Copyright>Frends</Copyright>
 	<Company>Frends</Company>
 	<Product>Frends</Product>
 	<PackageTags>Frends</PackageTags>
 	<PackageLicenseExpression>MIT</PackageLicenseExpression>
 	<GenerateDocumentationFile>true</GenerateDocumentationFile>
-	<Description>FRENDS Task for listing blobs in Azure Storage container.</Description>
+	<Description>Frends task for listing blobs in Azure Storage container.</Description>
 	<PackageProjectUrl>https://frends.com/</PackageProjectUrl>
 	<RepositoryUrl>https://github.com/FrendsPlatform/Frends.AzureBlobStorage</RepositoryUrl>
   </PropertyGroup>
 	
   <ItemGroup>
-	  <None Include="..\.editorconfig" Link=".editorconfig" />
 	  <None Include="FrendsTaskMetadata.json" Pack="true" PackagePath="/">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </None>

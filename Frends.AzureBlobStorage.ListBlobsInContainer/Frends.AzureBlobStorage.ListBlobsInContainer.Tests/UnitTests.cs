@@ -3,6 +3,7 @@ using Azure.Storage.Sas;
 using Frends.AzureBlobStorage.ListBlobsInContainer.Definitions;
 using NUnit.Framework;
 using System;
+using System.Threading;
 using Assert = NUnit.Framework.Assert;
 
 namespace Frends.AzureBlobStorage.ListBlobsInContainer.Tests
@@ -11,191 +12,295 @@ namespace Frends.AzureBlobStorage.ListBlobsInContainer.Tests
     public class ListListBlobsInContainerTest
     {
         /// <summary>
-        ///     Storage account's access key.
+        /// Storage account's access key.
         /// </summary>
         private readonly string _accessKey = Environment.GetEnvironmentVariable("HiQ_AzureBlobStorage_testsorage01AccessKey");
 
         /// <summary>
-        ///     Storage account's connection string.
+        /// Storage account's connection string.
         /// </summary>
         private readonly string _connstring = Environment.GetEnvironmentVariable("HiQ_AzureBlobStorage_ConnString");
 
         Source source;
+        Optional optional;
         private readonly string _storageaccount = "testsorage01";
         private readonly string _containerName = "test";
 
         #region SAS Token
 
         /// <summary>
-        ///     Test with SAS Token.
+        /// Test with SAS Token and Flat listing.
         /// </summary>
         [Test]
-        public void ListBlobsSAS()
+        public void ListBlobsSASFlat()
         {
             source = new Source
             {
-                AuthenticationMethod = AuthenticationMethod.Sastoken,
-                Uri = $"https://{_storageaccount}.blob.core.windows.net/",
-                SasToken = GetServiceSasUriForBlob(),
-                ContainerName = _containerName,
-                Prefix = null,
-                FlatBlobListing = true,
-                
+                AuthenticationMethod = AuthenticationMethod.SASToken,
+                URI = $"https://{_storageaccount}.blob.core.windows.net",
+                SASToken = GetServiceSasUriForBlob(),
+                ContainerName = _containerName
             };
 
-            var result = AzureBlobStorage.ListBlobsInContainer(source);
+            optional = new Optional
+            {
+                Prefix = null,
+                ListingStructure = ListingStructure.Flat
+            };
+
+            var result = AzureBlobStorage.ListBlobsInContainer(source, optional, default);
             Assert.IsNotEmpty(result.Result.BlobList);
         }
 
+
         /// <summary>
-        ///     Test with SAS Token and Prefix.
+        /// Test with SAS Token and Hierarchical listing.
+        /// </summary>
+        [Test]
+        public void ListBlobsSASHierarchical()
+        {
+            source = new Source
+            {
+                AuthenticationMethod = AuthenticationMethod.SASToken,
+                URI = $"https://{_storageaccount}.blob.core.windows.net",
+                SASToken = GetServiceSasUriForBlob(),
+                ContainerName = _containerName
+            };
+
+            optional = new Optional
+            {
+                Prefix = null,
+                ListingStructure = ListingStructure.Hierarchical,
+            };
+
+            var result = AzureBlobStorage.ListBlobsInContainer(source, optional, default);
+            Assert.IsNotEmpty(result.Result.BlobList);
+        }
+
+
+        /// <summary>
+        /// Test with SAS Token and Prefix.
         /// </summary>
         [Test]
         public void ListBlobsSASPrefix()
         {
             source = new Source
             {
-                AuthenticationMethod = AuthenticationMethod.Sastoken,
-                Uri = $"https://{_storageaccount}.blob.core.windows.net/",
-                SasToken = GetServiceSasUriForBlob(),
+                AuthenticationMethod = AuthenticationMethod.SASToken,
+                URI = $"https://{_storageaccount}.blob.core.windows.net",
+                SASToken = GetServiceSasUriForBlob(),
                 ContainerName = _containerName,
-                Prefix = "t",
-                FlatBlobListing = true,
-
+                
             };
 
-            var result = AzureBlobStorage.ListBlobsInContainer(source);
-            Assert.IsNotEmpty(result.Result.BlobList);
-        }
-
-        /// <summary>
-        ///     Test with SAS Token and FlatBlobListing false.
-        /// </summary>
-        [Test]
-        public void ListBlobsSASFBLf()
-        {
-            source = new Source
+            optional = new Optional
             {
-                AuthenticationMethod = AuthenticationMethod.Sastoken,
-                Uri = $"https://{_storageaccount}.blob.core.windows.net/",
-                SasToken = GetServiceSasUriForBlob(),
-                ContainerName = _containerName,
-                Prefix = null,
-                FlatBlobListing = false,
-
+                Prefix = "t",
+                ListingStructure = ListingStructure.Flat,
             };
 
-            var result = AzureBlobStorage.ListBlobsInContainer(source);
+            var result = AzureBlobStorage.ListBlobsInContainer(source, optional, default);
             Assert.IsNotEmpty(result.Result.BlobList);
         }
 
         /// <summary>
-        ///     Test with missing SAS Token.
+        /// Test with missing SAS Token.
         /// </summary>
         [Test]
         public void ListBlobsSASMissingToken()
         {
             source = new Source
             {
-                AuthenticationMethod = AuthenticationMethod.Sastoken,
-                Uri = $"https://{_storageaccount}.blob.core.windows.net/",
-                SasToken = "",
+                AuthenticationMethod = AuthenticationMethod.SASToken,
+                URI = $"https://{_storageaccount}.blob.core.windows.net",
+                SASToken = "",
                 ContainerName = _containerName,
-                Prefix = null,
-                FlatBlobListing = true,
-
+                
             };
 
-            var ex = Assert.ThrowsAsync<Exception>(async () => await AzureBlobStorage.ListBlobsInContainer(source));
+            optional = new Optional
+            {
+                Prefix = null,
+                ListingStructure = ListingStructure.Flat,
+            };
+
+            var ex = Assert.ThrowsAsync<Exception>(async () => await AzureBlobStorage.ListBlobsInContainer(source, optional, default));
             Assert.That(ex.Message.Equals("SAS Token and URI required."));
+        }
+
+        /// <summary>
+        /// Test with SAS Token and Cancellation token.
+        /// </summary>
+        [Test]
+        public void ListBlobsSASCancel()
+        {
+            CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+            CancellationToken token = cancellationTokenSource.Token;
+
+            source = new Source
+            {
+                AuthenticationMethod = AuthenticationMethod.SASToken,
+                URI = $"https://{_storageaccount}.blob.core.windows.net",
+                SASToken = GetServiceSasUriForBlob(),
+                ContainerName = _containerName,
+                
+            };
+
+            optional = new Optional
+            {
+                Prefix = null,
+                ListingStructure = ListingStructure.Flat,
+            };
+
+            //Checking if working when not cancelled.
+            while (!token.IsCancellationRequested)
+            {
+                var _result = AzureBlobStorage.ListBlobsInContainer(source, optional, token);
+                Assert.IsNotEmpty(_result.Result.BlobList);
+                cancellationTokenSource.Cancel();
+            }
+
+            //With cancellation.
+            var ex = Assert.ThrowsAsync<Exception>(async () => await AzureBlobStorage.ListBlobsInContainer(source, optional, token));
+            Assert.That(ex.Message.Contains("Operation cancelled."));
         }
         #endregion SAS
 
-        #region Connection string
+        #region ConnectionString
 
         /// <summary>
-        ///     Test with Connection string.
+        /// Test with Connection string and Flat listing.
         /// </summary>
         [Test]
         public void ListBlobsCS()
         {
             source = new Source
             {
-                AuthenticationMethod = AuthenticationMethod.Connectionstring,
+                AuthenticationMethod = AuthenticationMethod.ConnectionString,
                 ConnectionString = _connstring,
-                ContainerName = _containerName,
-                Prefix = null,
-                FlatBlobListing = true,
+                ContainerName = _containerName
             };
 
-            var result = AzureBlobStorage.ListBlobsInContainer(source);
+            optional = new Optional
+            {
+                Prefix = null,
+                ListingStructure = ListingStructure.Flat,
+            };
+
+            var result = AzureBlobStorage.ListBlobsInContainer(source, optional, default);
             Assert.IsNotEmpty(result.Result.BlobList);
         }
 
         /// <summary>
-        ///     Test with connection string and Prefix.
+        /// Test with connection string and Prefix.
         /// </summary>
         [Test]
         public void ListBlobsCSPrefix()
         {
             source = new Source
             {
-                AuthenticationMethod = AuthenticationMethod.Connectionstring,
+                AuthenticationMethod = AuthenticationMethod.ConnectionString,
                 ConnectionString = _connstring,
-                ContainerName = _containerName,
-                Prefix = "t",
-                FlatBlobListing = true,
-
+                ContainerName = _containerName
             };
 
-            var result = AzureBlobStorage.ListBlobsInContainer(source);
+            optional = new Optional
+            {
+                Prefix = "test",
+                ListingStructure = ListingStructure.Flat
+            };
+
+            var result = AzureBlobStorage.ListBlobsInContainer(source, optional, default);
             Assert.IsNotEmpty(result.Result.BlobList);
         }
 
         /// <summary>
-        ///     Test with connection string and FlatBlobListing false.
+        /// Test with connection string and FlatBlobListing false.
         /// </summary>
         [Test]
-        public void ListBlobsCSFBLf()
+        public void ListBlobsCSHierarchical()
         {
             source = new Source
             {
-                AuthenticationMethod = AuthenticationMethod.Connectionstring,
+                AuthenticationMethod = AuthenticationMethod.ConnectionString,
                 ConnectionString = _connstring,
-                ContainerName = _containerName,
-                Prefix = null,
-                FlatBlobListing = false,
+                ContainerName = _containerName
 
             };
 
-            var result = AzureBlobStorage.ListBlobsInContainer(source);
+            optional = new Optional
+            {
+                Prefix = null,
+                ListingStructure = ListingStructure.Hierarchical
+            };
+
+            var result = AzureBlobStorage.ListBlobsInContainer(source, optional, default);
             Assert.IsNotEmpty(result.Result.BlobList);
         }
 
         /// <summary>
-        ///     Test with missing connection string.
+        /// Test with missing connection string.
         /// </summary>
         [Test]
         public void ListBlobsMissingCS()
         {
             source = new Source
             {
-                AuthenticationMethod = AuthenticationMethod.Connectionstring,
+                AuthenticationMethod = AuthenticationMethod.ConnectionString,
                 ConnectionString = "",
                 ContainerName = _containerName,
-                Prefix = "t",
-                FlatBlobListing = false,
-
             };
 
-            var ex = Assert.ThrowsAsync<Exception>(async () => await AzureBlobStorage.ListBlobsInContainer(source));
+            optional = new Optional
+            {
+                Prefix = "t",
+                ListingStructure = ListingStructure.Hierarchical
+            };
+
+            var ex = Assert.ThrowsAsync<Exception>(async () => await AzureBlobStorage.ListBlobsInContainer(source, optional, default));
             Assert.That(ex.Message.Equals("Connection string required."));
         }
-        #endregion SAS
+
+        /// <summary>
+        /// Test with connection string and Cancellation token.
+        /// </summary>
+        [Test]
+        public void ListBlobsCSCancel()
+        {
+            CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+            CancellationToken token = cancellationTokenSource.Token;
+
+            source = new Source
+            {
+                AuthenticationMethod = AuthenticationMethod.ConnectionString,
+                ConnectionString = _connstring,
+                ContainerName = _containerName,
+            };
+
+            optional = new Optional
+            {
+                Prefix = null,
+                ListingStructure = ListingStructure.Hierarchical
+            };
+
+            //Checking if working when not cancelled.
+            while (!token.IsCancellationRequested)
+            {
+                var _result = AzureBlobStorage.ListBlobsInContainer(source, optional, token);
+                Assert.IsNotEmpty(_result.Result.BlobList);
+                cancellationTokenSource.Cancel();
+            }
+
+            //With cancellation.
+            var ex = Assert.ThrowsAsync<Exception>(async () => await AzureBlobStorage.ListBlobsInContainer(source, optional, token));
+            Assert.That(ex.Message.Contains("Operation cancelled."));
+        }
+
+        #endregion ConnectionString
 
 
         /// <summary>
-        ///     Generate SAS Token. Token last for 5 minutes.
+        /// Generate SAS Token. Token last for 5 minutes.
         /// </summary>
         private string GetServiceSasUriForBlob()
         {

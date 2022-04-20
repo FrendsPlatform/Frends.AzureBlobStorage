@@ -3,35 +3,13 @@
 namespace Frends.AzureBlobStorage.ListBlobsInContainer.Definitions
 {
     /// <summary>
-    ///     Returns list of container's blobs.
+    /// Returns list of blobs and subdirectories in Azure Storage container with flat or hierarchical listing structure.
     /// </summary>
     public class Result
     {
         /// <summary>
-        ///     Blob's type.
+        /// List of blobs.
         /// </summary>
-        public string BlobType { get; set; }
-
-        /// <summary>
-        ///     Blob's URI.
-        /// </summary>
-        public string Uri { get; set; }
-
-        /// <summary>
-        ///     Blob's name.
-        /// </summary>
-        public string Name { get; set; }
-
-        /// <summary>
-        ///     Blob's entity tag.
-        /// </summary>
-        public string ETag { get; set; }
-
-        /// <summary>
-        ///     List of container's blobs.
-        /// </summary>
-        public List<Result> BlobList { get; set; }
-
+        public List<BlobData> BlobList { get; set; }
     }
 }
-
