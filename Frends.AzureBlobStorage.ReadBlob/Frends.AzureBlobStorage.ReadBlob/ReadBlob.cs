@@ -11,42 +11,42 @@ namespace Frends.AzureBlobStorage.ReadBlob
     public class AzureBlobStorage
     {
         /// <summary>
-        /// Read a single file to Azure blob storage using connection string or SAS Token.
-        /// [Documentation](https://tasks.frends.com/tasks#frends-tasks/Frends.AzureBlobStorage.ReadBlob)
-        /// <param name="source">Information about which Blob to read.</param>
-        /// <returns>Object { string content }</returns>
+        /// Read a single file from Azure Storage.
         /// </summary>
+        /// <param name="source">Source connection parameters.</param>
+        /// <param name="options">Options for the task</param>
+        /// <returns>object { string Content }</returns>
 
-        public static Result ReadBlob([PropertyTab] Source source, CancellationToken cancellationToken)
+        public static Result ReadBlob([PropertyTab] Source source, [PropertyTab] Options options, CancellationToken cancellationToken)
         {
-            var data = ReadBlobContent(source, cancellationToken);
-            return new Result(data);
+            var blob = CreateBlobClient(source);
+            var result = blob.DownloadContent(cancellationToken).Value;
+            var encoding = SetStringEncoding(result.Content.ToString(), options.Encoding);
+
+            return new Result(encoding);
         }
 
-        private static string ReadBlobContent(Source source, CancellationToken cancellationToken)
+        private static BlobClient CreateBlobClient(Source source)
         {
             BlobClient blob = null;
-            var uri = $"{source.Uri}/{source.ContainerName}/{source.BlobName}?";
+            var uri = $"{source.URI}/{source.ContainerName}/{source.BlobName}?";
 
             switch (source.AuthenticationMethod)
             {
-                case AuthenticationMethod.Connectionstring:
+                case AuthenticationMethod.ConnectionString:
                     if (string.IsNullOrEmpty(source.ConnectionString))
                         throw new Exception("Connection string required.");
                     blob = new BlobClient(source.ConnectionString, source.ContainerName, source.BlobName);
                     break;
 
-                case AuthenticationMethod.Sastoken:
-                    if (string.IsNullOrEmpty(source.SasToken) || string.IsNullOrEmpty(source.Uri))
+                case AuthenticationMethod.SASToken:
+                    if (string.IsNullOrEmpty(source.SASToken) || string.IsNullOrEmpty(source.URI))
                         throw new Exception("SAS Token and URI required.");
-                    blob = new BlobClient(new Uri(uri), new AzureSasCredential(source.SasToken));
+                    blob = new BlobClient(new Uri(uri), new AzureSasCredential(source.SASToken));
                     break;
             }
 
-            var result = blob.DownloadContent(cancellationToken).Value;
-            var encoding = SetStringEncoding(result.Content.ToString(), source.Encoding);
-
-            return encoding.ToString();
+            return blob;
         }
 
         private static string SetStringEncoding(string text, Encode encoding)
