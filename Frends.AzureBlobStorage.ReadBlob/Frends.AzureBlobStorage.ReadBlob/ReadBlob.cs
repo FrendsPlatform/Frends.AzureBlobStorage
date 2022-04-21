@@ -34,26 +34,19 @@ namespace Frends.AzureBlobStorage.ReadBlob
             BlobClient blob = null;
             var uri = $"{source.URI}/{source.ContainerName}/{source.BlobName}?";
 
-            try
+            switch (source.AuthenticationMethod)
             {
-                switch (source.AuthenticationMethod)
-                {
-                    case AuthenticationMethod.ConnectionString:
-                        if (string.IsNullOrWhiteSpace(source.ConnectionString))
-                            throw new Exception("Connection string required.");
-                        blob = new BlobClient(source.ConnectionString, source.ContainerName, source.BlobName);
-                        break;
+                case AuthenticationMethod.ConnectionString:
+                    if (string.IsNullOrWhiteSpace(source.ConnectionString))
+                        throw new Exception("Connection string required.");
+                    blob = new BlobClient(source.ConnectionString, source.ContainerName, source.BlobName);
+                    break;
 
-                    case AuthenticationMethod.SASToken:
-                        if (string.IsNullOrWhiteSpace(source.SASToken) || string.IsNullOrWhiteSpace(source.URI))
-                            throw new Exception("SAS Token and URI required.");
-                        blob = new BlobClient(new Uri(uri), new AzureSasCredential(source.SASToken));
-                        break;
-                }
-            }
-            catch (Exception)
-            {
-                throw new Exception("Authentication failed.");
+                case AuthenticationMethod.SASToken:
+                    if (string.IsNullOrWhiteSpace(source.SASToken) || string.IsNullOrWhiteSpace(source.URI))
+                        throw new Exception("SAS Token and URI required.");
+                    blob = new BlobClient(new Uri(uri), new AzureSasCredential(source.SASToken));
+                    break;
             }
 
             return blob;
@@ -61,20 +54,20 @@ namespace Frends.AzureBlobStorage.ReadBlob
 
         private static string SetStringEncoding(string text, Encode encoding)
         {
-                var bytes = Encoding.UTF8.GetBytes(text);
-                switch (encoding)
-                {
-                    case Encode.UTF8:
-                        return Encoding.UTF8.GetString(bytes);
-                    case Encode.UTF32:
-                        return Encoding.UTF32.GetString(bytes);
-                    case Encode.Unicode:
-                        return Encoding.Unicode.GetString(bytes);
-                    case Encode.ASCII:
-                        return Encoding.ASCII.GetString(bytes);
-                    default:
-                        return Encoding.UTF8.GetString(bytes);
-                }
+            var bytes = Encoding.UTF8.GetBytes(text);
+            switch (encoding)
+            {
+                case Encode.UTF8:
+                    return Encoding.UTF8.GetString(bytes);
+                case Encode.UTF32:
+                    return Encoding.UTF32.GetString(bytes);
+                case Encode.Unicode:
+                    return Encoding.Unicode.GetString(bytes);
+                case Encode.ASCII:
+                    return Encoding.ASCII.GetString(bytes);
+                default:
+                    return Encoding.UTF8.GetString(bytes);
+            }
         }
     }
 }

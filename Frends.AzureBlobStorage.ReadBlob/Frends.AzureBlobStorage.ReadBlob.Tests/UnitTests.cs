@@ -88,7 +88,7 @@ namespace Frends.AzureBlobStorage.ReadBlob.Tests
             };
 
             var ex = Assert.ThrowsAsync<Exception>(() => AzureBlobStorage.ReadBlob(source, options, default));
-            Assert.That(ex.Message.Equals("Authentication failed."));
+            Assert.That(ex.Message.Equals("SAS Token and URI required."));
         }
 
         /// <summary>
@@ -110,7 +110,7 @@ namespace Frends.AzureBlobStorage.ReadBlob.Tests
             };
 
             var ex = Assert.ThrowsAsync<Exception>(() => AzureBlobStorage.ReadBlob(source, options, default));
-            Assert.That(ex.Message.Equals("Authentication failed."));
+            Assert.That(ex.Message.Equals("Connection string required."));
         }
 
         /// <summary>
