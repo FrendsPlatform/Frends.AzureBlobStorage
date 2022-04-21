@@ -1,0 +1,16 @@
+name: ListBlobsInContainer_release
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    uses: FrendsPlatform/FrendsTasks/.github/workflows/release.yml@main
+    with:
+      workdir: Frends.AzureBlobStorage.ListBlobsInContainer
+      env_var_name_1: HiQ_AzureBlobStorage_ConnString
+      env_var_name_2: HiQ_AzureBlobStorage_testsorage01AccessKey
+    secrets:
+      feed_api_key: ${{ secrets.TASKS_FEED_API_KEY }}
+      env_var_value_1: ${{ secrets.HIQ_AZUREBLOBSTORAGE_CONNSTRING }}
+      env_var_value_2: ${{ secrets.HIQ_AZUREBLOBSTORAGE_TESTSORAGE01ACCESSKEY }}

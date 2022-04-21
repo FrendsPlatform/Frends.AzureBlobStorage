@@ -1,0 +1,7 @@
+{
+  "Tasks": [
+    {
+      "TaskMethod": "Frends.AzureBlobStorage.ListBlobsInContainer.AzureBlobStorage.ListBlobsInContainer"
+    }
+  ]
+}

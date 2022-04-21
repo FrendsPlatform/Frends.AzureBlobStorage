@@ -8,6 +8,7 @@ Frends tasks for Azure Blob Storage operations.
 - [Frends.AzureBlobStorage.UploadBlob](Frends.AzureBlobStorage.UploadBlob/README.md)
 - [Frends.AzureBlobStorage.DeleteBlob](Frends.AzureBlobStorage.DeleteBlob/README.md)
 - [Frends.AzureBlobStorage.ReadBlob](Frends.AzureBlobStorage.ReadBlob/README.md)
+- [Frends.AzureBlobStorage.ListBlobsInContainer](Frends.AzureBlobStorage.ListBlobsInContainer/README.md)
 - [Frends.AzureBlobStorage.CreateContainer](Frends.AzureBlobStorage.CreateContainer/README.md)
 - [Frends.AzureBlobStorage.DeleteContainer](Frends.AzureBlobStorage.DeleteContainer/README.md)
 
