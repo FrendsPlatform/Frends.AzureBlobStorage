@@ -41,7 +41,7 @@ namespace Frends.AzureBlobStorage.ReadBlob.Tests
             };
 
             var result = AzureBlobStorage.ReadBlob(source, options, default);
-            Assert.IsNotEmpty(result.Content);
+            Assert.IsNotEmpty(result.Result.Content);
         }
 
         /// <summary>
@@ -64,7 +64,7 @@ namespace Frends.AzureBlobStorage.ReadBlob.Tests
             };
 
             var result = AzureBlobStorage.ReadBlob(source, options, default);
-            Assert.IsNotEmpty(result.Content);
+            Assert.IsNotEmpty(result.Result.Content);
         }
 
         /// <summary>
@@ -87,8 +87,8 @@ namespace Frends.AzureBlobStorage.ReadBlob.Tests
                 Encoding = Encode.ASCII
             };
 
-            var ex = Assert.Throws<Exception>(() => AzureBlobStorage.ReadBlob(source, options, default));
-            Assert.That(ex.Message.Equals("SAS Token and URI required."));
+            var ex = Assert.ThrowsAsync<Exception>(() => AzureBlobStorage.ReadBlob(source, options, default));
+            Assert.That(ex.Message.Equals("Authentication failed."));
         }
 
         /// <summary>
@@ -109,8 +109,8 @@ namespace Frends.AzureBlobStorage.ReadBlob.Tests
                 Encoding = Encode.ASCII
             };
 
-            var ex = Assert.Throws<Exception>(() => AzureBlobStorage.ReadBlob(source, options, default));
-            Assert.That(ex.Message.Equals("Connection string required."));
+            var ex = Assert.ThrowsAsync<Exception>(() => AzureBlobStorage.ReadBlob(source, options, default));
+            Assert.That(ex.Message.Equals("Authentication failed."));
         }
 
         /// <summary>

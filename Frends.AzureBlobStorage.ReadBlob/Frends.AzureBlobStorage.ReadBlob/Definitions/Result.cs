@@ -10,8 +10,7 @@
         /// </summary>
         public string Content { get; private set; }
 
-
-        public Result(string content)
+        internal Result(string content)
         {
             Content = content;
         }

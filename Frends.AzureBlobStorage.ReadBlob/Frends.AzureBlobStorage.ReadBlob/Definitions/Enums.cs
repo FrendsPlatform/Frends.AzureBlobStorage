@@ -6,10 +6,12 @@ namespace Frends.AzureBlobStorage.ReadBlob.Definitions
     /// </summary>
     public enum Encode
     {
+    #pragma warning disable CS1591 // Encoding options. No need for XML here.
         UTF8,
         UTF32,
         Unicode,
         ASCII
+    #pragma warning restore CS1591
     }
 
     /// <summary>
