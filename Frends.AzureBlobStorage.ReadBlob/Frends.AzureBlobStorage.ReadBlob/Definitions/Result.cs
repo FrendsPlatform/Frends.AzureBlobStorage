@@ -1,6 +1,4 @@
-﻿#pragma warning disable 1591
-
-namespace Frends.AzureBlobStorage.ReadBlob.Definitions
+﻿namespace Frends.AzureBlobStorage.ReadBlob.Definitions
 {
     /// <summary>
     ///     Returns encoded blob content.
@@ -8,11 +6,12 @@ namespace Frends.AzureBlobStorage.ReadBlob.Definitions
     public class Result
     {
         /// <summary>
-        ///     Encoded blob content.
+        /// Encoded blob content.
         /// </summary>
+        /// <example>"line1\r\nline2\r\nline3"</example>
         public string Content { get; private set; }
 
-        public Result(string content)
+        internal Result(string content)
         {
             Content = content;
         }

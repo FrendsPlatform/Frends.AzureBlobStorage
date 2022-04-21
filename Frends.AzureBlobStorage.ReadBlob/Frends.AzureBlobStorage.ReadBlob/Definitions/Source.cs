@@ -1,55 +1,53 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-#pragma warning disable 1591
 namespace Frends.AzureBlobStorage.ReadBlob.Definitions
 {
+    /// <summary>
+    /// Source values.
+    /// </summary>
     public class Source
     {
         /// <summary>
-        ///     Authentication method to use when connecting to Azure Storage. Options are connection string and SAS Token.
+        /// Authentication method to use when connecting to Azure Storage. Options are connection string and SAS Token.
         /// </summary>
+        /// <example>ConnectionString</example>
+        [DefaultValue(AuthenticationMethod.ConnectionString)]
         public AuthenticationMethod AuthenticationMethod { get; set; }
 
         /// <summary>
-        ///     The base URI for the storage account.
+        /// The base URI for the Azure storage container.
         /// </summary>
-        [UIHint(nameof(AuthenticationMethod), "", AuthenticationMethod.Sastoken)]
-        [DefaultValue("https://xx.blob.xx.xx.net/")]
-        [DisplayFormat(DataFormatString = "Text")]
-        public string Uri { get; set; }
+        /// <example>https://storageaccount.blob.core.windows.net</example>
+        [UIHint(nameof(AuthenticationMethod), "", AuthenticationMethod.SASToken)]
+        public string URI { get; set; }
 
         /// <summary>
-        ///     A shared access signature. Grants restricted access rights to Azure Storage resources when combined with URI.
+        /// A shared access signature for Azure storage container. Grants restricted access rights to Azure Storage resources when combined with URI.
         /// </summary>
-        [UIHint(nameof(AuthenticationMethod), "", AuthenticationMethod.Sastoken)]
+        /// <example>sv=2021-04-10&amp;se=2022-04-10T10%3A431Z&amp;sr=c&amp;sp=l&amp;sig=ZJg983RovE%2BZXI</example>
+        [UIHint(nameof(AuthenticationMethod), "", AuthenticationMethod.SASToken)]
         [PasswordPropertyText]
-        [DisplayFormat(DataFormatString = "Text")]
-        public string SasToken { get; set; }
+        public string SASToken { get; set; }
 
         /// <summary>
-        ///     Connection string to Azure storage.
+        /// Azure storage account's connection string.
         /// </summary>
-        [UIHint(nameof(AuthenticationMethod), "", AuthenticationMethod.Connectionstring)]
+        /// <example>"DefaultEndpointsProtocol=https;AccountName=accountname;AccountKey=Pdlrxyz==;EndpointSuffix=core.windows.net"</example>
+        [UIHint(nameof(AuthenticationMethod), "", AuthenticationMethod.ConnectionString)]
         [PasswordPropertyText]
-        [DisplayFormat(DataFormatString = "Text")]
         public string ConnectionString { get; set; }
 
         /// <summary>
-        ///     Name of the azure blob storage container from where blob data is located.
+        /// Azure storage container's name.
         /// </summary>
-        [DisplayFormat(DataFormatString = "Text")]
+        /// <example>Container1</example>
         public string ContainerName { get; set; }
 
         /// <summary>
-        ///    Name of the blob which content is read.
+        /// Name of the blob which content is read.
         /// </summary>
+        /// <example>File.txt</example>
         [DisplayFormat(DataFormatString = "Text")]
         public string BlobName { get; set; }
-
-        /// <summary>
-        ///     Encoding name in which blob content is read.
-        /// </summary>
-        [DefaultValue(Encode.UTF8)]
-        public Encode Encoding { get; set; }
     }
 }
