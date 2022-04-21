@@ -13,12 +13,12 @@ namespace Frends.AzureBlobStorage.ListBlobsInContainer
     public class AzureBlobStorage
     {
         /// <summary>
-        /// List blobs and subdirectories in Azure Storage container with flat or hierarchical listing structure.
+        /// List blobs and subdirectories in Azure Storage container in flat or hierarchical listing structure.
         /// [Documentation](https://tasks.frends.com/tasks/frends-tasks/Frends.AzureBlobStorage.ListBlobsInContainer)
         /// </summary>
         /// <param name="source">Source connection parameters.</param>
         /// <param name="options">Options for the task</param>
-        /// <returns>object { string ListingStructure, string Type, string Name, string URI, string ETag }</returns>
+        /// <returns>object { string Type, string Name, string URI, string ETag }</returns>
         public static async Task<Result> ListBlobsInContainer([PropertyTab] Source source, [PropertyTab] Options options, CancellationToken cancellationToken)
         {
             var authSas = source.AuthenticationMethod.Equals(AuthenticationMethod.SASToken) ? true : false;
@@ -81,7 +81,6 @@ namespace Frends.AzureBlobStorage.ListBlobsInContainer
                         var blob = authSas ? new BlobClient(new Uri($"{source.URI}/{source.ContainerName}/{blobItem.Name}?")) : new BlobClient(source.ConnectionString, source.ContainerName, blobItem.Name);
                         blobListing.Add(new BlobData
                         {
-                            ListingStructure = "Flat",
                             Type = blobItem.Properties.BlobType.ToString(),
                             URI = blob.Uri.ToString(),
                             Name = blob.Name,
@@ -125,7 +124,6 @@ namespace Frends.AzureBlobStorage.ListBlobsInContainer
 
                             blobListing.Add(new BlobData
                             {
-                                ListingStructure = "Hierarchical",
                                 Type = blobItem.Blob.Properties.BlobType.ToString(),
                                 URI = blob.Uri.ToString(),
                                 Name = blobItem.Blob.Name,
@@ -139,7 +137,6 @@ namespace Frends.AzureBlobStorage.ListBlobsInContainer
 
                             blobListing.Add(new BlobData
                             {
-                                ListingStructure = "Hierarchical",
                                 Type = "Directory",
                                 URI = $"{blob.Uri}/{blobItem.Prefix}",
                                 Name = blobItem.Prefix,

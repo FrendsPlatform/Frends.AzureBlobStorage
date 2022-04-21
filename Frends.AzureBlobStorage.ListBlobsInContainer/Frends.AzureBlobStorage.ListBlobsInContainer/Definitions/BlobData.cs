@@ -6,12 +6,6 @@
     public class BlobData
     {
         /// <summary>
-        /// Flat or hierarchically listing structure.
-        /// </summary>
-        /// <example>Flat</example>
-        public string ListingStructure { get; set; }
-
-        /// <summary>
         /// Blob's type.
         ///     Directory is a sub directory in container.
         ///     Block blobs store text and binary data. Block blobs are made up of blocks of data that can be managed individually.

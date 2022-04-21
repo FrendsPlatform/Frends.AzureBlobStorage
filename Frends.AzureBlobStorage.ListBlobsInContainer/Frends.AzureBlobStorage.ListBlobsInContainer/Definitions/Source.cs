@@ -10,7 +10,6 @@ namespace Frends.AzureBlobStorage.ListBlobsInContainer.Definitions
         /// <summary>
         /// Authentication method to use when connecting to Azure Storage. Options are connection string and SAS Token.
         /// </summary>
-        /// <example>ConnectionString</example>
         [DefaultValue (AuthenticationMethod.ConnectionString)]
         public AuthenticationMethod AuthenticationMethod { get; set; }
 
@@ -31,7 +30,7 @@ namespace Frends.AzureBlobStorage.ListBlobsInContainer.Definitions
 
 
         /// <summary>
-        /// Azure storage container's connection string.
+        /// Azure storage account's connection string.
         /// </summary>
         /// <example>"DefaultEndpointsProtocol=https;AccountName=accountname;AccountKey=Pdlrxyz==;EndpointSuffix=core.windows.net"</example>
         [UIHint(nameof(AuthenticationMethod), "", AuthenticationMethod.ConnectionString)]
