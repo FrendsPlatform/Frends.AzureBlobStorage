@@ -10,6 +10,7 @@ namespace Frends.AzureBlobStorage.ReadBlob.Definitions
         /// <summary>
         /// Authentication method to use when connecting to Azure Storage. Options are connection string and SAS Token.
         /// </summary>
+        /// <example>ConnectionString</example>
         [DefaultValue(AuthenticationMethod.ConnectionString)]
         public AuthenticationMethod AuthenticationMethod { get; set; }
 
@@ -39,11 +40,13 @@ namespace Frends.AzureBlobStorage.ReadBlob.Definitions
         /// <summary>
         /// Azure storage container's name.
         /// </summary>
+        /// <example>Container1</example>
         public string ContainerName { get; set; }
 
         /// <summary>
         /// Name of the blob which content is read.
         /// </summary>
+        /// <example>File.txt</example>
         [DisplayFormat(DataFormatString = "Text")]
         public string BlobName { get; set; }
     }

@@ -9,10 +9,13 @@ using System.Threading.Tasks;
 
 namespace Frends.AzureBlobStorage.ReadBlob
 {
+    /// <summary>
+    /// Azure Storage task.
+    /// </summary>
     public class AzureBlobStorage
     {
         /// <summary>
-        /// Read a single file from Azure Storage.
+        /// Encode and read a single file from Azure Storage using connection string or SAS Token authentication.
         /// [Documentation](https://tasks.frends.com/tasks#frends-tasks/Frends.AzureBlobStorage.ReadBlob)
         /// </summary>
         /// <param name="source">Source connection parameters.</param>
@@ -24,7 +27,7 @@ namespace Frends.AzureBlobStorage.ReadBlob
         {
             var blob = CreateBlobClient(source);
             var result = (await blob.DownloadContentAsync(cancellationToken)).Value;
-            var encoding = SetStringEncoding(result.ToString(), options.Encoding);
+            var encoding = SetStringEncoding(result.Content.ToString(), options.Encoding);
 
             return new Result(encoding);
         }
