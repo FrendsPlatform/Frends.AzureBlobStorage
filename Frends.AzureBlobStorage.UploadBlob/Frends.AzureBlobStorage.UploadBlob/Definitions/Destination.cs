@@ -33,6 +33,41 @@ namespace Frends.AzureBlobStorage.UploadBlob
         public bool CreateContainerIfItDoesNotExist { get; set; }
 
         /// <summary>
+        /// Append any blob type.
+        /// </summary>
+        /// <example>false</example>
+        [DefaultValue(false)]
+        public bool Append { get; set; }
+
+        /// <summary>
+        /// Append any blob type.
+        /// </summary>
+        /// <example>TestFile.txt</example>
+        [UIHint(nameof(Append), "", true)]
+        public string BlobName { get; set; }
+
+        /// <summary>
+        /// Directory where blob will be downloaded for appending process. Only Block and Page blobs will be downloaded.
+        /// </summary>
+        /// <example>c:/temp/downloads</example>
+        [UIHint(nameof(Append), "", true)]
+        public string DownloadFolder { get; set; }
+
+        /// <summary>
+        /// Specifies the maximum size for the page blob, up to 8 TB. The size must be aligned to a 512-byte boundary (512, 1024, 1536..). Calculating minimum value from file if given value is less than 512.
+        /// </summary>
+        /// <example>1024</example>
+        [UIHint(nameof(Append), "", true)]
+        public long PageMaxSize { get; set; }
+
+        /// <summary>
+        /// Specifies the starting offset for the content to be written as a page. Value range from 0 to 'page max-file size'. If set -1, 'page max-file size' will be calculated from file info.  
+        /// </summary>
+        /// <example>c:/temp/downloads</example>
+        [UIHint(nameof(Append), "", true)]
+        public long PageOffset { get; set; }
+
+        /// <summary>
         /// Azure blob type to upload: Append, Block or Page.
         /// </summary>
         [DefaultValue(AzureBlobType.Block)]
