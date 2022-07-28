@@ -1,33 +1,32 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace Frends.AzureBlobStorage.UploadBlob
+namespace Frends.AzureBlobStorage.UploadBlob;
+
+/// <summary>
+/// Input-class for UploadBlob-task.
+/// </summary>
+public class Source
 {
     /// <summary>
-    /// Input-class for UploadBlob-task.
+    /// File which will be uploaded.
     /// </summary>
-    public class Source
-    {
-        /// <summary>
-        /// File which will be uploaded.
-        /// </summary>
-        [DefaultValue(@"c:\temp\TestFile.xml")]
-        [DisplayName("Source File")]
-        [DisplayFormat(DataFormatString = "Text")]
-        public string SourceFile { get; set; }
+    /// <example>c:\temp\testfile.txt</example>
+    [DefaultValue(@"c:\temp\TestFile.txt")]
+    public string SourceFile { get; set; }
 
-        /// <summary>
-        /// Uses stream to read file content.
-        /// </summary>
-        [DefaultValue(false)]
-        [DisplayName("Stream content only")]
-        public bool ContentsOnly { get; set; }
+    /// <summary>
+    /// Uses stream to read file content.
+    /// </summary>
+    /// <example>false</example>
+    [DefaultValue(false)]
+    public bool ContentsOnly { get; set; }
 
-        /// <summary>
-        /// Works only when transferring stream content.
-        /// </summary>
-        [DefaultValue(false)]
-        [DisplayName("Gzip compression")]
-        public bool Compress { get; set; }
-    }
+    /// <summary>
+    /// Gzip compression. Works only when transferring stream content.
+    /// </summary>
+    /// <example>false</example>
+    [DefaultValue(false)]
+    [DisplayName("Gzip compression")]
+    public bool Compress { get; set; }
 }
