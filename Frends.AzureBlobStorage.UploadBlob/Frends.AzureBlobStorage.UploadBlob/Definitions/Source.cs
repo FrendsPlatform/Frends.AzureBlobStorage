@@ -9,10 +9,11 @@ namespace Frends.AzureBlobStorage.UploadBlob;
 public class Source
 {
     /// <summary>
-    /// File which will be uploaded.
+    /// File which will be uploaded. This file will be appended into target blob in Append process.
     /// </summary>
     /// <example>c:\temp\testfile.txt</example>
-    [DefaultValue(@"c:\temp\TestFile.txt")]
+    [DisplayFormat(DataFormatString = "Text")]
+    [DefaultValue(@"c:\temp\testfile.txt")]
     public string SourceFile { get; set; }
 
     /// <summary>

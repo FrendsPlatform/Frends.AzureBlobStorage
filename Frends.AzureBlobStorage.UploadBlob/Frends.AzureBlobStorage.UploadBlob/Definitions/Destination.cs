@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 namespace Frends.AzureBlobStorage.UploadBlob;
 
 /// <summary>
-/// Options-class for UploadBlob-task.
+/// Destination and optional parameters.
 /// </summary>
 public class Destination
 {
@@ -16,13 +16,13 @@ public class Destination
     public string ConnectionString { get; set; }
 
     /// <summary>
-    /// Name of the Azure Blob Storage container where the data will be uploaded.
+    /// Name of the Azure Blob Storage container where the data will be uploaded. 
     /// </summary>
     /// <example>UploadContainer</example>
     public string ContainerName { get; set; }
 
     /// <summary>
-    /// Determines if the container should be created if it does not exist.
+    /// Determines if the container should be created if it does not exist. See https://docs.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata for naming rules.
     /// </summary>
     /// <example>true</example>
     [DefaultValue(true)]
@@ -34,6 +34,20 @@ public class Destination
     /// <example>Block</example>
     [DefaultValue(AzureBlobType.Block)]
     public AzureBlobType BlobType { get; set; }
+
+    /// <summary>
+    /// Specifies the maximum size for the Page blob, up to 8 TB. The size must be aligned to a 512-byte boundary (512, 1024, 1536..). Calculating minimum value from file's size if given value is less than 512.
+    /// </summary>
+    /// <example>1024</example>
+    [UIHint(nameof(BlobType), "", AzureBlobType.Page)]
+    public long PageMaxSize { get; set; }
+
+    /// <summary>
+    /// Specifies the starting offset for the content to be written as a Page. Value range from 0 to 'page max-file size'. If set to -1, 'page max-file size' will be calculated from 'PageMaxSize'-file's size.  
+    /// </summary>
+    /// <example>0</example>
+    [UIHint(nameof(BlobType), "", AzureBlobType.Page)]
+    public long PageOffset { get; set; }
 
     /// <summary>
     /// Source file can be renamed to this name in Azure Blob Storage.
@@ -55,20 +69,14 @@ public class Destination
     public string FileEncoding { get; set; }
 
     /// <summary>
-    /// Should upload operation overwrite existing file with same name?
+    /// Should upload operation overwrite existing blob with same name?
     /// </summary>
+    /// <example>false</example>
     [DefaultValue(false)]
     public bool Overwrite { get; set; }
 
     /// <summary>
-    /// How many work items to process concurrently.
-    /// </summary>
-    /// <example>64</example>
-    [DefaultValue(64)]
-    public int ParallelOperations { get; set; }
-
-    /// <summary>
-    /// Append blob with 'Source File'. Block and Page blob will be downloaded into 'Download Folder' and uploaded back to same container after local append process is completed. No downloading needed for Append Blob. Overwrite must be true when targeting Block or Page blob.
+    /// Append blob with 'Source File'. Block and Page blob will be downloaded into 'Download Folder' and uploaded back into same container after local append process is completed. No downloading needed for Append Blob. Overwrite must be true when targeting Block or Page blob.
     /// </summary>
     /// <example>false</example>
     [DefaultValue(false)]
@@ -89,26 +97,19 @@ public class Destination
     public string DownloadFolder { get; set; }
 
     /// <summary>
-    /// Specifies the maximum size for the page blob, up to 8 TB. The size must be aligned to a 512-byte boundary (512, 1024, 1536..). Calculating minimum value from file's size if given value is less than 512.
-    /// </summary>
-    /// <example>1024</example>
-    [UIHint(nameof(BlobType), "", AzureBlobType.Page)]
-    public long PageMaxSize { get; set; }
-
-    /// <summary>
-    /// Specifies the starting offset for the content to be written as a page. Value range from 0 to 'page max-file size'. If set -1, 'page max-file size' will be calculated from file's size.  
-    /// </summary>
-    /// <example>c:/temp/downloads</example>
-    [UIHint(nameof(BlobType), "", AzureBlobType.Page)]
-    public long PageOffset { get; set; }
-
-    /// <summary>
-    /// Delete temp file after append and reupload.  
+    /// Delete temp file after append process.
     /// </summary>
     /// <example>false</example>
-    [UIHint(nameof(BlobType), "", AzureBlobType.Page)]
+    [UIHint(nameof(Append), "", true)]
     [DefaultValue(false)]
     public bool DeleteTempFile { get; set; }
+
+    /// <summary>
+    /// How many work items to process concurrently.
+    /// </summary>
+    /// <example>64</example>
+    [DefaultValue(64)]
+    public int ParallelOperations { get; set; }
 }
 
 /// <summary>
