@@ -24,9 +24,4 @@
     <ProjectReference Include="..\Frends.AzureBlobStorage.UploadBlob\Frends.AzureBlobStorage.UploadBlob.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Downloads\" />
-    <Folder Include="TestFiles\" />
-  </ItemGroup>
-
 </Project>
