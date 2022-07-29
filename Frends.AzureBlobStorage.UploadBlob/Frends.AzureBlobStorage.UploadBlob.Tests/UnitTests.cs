@@ -467,16 +467,8 @@ public class UploadTest
 
     private bool DeleteFiles()
     {
-        if (File.Exists(_firstTestFilePath))
-            File.Delete(_firstTestFilePath);
-
-        if (File.Exists(_secondTestFilePath))
-            File.Delete(_secondTestFilePath);
-
         if (File.Exists(Path.Combine(_downloadDir, Path.GetFileName(_firstTestFilePath))))
             File.Delete(Path.Combine(_downloadDir, Path.GetFileName(_firstTestFilePath)));
-        if (Directory.Exists(_downloadDir))
-            Directory.Delete(_downloadDir);
 
         return true;
     }
