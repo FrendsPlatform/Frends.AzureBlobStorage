@@ -13,9 +13,9 @@ public class UploadTest
 {
     private readonly string _connectionString = Environment.GetEnvironmentVariable("HiQ_AzureBlobStorage_ConnString");
     private string _containerName;
-    private readonly string _downloadDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TestFiles", "Downloads");
-    private readonly string _firstTestFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TestFiles", "testfile.txt");
-    private readonly string _secondTestFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TestFiles", "testfile2.txt");
+    private readonly string _downloadDir = Path.Combine(Environment.CurrentDirectory, "TestFiles", "Downloads");
+    private readonly string _firstTestFilePath = Path.Combine(Environment.CurrentDirectory, "TestFiles", "testfile.txt");
+    private readonly string _secondTestFilePath = Path.Combine(Environment.CurrentDirectory, "TestFiles", "testfile2.txt");
 
     [TestInitialize]
     public void TestSetup()
@@ -467,8 +467,16 @@ public class UploadTest
 
     private bool DeleteFiles()
     {
+        if (File.Exists(_firstTestFilePath))
+            File.Delete(_firstTestFilePath);
+
+        if (File.Exists(_secondTestFilePath))
+            File.Delete(_secondTestFilePath);
+
         if (File.Exists(Path.Combine(_downloadDir, Path.GetFileName(_firstTestFilePath))))
             File.Delete(Path.Combine(_downloadDir, Path.GetFileName(_firstTestFilePath)));
+        if (Directory.Exists(_downloadDir))
+            Directory.Delete(_downloadDir);
 
         return true;
     }
