@@ -10,6 +10,7 @@ using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Blobs.Specialized;
 using System.IO.Compression;
+using Frends.AzureBlobStorage.UploadBlob.Definitions;
 
 namespace Frends.AzureBlobStorage.UploadBlob;
 /// <summary>
@@ -26,39 +27,109 @@ public class AzureBlobStorage
     /// <returns>Object { string Uri, string SourceFile }</returns>
     public static async Task<Result> UploadBlob([PropertyTab] Source source, [PropertyTab] Destination destination, CancellationToken cancellationToken)
     {
-        if (!File.Exists(source.SourceFile)) throw new ArgumentException($"Source file {source.SourceFile} does not exist");
+        var fi = new FileInfo(source.SourceFile);
+        if (!fi.Exists) throw new ArgumentException("Source file doesn't exists.");
 
-        var fi = destination.Append && await BlobExists(destination, cancellationToken) ? await AppendAny(source, destination, cancellationToken) : new FileInfo(source.SourceFile);
+        var blob = new BlobClient(destination.ConnectionString, destination.ContainerName, destination.BlobName);
 
-        var blobServiceClient = new BlobServiceClient(destination.ConnectionString);
-        var container = blobServiceClient.GetBlobContainerClient(destination.ContainerName);
+        if (destination.HandleExistingFile.Equals(HandleExistingFile.Error) && await BlobExists(destination, cancellationToken)) throw new Exception("UploadBlob: Blob already exists.");
+        if (destination.HandleExistingFile.Equals(HandleExistingFile.Overwrite) && await BlobExists(destination, cancellationToken)) await blob.DeleteIfExistsAsync(DeleteSnapshotsOption.None, null, cancellationToken);
+        if (destination.HandleExistingFile.Equals(HandleExistingFile.Append) && await BlobExists(destination, cancellationToken)) fi = await AppendAny(source, destination, cancellationToken);
 
         if (fi != null)
         {
-            try
-            {
-                if (destination.CreateContainerIfItDoesNotExist) await container.CreateIfNotExistsAsync(PublicAccessType.None, null, null, cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Checking if container exists or creating new container caused an exception.{ex}");
-            }
-
-            string fileName;
-            if (string.IsNullOrWhiteSpace(destination.RenameTo) && source.Compress) fileName = fi.Name + ".gz";
-            else if (string.IsNullOrWhiteSpace(destination.RenameTo)) fileName = fi.Name;
-            else fileName = destination.RenameTo;
-
-            // Return URI to uploaded blob and source file path.
-            return destination.BlobType switch
-            {
-                AzureBlobType.Append => await AppendBlob(source, destination, fi, fileName, cancellationToken),
-                AzureBlobType.Page => await UploadPageBlob(source, destination, fi, fileName, cancellationToken),
-                _ => await UploadBlockBlob(source, destination, fi, fileName, cancellationToken),
-            };
+            var fileName = RenameFile(source, destination, fi);
+            return await HandleUpload(source, destination, fi, fileName, cancellationToken);
         }
         else
-            return new Result { SourceFile = source.SourceFile, Uri = source.SourceFile };
+            return new Result { SourceFile = source.SourceFile, Uri = blob.Uri.ToString() };
+    }
+
+    private static async Task<Result> HandleUpload(Source source, Destination destination, FileInfo fi, string fileName, CancellationToken cancellationToken)
+    {
+            if (destination.CreateContainerIfItDoesNotExist) await CreateContainerIfItDoesNotExist(destination, cancellationToken);
+
+            var contentType = string.IsNullOrWhiteSpace(destination.ContentType) ? MimeUtility.GetMimeMapping(fi.Name) : destination.ContentType;
+            var encoding = GetEncoding(destination.FileEncoding);
+
+            var progressHandler = new Progress<long>(progress => { Console.WriteLine("Bytes uploaded: {0}", progress); });
+
+            switch (destination.BlobType)
+            {
+                case AzureBlobType.Append:
+                    try
+                    {
+                        var appendBlobClient = new AppendBlobClient(destination.ConnectionString, destination.ContainerName, fileName);
+                        var appendBlobCreateOptions = new AppendBlobCreateOptions { HttpHeaders = new BlobHttpHeaders { ContentType = contentType, ContentEncoding = source.Compress ? "gzip" : encoding.WebName } };
+                        await appendBlobClient.CreateAsync(appendBlobCreateOptions, cancellationToken);
+                        using var appendGetStream = GetStream(false, true, encoding, fi);
+                        await appendBlobClient.AppendBlockAsync(appendGetStream, null, null, progressHandler, cancellationToken);
+                        return new Result { SourceFile = source.SourceFile, Uri = appendBlobClient.Uri.ToString() };
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new Exception($"UploadBlob (Append): An error occured while uploading file. {ex}");
+                    }
+
+                case AzureBlobType.Block:
+                    try
+                    {
+                        var blobClient = new BlobClient(destination.ConnectionString, destination.ContainerName, fileName);
+                        var blobUploadOptions = new BlobUploadOptions
+                        {
+                            ProgressHandler = progressHandler,
+                            TransferOptions = new StorageTransferOptions { MaximumConcurrency = destination.ParallelOperations },
+                            HttpHeaders = new BlobHttpHeaders { ContentType = contentType, ContentEncoding = source.Compress ? "gzip" : encoding.WebName }
+                        };
+                        using var blockGetStream = GetStream(source.Compress, source.ContentsOnly, encoding, fi);
+                        await blobClient.UploadAsync(blockGetStream, blobUploadOptions, cancellationToken);
+                    
+                        //Delete temp file
+                        if (Path.GetDirectoryName(fi.FullName) != Path.GetDirectoryName(source.SourceFile)) fi.Delete();
+
+                        return new Result { SourceFile = source.SourceFile, Uri = blobClient.Uri.ToString() };
+
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new Exception($"UploadBlob (Block): An error occured while uploading file. {ex}");
+                    }
+
+                case AzureBlobType.Page:
+                    try
+                    {
+                        var pageBlobClient = new PageBlobClient(destination.ConnectionString, destination.ContainerName, fileName);
+                        var maxSize = destination.PageMaxSize < 512 ? 512 : destination.PageMaxSize;
+                        var fiMinLenght = fi.Length;
+
+                        //Upload size can't be over Page's full size.
+                        while (maxSize % 512 != 0) maxSize += (maxSize / 512);
+                        while (fiMinLenght % 512 != 0) fiMinLenght += (fiMinLenght / 512);
+                        while (maxSize < fiMinLenght) maxSize += 512;
+
+                        if (destination.HandleExistingFile.Equals(HandleExistingFile.Overwrite)) await pageBlobClient.DeleteIfExistsAsync(DeleteSnapshotsOption.None, null, cancellationToken);
+
+                        if (fiMinLenght > 8796093022208 || maxSize > 8796093022208) //Handle over 8 TB
+                            throw new Exception($"UploadPageBlob: Required minimum size of Page is over 8 TB. File's minumum size: {fiMinLenght} bytes, Page maximum size: {maxSize} bytes.");
+
+                        using var pageGetStream = GetStream(false, true, encoding, fi);
+                        await pageBlobClient.CreateAsync(maxSize, cancellationToken: cancellationToken);
+                        await pageBlobClient.UploadPagesAsync(pageGetStream, destination.PageOffset == -1 ? maxSize - fiMinLenght : destination.PageOffset, cancellationToken: cancellationToken);
+
+                        //Delete temp file
+                        if (Path.GetDirectoryName(fi.FullName) != Path.GetDirectoryName(source.SourceFile)) fi.Delete();
+
+                        return new Result { SourceFile = source.SourceFile, Uri = pageBlobClient.Uri.ToString() };
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new Exception($"UploadBlob (Page): An error occured while uploading file. {ex}");
+                    }
+
+            ////Handle CS0161
+            default: throw new Exception("HandleUpload: An error occured while uploading file. Missing Azure Blob type."); // return new Result { SourceFile = source.SourceFile, Uri = null };
+        }
+        
     }
 
     private static async Task<bool> BlobExists(Destination destination, CancellationToken cancellationToken)
@@ -70,7 +141,37 @@ public class AzureBlobStorage
         }
         catch (Exception ex)
         {
-            throw new Exception($"BlobExists: Error while checking if blob exists. {ex}");
+            throw new Exception($"BlobExists: An error occured while checking if blob exists. {ex}");
+        }
+    }
+
+    private static string RenameFile(Source source, Destination destination, FileInfo fi)
+    {
+        try
+        {
+            string fileName;
+            if (string.IsNullOrWhiteSpace(destination.RenameTo) && source.Compress) fileName = fi.Name + ".gz";
+            else if (string.IsNullOrWhiteSpace(destination.RenameTo)) fileName = fi.Name;
+            else fileName = destination.RenameTo;
+            return fileName;
+        }
+        catch (Exception ex)
+        {
+            throw new Exception($"RenameFile: An error occured while renaming file. {ex}");
+        }
+    }
+
+    private static async Task CreateContainerIfItDoesNotExist(Destination destination, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var blobServiceClient = new BlobServiceClient(destination.ConnectionString);
+            var container = blobServiceClient.GetBlobContainerClient(destination.ContainerName);
+            await container.CreateIfNotExistsAsync(PublicAccessType.None, null, null, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            throw new Exception($"CreateContainerIfItDoesNotExist: An error occured while checking if container exists or while creating a new container.{ex}");
         }
     }
 
@@ -81,6 +182,7 @@ public class AzureBlobStorage
             var blob = new BlobClient(destination.ConnectionString, destination.ContainerName, destination.BlobName);
             var blobProperties = blob.GetPropertiesAsync(cancellationToken: cancellationToken);
 
+            //Block and Page blobs must be downloaded and handled in temp because file size can be too large for memory stream.
             if (blobProperties.Result.Value.BlobType.Equals(BlobType.Append))
             {
                 var appendBlob = new AppendBlobClient(destination.ConnectionString, destination.ContainerName, destination.BlobName);
@@ -96,126 +198,32 @@ public class AzureBlobStorage
                     await appendBlob.AppendBlockAsync(stream, cancellationToken: cancellationToken);
                 }
 
-                return null;
+                // Return null to skip uploading.
+                return null; 
             }
             else
             {
-                var appendFile = Path.Combine(destination.DownloadFolder, destination.BlobName);
-                Directory.CreateDirectory(destination.DownloadFolder);
-                await blob.DownloadToAsync(Path.Combine(destination.DownloadFolder, destination.BlobName), cancellationToken);
+                var tempFile = Path.Combine(Path.GetTempPath(), destination.BlobName);
+                await blob.DownloadToAsync(tempFile, cancellationToken);
 
                 using (var sourceData = new StreamReader(source.SourceFile))
-                using (var destinationFile = File.AppendText(appendFile))
+                using (var destinationFile = File.AppendText(tempFile))
                 {
                     var line = sourceData.ReadLine();
                     destinationFile.Write(line); //WriteLine will mess up Page blob upload.
                 };
 
-                return new FileInfo(appendFile);
+                return new FileInfo(tempFile);
             }
         }
         catch (Exception ex)
         {
-            throw new Exception($"AppendAny: Error occured while appending. {ex}");
+            throw new Exception($"AppendAny: An error occured while appending file. {ex}");
         }
-    }
-
-    private static async Task<Result> UploadBlockBlob(Source source, Destination destinationProperties, FileInfo fi, string fileName, CancellationToken cancellationToken)
-    {
-        var blob = new BlobClient(destinationProperties.ConnectionString, destinationProperties.ContainerName, fileName);
-        var contentType = string.IsNullOrWhiteSpace(destinationProperties.ContentType) ? MimeUtility.GetMimeMapping(fi.Name) : destinationProperties.ContentType;
-        var encoding = GetEncoding(destinationProperties.FileEncoding);
-
-        if (destinationProperties.Overwrite) await blob.DeleteIfExistsAsync(DeleteSnapshotsOption.None, null, cancellationToken);
-
-        var progressHandler = new Progress<long>(progress => { Console.WriteLine("Bytes uploaded: {0}", progress); });
-
-        var uploadOptions = new BlobUploadOptions
-        {
-            ProgressHandler = progressHandler,
-            TransferOptions = new StorageTransferOptions { MaximumConcurrency = destinationProperties.ParallelOperations },
-            HttpHeaders = new BlobHttpHeaders { ContentType = contentType, ContentEncoding = source.Compress ? "gzip" : encoding.WebName }
-        };
-
-        try
-        {
-            using var stream = GetStream(source.Compress, source.ContentsOnly, encoding, fi);
-            await blob.UploadAsync(stream, uploadOptions, cancellationToken);
-        }
-        catch (Exception e)
-        {
-            throw new Exception("UploadFileAsync: Error occured while uploading file to blob storage", e);
-        }
-        return new Result { SourceFile = source.SourceFile, Uri = blob.Uri.ToString() };
-    }
-
-    private static async Task<Result> AppendBlob(Source source, Destination destinationProperties, FileInfo fi, string fileName, CancellationToken cancellationToken)
-    {
-        var blob = new AppendBlobClient(destinationProperties.ConnectionString, destinationProperties.ContainerName, fileName);
-        var encoding = GetEncoding(destinationProperties.FileEncoding);
-
-        if (destinationProperties.Overwrite || !await blob.ExistsAsync(cancellationToken))
-        {
-            await blob.DeleteIfExistsAsync(DeleteSnapshotsOption.None, null, cancellationToken);
-            var contentType = string.IsNullOrWhiteSpace(destinationProperties.ContentType) ? MimeUtility.GetMimeMapping(fi.Name) : destinationProperties.ContentType;
-            var uploadOptions = new AppendBlobCreateOptions { HttpHeaders = new BlobHttpHeaders { ContentType = contentType, ContentEncoding = source.Compress ? "gzip" : encoding.WebName } };
-            await blob.CreateAsync(uploadOptions, cancellationToken);
-        }
-
-        var progressHandler = new Progress<long>(progress => { Console.WriteLine("Bytes uploaded: {0}", progress); });
-
-        try
-        {
-            using var stream = GetStream(false, true, encoding, fi);
-            await blob.AppendBlockAsync(stream, null, null, progressHandler, cancellationToken);
-        }
-        catch (Exception e)
-        {
-            throw new Exception("Error occured while appending a block.", e);
-        }
-
-        return new Result { SourceFile = source.SourceFile, Uri = blob.Uri.ToString() };
-    }
-
-    private static async Task<Result> UploadPageBlob(Source source, Destination destination, FileInfo fi, string fileName, CancellationToken cancellationToken)
-    {
-        var blob = new PageBlobClient(destination.ConnectionString, destination.ContainerName, fileName);
-        var encoding = GetEncoding(destination.FileEncoding);
-        var maxSize = destination.PageMaxSize < 512 ? 512 : destination.PageMaxSize;
-        var fiMinLenght = fi.Length;
-
-        //Upload size can't be over Page's full size.
-        while (maxSize % 512 != 0) maxSize += (maxSize / 512);
-        while (fiMinLenght % 512 != 0) fiMinLenght += (fiMinLenght / 512);
-        while (maxSize < fiMinLenght) maxSize += 512;
-
-        if (destination.Overwrite) await blob.DeleteIfExistsAsync(DeleteSnapshotsOption.None, null, cancellationToken);
-
-        var progressHandler = new Progress<long>(progress => { Console.WriteLine("Bytes uploaded: {0}", progress); });
-
-        try
-        {
-            if (fiMinLenght > 8796093022208 || maxSize > 8796093022208) //Handle over 8 TB
-                throw new Exception($"UploadPageBlob: Required minimum size of Page is over 8 TB. File's minumum size: {fiMinLenght} bytes, Page maximum size: {maxSize} bytes.");
-
-            using var stream = GetStream(false, true, encoding, fi);
-            await blob.CreateAsync(maxSize, cancellationToken: cancellationToken);
-            await blob.UploadPagesAsync(stream, destination.PageOffset == -1 ? maxSize - fiMinLenght : destination.PageOffset, cancellationToken: cancellationToken);
-
-            if (destination.DeleteTempFile)
-                File.Delete(fi.FullName);
-        }
-        catch (Exception e)
-        {
-            throw new Exception("Error occured while uploading page blob", e);
-        }
-
-        return new Result { SourceFile = source.SourceFile, Uri = blob.Uri.ToString() };
     }
 
     /// <summary>
-    /// Gets correct stream object.
-    /// Does not always dispose, so use using.
+    /// Gets correct stream object. Does not always dispose, so use using.
     /// </summary>
     private static Stream GetStream(bool compress, bool fromString, Encoding encoding, FileInfo file)
     {

@@ -1,4 +1,4 @@
-﻿namespace Frends.AzureBlobStorage.UploadBlob;
+﻿namespace Frends.AzureBlobStorage.UploadBlob.Definitions;
 
 /// <summary>
 /// Result-class for UploadBlob-task.

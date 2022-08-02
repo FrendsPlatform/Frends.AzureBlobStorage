@@ -6,13 +6,6 @@ FRENDS Task for uploading a file to Azure.
 ![MyGet](https://img.shields.io/myget/frends-tasks/v/Frends.AzureBlobStorage.UploadBlob)
 ![Coverage](https://app-github-custom-badges.azurewebsites.net/Badge?key=FrendsPlatform/Frends.AzureBlobStorage/Frends.AzureBlobStorage.UploadBlob|main)
 
-- [Installing](#installing)
-- [Task](#task)
-     - [UploadBlob](#UploadBlob)
-- [Building](#building)
-- [License](#license)
-- [Contributing](#contributing)
-
 # Installing
 
 You can install the task via FRENDS UI Task View or you can find the nuget package from the following nuget feed 'Insert nuget feed here'.

@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace Frends.AzureBlobStorage.UploadBlob;
+namespace Frends.AzureBlobStorage.UploadBlob.Definitions;
 
 /// <summary>
 /// Input-class for UploadBlob-task.

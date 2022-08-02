@@ -4,9 +4,10 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.Storage.Blobs;
+using Frends.AzureBlobStorage.UploadBlob.Definitions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Frends.AzureBlobStorage.UploadBlob;
+namespace Frends.AzureBlobStorage.UploadBlob.Tests;
 
 [TestClass]
 public class UploadTest
@@ -52,8 +53,8 @@ public class UploadTest
             BlobType = AzureBlobType.Block,
             ConnectionString = _connectionString,
             CreateContainerIfItDoesNotExist = true,
-            Overwrite = true,
-            FileEncoding = "utf-8"
+            FileEncoding = "utf-8",
+            HandleExistingFile = HandleExistingFile.Overwrite,
         };
         var container = GetBlobContainer(_connectionString, _containerName);
         var result = await AzureBlobStorage.UploadBlob(input, options, new CancellationToken());
@@ -74,7 +75,7 @@ public class UploadTest
             BlobType = AzureBlobType.Append,
             ConnectionString = _connectionString,
             CreateContainerIfItDoesNotExist = true,
-            Overwrite = true,
+            HandleExistingFile = HandleExistingFile.Overwrite,
             FileEncoding = "utf-8"
         };
         var container = GetBlobContainer(_connectionString, _containerName);
@@ -99,10 +100,9 @@ public class UploadTest
             BlobType = AzureBlobType.Page,
             ParallelOperations = 24,
             ConnectionString = _connectionString,
-            Overwrite = false,
+            HandleExistingFile = HandleExistingFile.Error,
             CreateContainerIfItDoesNotExist = true,
             FileEncoding = "utf-8",
-            Append = false,
             BlobName = filename,
             PageMaxSize = 0,
             PageOffset = 0
@@ -129,10 +129,9 @@ public class UploadTest
             BlobType = AzureBlobType.Page,
             ParallelOperations = 24,
             ConnectionString = _connectionString,
-            Overwrite = false,
+            HandleExistingFile = HandleExistingFile.Error,
             CreateContainerIfItDoesNotExist = true,
             FileEncoding = "utf-8",
-            Append = false,
             BlobName = filename,
             PageMaxSize = 2048,
             PageOffset = -1,
@@ -156,7 +155,7 @@ public class UploadTest
             BlobType = AzureBlobType.Block,
             ParallelOperations = 24,
             ConnectionString = _connectionString,
-            Overwrite = true,
+            HandleExistingFile = HandleExistingFile.Overwrite,
             CreateContainerIfItDoesNotExist = true,
             FileEncoding = "utf-8"
         };
@@ -184,7 +183,7 @@ public class UploadTest
             BlobType = AzureBlobType.Block,
             ParallelOperations = 24,
             ConnectionString = _connectionString,
-            Overwrite = false,
+            HandleExistingFile = HandleExistingFile.Error,
             CreateContainerIfItDoesNotExist = true,
             ContentType = "text/xml",
             FileEncoding = "utf8",
@@ -217,7 +216,7 @@ public class UploadTest
             BlobType = AzureBlobType.Block,
             ParallelOperations = 24,
             ConnectionString = _connectionString,
-            Overwrite = false,
+            HandleExistingFile = HandleExistingFile.Error,
             CreateContainerIfItDoesNotExist = true,
             ContentType = "foo/bar",
             FileEncoding = "utf8",
@@ -251,7 +250,7 @@ public class UploadTest
             BlobType = AzureBlobType.Block,
             ParallelOperations = 24,
             ConnectionString = _connectionString,
-            Overwrite = false,
+            HandleExistingFile = HandleExistingFile.Error,
             CreateContainerIfItDoesNotExist = true,
             ContentType = "foo/bar",
             FileEncoding = "utf8",
@@ -282,7 +281,7 @@ public class UploadTest
             ConnectionString = _connectionString,
             CreateContainerIfItDoesNotExist = true,
             FileEncoding = "utf8",
-            Append = false,
+            HandleExistingFile = HandleExistingFile.Error,
         };
 
         //Upload parameters for appending.
@@ -295,10 +294,8 @@ public class UploadTest
             ConnectionString = _connectionString,
             CreateContainerIfItDoesNotExist = false,
             FileEncoding = "utf8",
-            Overwrite = true,
-            Append = true,
-            BlobName = Path.GetFileName(_firstTestFilePath),
-            DownloadFolder = _downloadDir
+            HandleExistingFile = HandleExistingFile.Append,
+            BlobName = Path.GetFileName(_firstTestFilePath)
         };
 
         var reader = File.ReadAllText(_firstTestFilePath).ToLower();
@@ -336,7 +333,7 @@ public class UploadTest
             FileEncoding = "utf8",
             PageMaxSize = 512,
             PageOffset = 0,
-            Append = false,
+            HandleExistingFile = HandleExistingFile.Error,
         };
 
         //Upload parameters for appending.
@@ -349,13 +346,10 @@ public class UploadTest
             ConnectionString = _connectionString,
             CreateContainerIfItDoesNotExist = false,
             FileEncoding = "utf8",
-            Overwrite = true,
-            Append = true,
+            HandleExistingFile = HandleExistingFile.Append,
             BlobName = Path.GetFileName(_firstTestFilePath),
-            DownloadFolder = _downloadDir,
             PageMaxSize = 0,
             PageOffset = -1,
-            DeleteTempFile = true,
         };
 
         var reader = File.ReadAllText(_firstTestFilePath);
@@ -393,7 +387,7 @@ public class UploadTest
             FileEncoding = "utf8",
             PageMaxSize = 512,
             PageOffset = 0,
-            Append = false,
+            HandleExistingFile = HandleExistingFile.Error,
         };
 
         //Upload parameters for appending.
@@ -406,7 +400,7 @@ public class UploadTest
             ConnectionString = _connectionString,
             CreateContainerIfItDoesNotExist = false,
             FileEncoding = "utf8",
-            Append = true,
+            HandleExistingFile = HandleExistingFile.Append,
             BlobName = Path.GetFileName(_firstTestFilePath),
         };
 
@@ -468,19 +462,25 @@ public class UploadTest
         return true;
     }
 
-    private bool DeleteFiles()
+    private void DeleteFiles()
     {
-        if (File.Exists(_firstTestFilePath))
-            File.Delete(_firstTestFilePath);
+        try
+        {
+            if (File.Exists(_firstTestFilePath))
+                File.Delete(_firstTestFilePath);
 
-        if (File.Exists(_secondTestFilePath))
-            File.Delete(_secondTestFilePath);
+            if (File.Exists(_secondTestFilePath))
+                File.Delete(_secondTestFilePath);
 
-        if (File.Exists(Path.Combine(_downloadDir, Path.GetFileName(_firstTestFilePath))))
-            File.Delete(Path.Combine(_downloadDir, Path.GetFileName(_firstTestFilePath)));
+            if (File.Exists(Path.Combine(_downloadDir, Path.GetFileName(_firstTestFilePath))))
+                File.Delete(Path.Combine(_downloadDir, Path.GetFileName(_firstTestFilePath)));
 
-        Directory.Delete(_testFileDir, true);
+            Directory.Delete(_testFileDir, true);
+        }
+        catch (Exception)
+        {
 
-        return true;
+            throw;
+        }
     }
 }

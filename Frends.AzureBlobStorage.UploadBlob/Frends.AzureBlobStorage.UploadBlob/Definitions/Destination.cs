@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace Frends.AzureBlobStorage.UploadBlob;
+namespace Frends.AzureBlobStorage.UploadBlob.Definitions;
 
 /// <summary>
 /// Destination and optional parameters.
@@ -69,40 +69,17 @@ public class Destination
     public string FileEncoding { get; set; }
 
     /// <summary>
-    /// Should upload operation overwrite existing blob with same name?
+    /// How existing blob will be handled.
     /// </summary>
-    /// <example>false</example>
-    [DefaultValue(false)]
-    public bool Overwrite { get; set; }
-
-    /// <summary>
-    /// Append blob with 'Source File'. Block and Page blob will be downloaded into 'Download Folder' and uploaded back into same container after local append process is completed. No downloading needed for Append Blob. Overwrite must be true when targeting Block or Page blob.
-    /// </summary>
-    /// <example>false</example>
-    [DefaultValue(false)]
-    public bool Append { get; set; }
+    [DefaultValue(HandleExistingFile.Error)]
+    public HandleExistingFile HandleExistingFile { get; set; }
 
     /// <summary>
     /// Blob's name. 'Source File' will be appended into this blob.
     /// </summary>
     /// <example>TestFile.txt</example>
-    [UIHint(nameof(Append), "", true)]
+    [UIHint(nameof(HandleExistingFile), "", HandleExistingFile.Append)]
     public string BlobName { get; set; }
-
-    /// <summary>
-    /// Directory where blob will be downloaded for appending process. Only Block and Page blobs will be downloaded.
-    /// </summary>
-    /// <example>c:/temp/downloads</example>
-    [UIHint(nameof(Append), "", true)]
-    public string DownloadFolder { get; set; }
-
-    /// <summary>
-    /// Delete temp file after append process.
-    /// </summary>
-    /// <example>false</example>
-    [UIHint(nameof(Append), "", true)]
-    [DefaultValue(false)]
-    public bool DeleteTempFile { get; set; }
 
     /// <summary>
     /// How many work items to process concurrently.
@@ -110,25 +87,4 @@ public class Destination
     /// <example>64</example>
     [DefaultValue(64)]
     public int ParallelOperations { get; set; }
-}
-
-/// <summary>
-/// Blob type of uploaded blob.
-/// </summary>
-public enum AzureBlobType
-{
-    /// <summary>
-    /// Made up of blocks like block blobs, but are optimized for append operations. Append blobs are ideal for scenarios such as logging data from virtual machines.
-    /// </summary>
-    Append,
-
-    /// <summary>
-    /// Store text and binary data. Block blobs are made up of blocks of data that can be managed individually. Block blobs can store up to about 190.7 TiB.
-    /// </summary>
-    Block,
-
-    /// <summary>
-    /// Store random access files up to 8 TiB in size. Page blobs store virtual hard drive (VHD) files and serve as disks for Azure virtual machines.
-    /// </summary>
-    Page
 }
