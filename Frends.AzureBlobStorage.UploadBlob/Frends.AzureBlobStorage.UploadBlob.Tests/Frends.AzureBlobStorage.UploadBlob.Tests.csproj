@@ -24,10 +24,4 @@
     <ProjectReference Include="..\Frends.AzureBlobStorage.UploadBlob\Frends.AzureBlobStorage.UploadBlob.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Content Include="TestFiles\TestFile.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-
 </Project>
