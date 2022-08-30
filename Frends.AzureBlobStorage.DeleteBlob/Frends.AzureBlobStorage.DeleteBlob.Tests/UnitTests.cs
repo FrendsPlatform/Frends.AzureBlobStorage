@@ -4,72 +4,56 @@ using System.Threading.Tasks;
 using Azure.Storage.Blobs;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Frends.AzureBlobStorage.DeleteBlob.Tests
+namespace Frends.AzureBlobStorage.DeleteBlob.Tests;
+
+[TestClass]
+public class DeleteTest
 {
-    [TestClass]
-    public class DeleteTest
+    private readonly string _connectionString = Environment.GetEnvironmentVariable("HiQ_AzureBlobStorage_ConnString");
+    private readonly string _containerName = "test-container";
+
+    [TestCleanup]
+    public async Task Cleanup()
     {
-        /// <summary>
-        /// Connection string for Azure Storage.
-        /// </summary>
-        private readonly string _connectionString = Environment.GetEnvironmentVariable("HiQ_AzureBlobStorage_ConnString");
+        var container = GetBlobContainer(_connectionString, _containerName);
+        await container.DeleteIfExistsAsync();
+    }
 
-        /// <summary>
-        /// Container name for tests.
-        /// </summary>
-        private readonly string _containerName = "test-container";
-
-        [TestCleanup]
-        public async Task Cleanup()
+    [TestMethod]
+    public async Task DeleteBlobAsync_ShouldReturnTrueWithNonexistingBlob()
+    {
+        var input = new Input
         {
-            // Delete whole container after running tests.
-            var container = GetBlobContainer(_connectionString, _containerName);
-            await container.DeleteIfExistsAsync();
-        }
+            BlobName = Guid.NewGuid().ToString(),
+            ContainerName = _containerName,
+            ConnectionString = _connectionString,
+        };
+        var container = GetBlobContainer(_connectionString, _containerName);
+        await container.CreateIfNotExistsAsync();
 
-        [TestMethod]
-        public async Task DeleteBlobAsync_ShouldReturnTrueWithNonexistingBlob()
+        var result = await AzureBlobStorage.DeleteBlob(input, new Options(), new CancellationToken());
+
+        Assert.IsTrue(result.Success, "DeleteBlob should've returned true when trying to delete non existing blob");
+    }
+
+    [TestMethod]
+    public async Task DeleteBlobAsync_ShouldReturnTrueWithNonexistingContainer()
+    {
+        var input = new Input
         {
-            var input = new Input
-            {
-                BlobName = Guid.NewGuid().ToString(),
-                ContainerName = _containerName,
-                ConnectionString = _connectionString,
-            };
-            var container = GetBlobContainer(_connectionString, _containerName);
-            await container.CreateIfNotExistsAsync();
+            BlobName = Guid.NewGuid().ToString(),
+            ConnectionString = _connectionString,
+            ContainerName = Guid.NewGuid().ToString()
+        };
 
-            var result = await AzureBlobStorage.DeleteBlob(input, new Options(), new CancellationToken());
+        var result = await AzureBlobStorage.DeleteBlob(input, new Options(), new CancellationToken());
 
-            Assert.IsTrue(result.Success, "DeleteBlob should've returned true when trying to delete non existing blob");
-        }
+        Assert.IsTrue(result.Success, "DeleteBlob should've returned true when trying to delete blob in non existing container");
+    }
 
-        [TestMethod]
-        public async Task DeleteBlobAsync_ShouldReturnTrueWithNonexistingContainer()
-        {
-            var input = new Input
-            {
-                BlobName = Guid.NewGuid().ToString(),
-                ConnectionString = _connectionString,
-                ContainerName = Guid.NewGuid().ToString()
-            };
-
-            var result = await AzureBlobStorage.DeleteBlob(input, new Options(), new CancellationToken());
-
-            Assert.IsTrue(result.Success, "DeleteBlob should've returned true when trying to delete blob in non existing container");
-        }
-
-        #region HelperMethods
-
-        private static BlobContainerClient GetBlobContainer(string connectionString, string containerName)
-        {
-            // Initialize azure account.
-            var blobServiceClient = new BlobServiceClient(connectionString);
-
-            // Fetch the container client.
-            return blobServiceClient.GetBlobContainerClient(containerName);
-        }
-
-        #endregion
+    private static BlobContainerClient GetBlobContainer(string connectionString, string containerName)
+    {
+        var blobServiceClient = new BlobServiceClient(connectionString);
+        return blobServiceClient.GetBlobContainerClient(containerName);
     }
 }
