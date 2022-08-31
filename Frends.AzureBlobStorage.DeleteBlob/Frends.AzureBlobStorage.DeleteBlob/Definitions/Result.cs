@@ -1,13 +1,18 @@
-﻿namespace Frends.AzureBlobStorage.DeleteBlob
+﻿namespace Frends.AzureBlobStorage.DeleteBlob;
+
+/// <summary>
+/// Result-class for DeleteBlob-task.
+/// </summary>
+public class Result
 {
     /// <summary>
-    /// Result-class for DeleteBlob-task.
+    /// Was the operation successful?
     /// </summary>
-    public class Result
+    /// <example>true</example>
+    public bool Success { get; private set; }
+
+    internal Result(bool success)
     {
-        /// <summary>
-        /// Was the operation successful?
-        /// </summary>
-        public bool Success { get; set; }
+        Success = success;
     }
 }
