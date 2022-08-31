@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.0.0] - 2022-08-31
+## [1.0.1] - 2022-08-31
 ### Changed
 - Security updated for dependency:
 Azure.Storage.Blobs 12.10.0 to 12.13.1
