@@ -1,133 +1,97 @@
 ﻿using System;
 using System.Globalization;
 using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Blobs;
+using Frends.AzureBlobStorage.DownloadBlob.Definitions;
+namespace Frends.AzureBlobStorage.DownloadBlob.Tests;
 
-namespace Frends.AzureBlobStorage.DownloadBlob.Tests
+[TestClass]
+public class UnitTests
 {
-    [TestClass]
-    public class UnitTests
+    private readonly string _connectionString = Environment.GetEnvironmentVariable("HiQ_AzureBlobStorage_ConnString");
+    private readonly string _testBlob = "test-blob.txt";
+    private string _containerName;
+    private Destination _destination;
+    private string _destinationDirectory;
+    private Source _source;
+    private readonly string _testFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TestFiles", "TestFile.xml");
+
+    [TestInitialize]
+    public async Task TestSetup()
     {
-        /// <summary>
-        ///     Connection string for Azure Storage.
-        /// </summary>
-        private readonly string _connectionString = Environment.GetEnvironmentVariable("HiQ_AzureBlobStorage_ConnString");
+        _destinationDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        Directory.CreateDirectory(_destinationDirectory);
 
-        /// <summary>
-        ///     Some random file for test purposes.
-        /// </summary>
-        private readonly string _testBlob = "test-blob.txt";
+        _containerName = $"test-container{DateTime.Now.ToString("mmssffffff", CultureInfo.InvariantCulture)}";
 
-        private CancellationToken _cancellationToken;
-
-        /// <summary>
-        ///     Container name for tests.
-        /// </summary>
-        private string _containerName;
-
-        private Destination _destination;
-
-        private string _destinationDirectory;
-
-        private Source _source;
-
-        /// <summary>
-        ///     Some random file for test purposes.
-        /// </summary>
-        private readonly string _testFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TestFiles", "TestFile.xml");
-
-        [TestInitialize]
-        public async Task TestSetup()
+        _source = new Source
         {
-            _destinationDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-            Directory.CreateDirectory(_destinationDirectory);
-
-            // Generate unique container name to avoid conflicts when running multiple tests.
-            _containerName = $"test-container{DateTime.Now.ToString("mmssffffff", CultureInfo.InvariantCulture)}";
-
-            // Task properties.
-            _source = new Source
-            {
-                ConnectionString = _connectionString,
-                BlobName = _testBlob,
-                ContainerName = _containerName,
-                Encoding = "utf-8"
-            };
-            _destination = new Destination
-            {
-                Directory = _destinationDirectory,
-                FileExistsOperation = FileExistsAction.Overwrite
-            };
-            _cancellationToken = new CancellationToken();
-
-
-            // Setup test material for download tasks.
-            var blobServiceClient = new BlobServiceClient(_connectionString);
-            var container = blobServiceClient.GetBlobContainerClient(_containerName);
-            var success = await container.CreateIfNotExistsAsync(PublicAccessType.None, null, null, _cancellationToken);
-
-            if (success is null) throw new Exception("Could no create blob container");
-
-            // Retrieve reference to a blob named "myblob".
-            var blockBlob = container.GetBlobClient(_testBlob);
-
-            await blockBlob.UploadAsync(_testFilePath, _cancellationToken);
-        }
-
-        [TestCleanup]
-        public async Task Cleanup()
+            ConnectionString = _connectionString,
+            BlobName = _testBlob,
+            ContainerName = _containerName,
+            Encoding = "utf-8"
+        };
+        _destination = new Destination
         {
-            // Delete whole container after running tests.
-            var blobServiceClient = new BlobServiceClient(_connectionString);
-            var container = blobServiceClient.GetBlobContainerClient(_containerName);
-            await container.DeleteIfExistsAsync(null, _cancellationToken);
+            Directory = _destinationDirectory,
+            FileExistsOperation = FileExistsAction.Overwrite
+        };
 
-            // Delete test files and folders.
-            if (Directory.Exists(_destinationDirectory)) Directory.Delete(_destinationDirectory, true);
-        }
+        var blobServiceClient = new BlobServiceClient(_connectionString);
+        var container = blobServiceClient.GetBlobContainerClient(_containerName);
+        await container.CreateIfNotExistsAsync(PublicAccessType.None, null, null);
+        var blockBlob = container.GetBlobClient(_testBlob);
+        await blockBlob.UploadAsync(_testFilePath, default);
+    }
 
-        [TestMethod]
-        public async Task DownloadBlobAsync_WritesBlobToFile()
-        {
-            var result = await AzureBlobStorage.DownloadBlob(_source, _destination, _cancellationToken);
-            Assert.IsTrue(File.Exists(result.FullPath));
-            var fileContent = File.ReadAllText(result.FullPath);
-            Assert.IsTrue(fileContent.Contains(@"<input>WhatHasBeenSeenCannotBeUnseen</input>"));
-        }
+    [TestCleanup]
+    public async Task Cleanup()
+    {
+        var blobServiceClient = new BlobServiceClient(_connectionString);
+        var container = blobServiceClient.GetBlobContainerClient(_containerName);
+        await container.DeleteIfExistsAsync(null);
+        if (Directory.Exists(_destinationDirectory)) Directory.Delete(_destinationDirectory, true);
+    }
 
-        [TestMethod]
-        [ExpectedException(typeof(IOException))]
-        public async Task DownloadBlobAsync_ThrowsExceptionIfDestinationFileExists()
-        {
-            await AzureBlobStorage.DownloadBlob(_source, _destination, _cancellationToken);
-            _destination.FileExistsOperation = FileExistsAction.Error;
-            await AzureBlobStorage.DownloadBlob(_source, _destination, _cancellationToken);
-        }
+    [TestMethod]
+    public async Task DownloadBlobAsync_WritesBlobToFile()
+    {
+        var result = await AzureBlobStorage.DownloadBlob(_source, _destination, default);
+        Assert.IsTrue(File.Exists(result.FullPath));
+        var fileContent = File.ReadAllText(result.FullPath);
+        Assert.IsTrue(fileContent.Contains(@"<input>WhatHasBeenSeenCannotBeUnseen</input>"));
+    }
 
-        [TestMethod]
-        public async Task DownloadBlobAsync_RenamesFileIfExists()
-        {
-            await AzureBlobStorage.DownloadBlob(_source, _destination, _cancellationToken);
-            _destination.FileExistsOperation = FileExistsAction.Rename;
-            var result = await AzureBlobStorage.DownloadBlob(_source, _destination, _cancellationToken);
-            Assert.AreEqual("test-blob(1).txt", result.FileName);
-        }
+    [TestMethod]
+    [ExpectedException(typeof(IOException))]
+    public async Task DownloadBlobAsync_ThrowsExceptionIfDestinationFileExists()
+    {
+        await AzureBlobStorage.DownloadBlob(_source, _destination, default);
+        _destination.FileExistsOperation = FileExistsAction.Error;
+        await AzureBlobStorage.DownloadBlob(_source, _destination, default);
+    }
 
-        [TestMethod]
-        public async Task DownloadBlobAsync_OverwritesFileIfExists()
-        {
-            // Download file with same name couple of time.
-            _destination.FileExistsOperation = FileExistsAction.Overwrite;
-            await AzureBlobStorage.DownloadBlob(_source, _destination, _cancellationToken);
-            await AzureBlobStorage.DownloadBlob(_source, _destination, _cancellationToken);
-            await AzureBlobStorage.DownloadBlob(_source, _destination, _cancellationToken);
+    [TestMethod]
+    public async Task DownloadBlobAsync_RenamesFileIfExists()
+    {
+        await AzureBlobStorage.DownloadBlob(_source, _destination, default);
+        _destination.FileExistsOperation = FileExistsAction.Rename;
+        var result = await AzureBlobStorage.DownloadBlob(_source, _destination, default);
+        Assert.AreEqual("test-blob(1).txt", result.FileName);
+    }
 
-            // Only one file should exist in destination folder.
-            Assert.AreEqual(1, Directory.GetFiles(_destinationDirectory).Length);
-        }
+    [TestMethod]
+    public async Task DownloadBlobAsync_OverwritesFileIfExists()
+    {
+        // Download file with same name couple of time.
+        _destination.FileExistsOperation = FileExistsAction.Overwrite;
+        
+        for (int i = 0; i < 4; i++)
+            await AzureBlobStorage.DownloadBlob(_source, _destination, default);
+        
+        Assert.AreEqual(1, Directory.GetFiles(_destinationDirectory).Length);
     }
 }

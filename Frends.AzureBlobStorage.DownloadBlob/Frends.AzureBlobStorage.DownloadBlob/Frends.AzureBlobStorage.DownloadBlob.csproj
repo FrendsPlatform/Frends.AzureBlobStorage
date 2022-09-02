@@ -10,7 +10,7 @@
 	<PackageTags>Frends</PackageTags>
 	<PackageLicenseExpression>MIT</PackageLicenseExpression>
 	<GenerateDocumentationFile>true</GenerateDocumentationFile>
-	<Description>FRENDS task to Download blob from Azure.</Description>
+	<Description>Frends task to download blob from Azure Blob Storage.</Description>
 	<PackageProjectUrl>https://frends.com/</PackageProjectUrl>
 	<RepositoryUrl>https://github.com/FrendsPlatform/Frends.AzureBlobStorage/tree/main/Frends.AzureBlobStorage.DownloadBlob</RepositoryUrl>
   </PropertyGroup>
