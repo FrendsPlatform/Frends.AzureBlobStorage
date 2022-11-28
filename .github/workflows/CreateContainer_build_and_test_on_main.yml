@@ -21,6 +21,6 @@ jobs:
     secrets:
       badge_service_api_key: ${{ secrets.BADGE_SERVICE_API_KEY }}
       env_var_value_1: ${{ secrets.HIQ_AZUREBLOBSTORAGE_CONNSTRING }}
-      env_var_name_2: ${{ secrets.HIQ_AZUREBLOBSTORAGE_APPID }}
-      env_var_name_3: ${{ secrets.HIQ_AZUREBLOBSTORAGE_TENANTID }}
-      env_var_name_4: ${{ secrets.HIQ_AZUREBLOBSTORAGE_CLIENTSECRET }}
+      env_var_value_2: ${{ secrets.HIQ_AZUREBLOBSTORAGE_APPID }}
+      env_var_value_3: ${{ secrets.HIQ_AZUREBLOBSTORAGE_TENANTID }}
+      env_var_value_4: ${{ secrets.HIQ_AZUREBLOBSTORAGE_CLIENTSECRET }}
