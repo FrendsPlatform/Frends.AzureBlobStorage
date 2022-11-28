@@ -10,6 +10,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{78F7F22E-6E20-4BCE-8362-0C558568B729}"
 	ProjectSection(SolutionItems) = preProject
 		CHANGELOG.md = CHANGELOG.md
+		..\.github\workflows\CreateContainer_build_and_test_on_main.yml = ..\.github\workflows\CreateContainer_build_and_test_on_main.yml
+		..\.github\workflows\CreateContainer_build_and_test_on_push.yml = ..\.github\workflows\CreateContainer_build_and_test_on_push.yml
+		..\.github\workflows\CreateContainer_release.yml = ..\.github\workflows\CreateContainer_release.yml
 		README.md = README.md
 	EndProjectSection
 EndProject
