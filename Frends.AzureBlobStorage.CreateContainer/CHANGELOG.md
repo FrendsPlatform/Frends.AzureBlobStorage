@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.0.1] - 2022-11-28
+## [1.1.0] - 2022-11-28
 ### Added
 - OAuth autentication
 ### Modified
