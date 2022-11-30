@@ -1,6 +1,6 @@
 # Frends.AzureBlobStorage
 
-Frends tasks for Azure Blob Storage operations.
+Frends Tasks for Azure Blob Storage operations.
 
 # Tasks
 
