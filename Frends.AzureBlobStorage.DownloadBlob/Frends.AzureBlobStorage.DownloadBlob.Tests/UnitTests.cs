@@ -70,7 +70,7 @@ public class UnitTests
     }
 
     [TestMethod]
-    [ExpectedException(typeof(IOException))]
+    [ExpectedException(typeof(Exception))]
     public async Task DownloadBlobAsync_ThrowsExceptionIfDestinationFileExists()
     {
         await AzureBlobStorage.DownloadBlob(_source, _destination, default);
