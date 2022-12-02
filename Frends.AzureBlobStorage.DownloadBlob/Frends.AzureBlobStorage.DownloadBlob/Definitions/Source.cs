@@ -8,12 +8,27 @@ namespace Frends.AzureBlobStorage.DownloadBlob.Definitions;
 public class Source
 {
     /// <summary>
-    /// Connection string to Azure Blob Storage.
+    /// Which connection method should be used for connecting to Azure Blob Storage.
     /// </summary>
-    /// <example>DefaultEndpointsProtocol=https;AccountName=account;AccountKey=foobar123Z;EndpointSuffix=core.windows.net</example>
-    [PasswordPropertyText]
+    /// <example>ConnectionMethod.ConnectionString</example>
+    [DefaultValue(ConnectionMethod.ConnectionString)]
+    public ConnectionMethod ConnectionMethod { get; set; }
+
+    /// <summary>
+    /// Connection string to Azure storage.
+    /// </summary>
+    /// <example>DefaultEndpointsProtocol=https;AccountName=accountname;AccountKey=Pdlrxyz==;EndpointSuffix=core.windows.net</example>
     [DisplayFormat(DataFormatString = "Text")]
+    [PasswordPropertyText]
+    [UIHint(nameof(ConnectionMethod), "", ConnectionMethod.ConnectionString)]
     public string ConnectionString { get; set; }
+
+    /// <summary>
+    /// OAuth2 connection information.
+    /// </summary>
+    /// <example>{ OAuthConnection.ApplicationID, OAuthConnection.TenantID, OAuthConnection.ClientSecret, OAuthConnection.StorageAccountName }</example>
+    [UIHint(nameof(ConnectionMethod), "", ConnectionMethod.OAuth2)]
+    public OAuthConnection[] Connection { get; set; }
 
     /// <summary>
     /// Name of the Azure Blob Storage container where the file is downloaded from.
@@ -37,4 +52,40 @@ public class Source
     /// <example>UTF-8</example>
     [DisplayFormat(DataFormatString = "Text")]
     public string Encoding { get; set; }
+}
+
+/// <summary>
+/// OAuthConnection values.
+/// </summary>
+public class OAuthConnection
+{
+    /// <summary>
+    /// Application (Client) ID of Azure AD Application.
+    /// </summary>
+    /// <example>xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx</example>
+    [DisplayFormat(DataFormatString = "Text")]
+    public string ApplicationID { get; set; }
+
+    /// <summary>
+    /// Tenant ID of Azure Tenant.
+    /// </summary>
+    /// <example>xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx</example>
+    [DisplayFormat(DataFormatString = "Text")]
+    [DisplayName("Tenant ID")]
+    public string TenantID { get; set; }
+
+    /// <summary>
+    /// Client Secret of Azure AD Application.
+    /// </summary>
+    /// <example>xxxxx~xxxxx~xxxxxxxxxxxxxxxxxxxxxxxxxxxx</example>
+    [PasswordPropertyText]
+    [DisplayName("Client Secret")]
+    public string ClientSecret { get; set; }
+
+    /// <summary>
+    /// Name of the storage account.
+    /// </summary>
+    /// <example>ExampleStorage</example>
+    [DisplayFormat(DataFormatString = "Text")]
+    public string StorageAccountName { get; set; }
 }

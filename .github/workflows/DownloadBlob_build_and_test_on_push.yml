@@ -14,7 +14,13 @@ jobs:
     with:
       workdir: Frends.AzureBlobStorage.DownloadBlob
       env_var_name_1: HiQ_AzureBlobStorage_ConnString
+      env_var_name_2: HiQ_AzureBlobStorage_AppID
+      env_var_name_3: HiQ_AzureBlobStorage_TenantID
+      env_var_name_4: HiQ_AzureBlobStorage_ClientSecret
     secrets:
       badge_service_api_key: ${{ secrets.BADGE_SERVICE_API_KEY }}
       test_feed_api_key: ${{ secrets.TASKS_TEST_FEED_API_KEY }}
       env_var_value_1: ${{ secrets.HIQ_AZUREBLOBSTORAGE_CONNSTRING }}
+      env_var_value_2: ${{ secrets.HIQ_AZUREBLOBSTORAGE_APPID }}
+      env_var_value_3: ${{ secrets.HIQ_AZUREBLOBSTORAGE_TENANTID }}
+      env_var_value_4: ${{ secrets.HIQ_AZUREBLOBSTORAGE_CLIENTSECRET }}

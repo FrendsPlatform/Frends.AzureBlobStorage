@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using System.ComponentModel;
 using Azure.Storage.Blobs;
 using Frends.AzureBlobStorage.DownloadBlob.Definitions;
+using Azure.Identity;
+
 namespace Frends.AzureBlobStorage.DownloadBlob;
 
 /// <summary>
@@ -24,42 +26,50 @@ public static class AzureBlobStorage
     /// <returns>Object { string FileName, string Directory, string FullPath}</returns>
     public static async Task<Result> DownloadBlob([PropertyTab] Source source, [PropertyTab] Destination destination, CancellationToken cancellationToken)
     {
-        var blob = new BlobClient(source.ConnectionString, source.ContainerName, source.BlobName);
-        var fullDestinationPath = Path.Combine(destination.Directory, source.BlobName);
-        var fileName = source.BlobName.Split('.')[0];
-        var fileExtension = "";
-
-        if (source.BlobName.Split('.').Length > 1)
+        try
         {
-            fileName = string.Join(".", source.BlobName.Split('.').Take(source.BlobName.Split('.').Length - 1).ToArray());
-            fileExtension = "." + source.BlobName.Split('.').Last();
-        }
+            //var blob = new BlobClient(source.ConnectionString, source.ContainerName, source.BlobName);
+            var blob = GetBlobClient(source);
+            var fullDestinationPath = Path.Combine(destination.Directory, source.BlobName);
+            var fileName = source.BlobName.Split('.')[0];
+            var fileExtension = "";
 
-        if (destination.FileExistsOperation == FileExistsAction.Error && File.Exists(fullDestinationPath))
-            throw new IOException("File already exists in destination path. Please delete the existing file or change the \"file exists operation\" to OverWrite.");
-
-        if (destination.FileExistsOperation == FileExistsAction.Rename && File.Exists(fullDestinationPath))
-        {
-            var increment = 1;
-            var incrementedFileName = fileName + "(" + increment.ToString() + ")" + fileExtension;
-
-            while (File.Exists(Path.Combine(destination.Directory, incrementedFileName)))
+            if (source.BlobName.Split('.').Length > 1)
             {
-                cancellationToken.ThrowIfCancellationRequested();
-                increment++;
-                incrementedFileName = fileName + "(" + increment.ToString() + ")" + fileExtension;
+                fileName = string.Join(".", source.BlobName.Split('.').Take(source.BlobName.Split('.').Length - 1).ToArray());
+                fileExtension = "." + source.BlobName.Split('.').Last();
             }
 
-            fullDestinationPath = Path.Combine(destination.Directory, incrementedFileName);
-            fileName = incrementedFileName;
-            await blob.DownloadToAsync(fullDestinationPath, cancellationToken);
+            if (destination.FileExistsOperation == FileExistsAction.Error && File.Exists(fullDestinationPath))
+                throw new IOException("File already exists in destination path. Please delete the existing file or change the \"file exists operation\" to OverWrite.");
+
+            if (destination.FileExistsOperation == FileExistsAction.Rename && File.Exists(fullDestinationPath))
+            {
+                var increment = 1;
+                var incrementedFileName = fileName + "(" + increment.ToString() + ")" + fileExtension;
+
+                while (File.Exists(Path.Combine(destination.Directory, incrementedFileName)))
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    increment++;
+                    incrementedFileName = fileName + "(" + increment.ToString() + ")" + fileExtension;
+                }
+
+                fullDestinationPath = Path.Combine(destination.Directory, incrementedFileName);
+                fileName = incrementedFileName;
+                await blob.DownloadToAsync(fullDestinationPath, cancellationToken);
+            }
+            else
+                await blob.DownloadToAsync(fullDestinationPath, cancellationToken);
+
+            CheckAndFixFileEncoding(fullDestinationPath, destination.Directory, fileExtension, source.Encoding);
+
+            return new Result(fileName, destination.Directory, fullDestinationPath);
         }
-        else
-            await blob.DownloadToAsync(fullDestinationPath, cancellationToken);
-
-        CheckAndFixFileEncoding(fullDestinationPath, destination.Directory, fileExtension, source.Encoding);
-
-        return new Result(fileName, destination.Directory, fullDestinationPath);
+        catch (Exception ex)
+        {
+            throw new Exception($"DownloadBlob error: {ex}");
+        }
     }
 
     private static void CheckAndFixFileEncoding(string fullPath, string directory, string fileExtension, string targetEncoding)
@@ -99,6 +109,26 @@ public static class AzureBlobStorage
             File.Delete(fullPath);
             File.Copy(tempFilePath, fullPath);
             File.Delete(tempFilePath);
+        }
+    }
+
+    private static BlobClient GetBlobClient(Source source)
+    {
+        switch (source.ConnectionMethod)
+        {
+            case ConnectionMethod.ConnectionString:
+                return new BlobClient(source.ConnectionString, source.ContainerName, source.BlobName);
+            case ConnectionMethod.OAuth2:
+                ClientSecretCredential credentials = null;
+                Uri url = null;
+                foreach (var _conn in source.Connection)
+                {
+                    credentials = new ClientSecretCredential(_conn.TenantID, _conn.ApplicationID, _conn.ClientSecret, new ClientSecretCredentialOptions());
+                    url = new Uri($"https://{_conn.StorageAccountName}.blob.core.windows.net/{source.ContainerName}/{source.BlobName}");
+                    break;
+                }
+                return new BlobClient(url, credentials);
+            default: throw new NotSupportedException();
         }
     }
 }

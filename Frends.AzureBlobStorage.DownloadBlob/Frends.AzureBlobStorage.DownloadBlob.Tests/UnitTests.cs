@@ -18,6 +18,10 @@ public class UnitTests
     private string _destinationDirectory;
     private Source _source;
     private readonly string _testFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TestFiles", "TestFile.xml");
+    private readonly string _appID = Environment.GetEnvironmentVariable("HiQ_AzureBlobStorage_AppID");
+    private readonly string _tenantID = Environment.GetEnvironmentVariable("HiQ_AzureBlobStorage_TenantID");
+    private readonly string _clientSecret = Environment.GetEnvironmentVariable("HiQ_AzureBlobStorage_ClientSecret");
+    private readonly string _storageAccount = "testsorage01";
 
     [TestInitialize]
     public async Task TestSetup()
@@ -66,7 +70,7 @@ public class UnitTests
     }
 
     [TestMethod]
-    [ExpectedException(typeof(IOException))]
+    [ExpectedException(typeof(Exception))]
     public async Task DownloadBlobAsync_ThrowsExceptionIfDestinationFileExists()
     {
         await AzureBlobStorage.DownloadBlob(_source, _destination, default);
@@ -93,5 +97,31 @@ public class UnitTests
             await AzureBlobStorage.DownloadBlob(_source, _destination, default);
         
         Assert.AreEqual(1, Directory.GetFiles(_destinationDirectory).Length);
+    }
+
+    [TestMethod]
+    public async Task AccessTokenAuthenticationTest()
+    {
+        var _conn = new OAuthConnection()
+        {
+            StorageAccountName = _storageAccount,
+            ApplicationID = _appID,
+            TenantID = _tenantID,
+            ClientSecret = _clientSecret
+        };
+
+        _source = new Source
+        {
+            ConnectionMethod = ConnectionMethod.OAuth2,
+            Connection = new[] { _conn },
+            BlobName = _testBlob,
+            ContainerName = _containerName,
+            Encoding = "utf-8"
+        };
+
+        var result = await AzureBlobStorage.DownloadBlob(_source, _destination, default);
+        Assert.IsTrue(File.Exists(result.FullPath));
+        var fileContent = File.ReadAllText(result.FullPath);
+        Assert.IsTrue(fileContent.Contains(@"<input>WhatHasBeenSeenCannotBeUnseen</input>"));
     }
 }
