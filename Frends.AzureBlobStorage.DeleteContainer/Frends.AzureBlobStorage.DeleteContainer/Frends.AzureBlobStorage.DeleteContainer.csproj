@@ -20,14 +20,10 @@
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </None>
   </ItemGroup>
-  
+
   <ItemGroup>
-    <PackageReference Include="Azure.Storage.Blobs" Version="12.10.0" />
-	<PackageReference Include="Azure.Storage.Common" Version="12.9.0" />
-	<PackageReference Include="Azure.Core" Version="1.20.0" />
-	<PackageReference Include="MimeMapping" Version="1.0.1.37" />
-    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-    <PackageReference Include="System.ComponentModel.Annotations" Version="4.7.0" />
+    <PackageReference Include="Azure.Identity" Version="1.8.0" />
+    <PackageReference Include="Azure.Storage.Blobs" Version="12.14.1" />
   </ItemGroup>
 
 </Project>
