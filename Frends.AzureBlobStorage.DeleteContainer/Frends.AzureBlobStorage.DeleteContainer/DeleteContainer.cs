@@ -42,15 +42,15 @@ public class AzureBlobStorage
         if(string.IsNullOrWhiteSpace(input.ContainerName))
             throw new ArgumentNullException("ContainerName parameter can't be empty.");
 
-        var container = GetBlobContainer(input);
-        
-        if (!await container.ExistsAsync(cancellationToken) && !options.ThrowErrorIfContainerDoesNotExists) 
-            return new Result(false, "Container not found.");
-        else if (!await container.ExistsAsync(cancellationToken) && options.ThrowErrorIfContainerDoesNotExists) 
-            throw new Exception("DeleteContainer error: Container not found.");
-
         try
         {
+            var container = GetBlobContainer(input);
+        
+            if (!await container.ExistsAsync(cancellationToken) && !options.ThrowErrorIfContainerDoesNotExists) 
+                return new Result(false, "Container not found.");
+            else if (!await container.ExistsAsync(cancellationToken) && options.ThrowErrorIfContainerDoesNotExists) 
+                throw new Exception("DeleteContainer error: Container not found.");
+
             var result = await container.DeleteIfExistsAsync(null, cancellationToken);
             return new Result(result, "Container deleted successfully.");
         }
@@ -58,7 +58,6 @@ public class AzureBlobStorage
         {
             throw new Exception("DeleteContaine: Error occured while trying to delete blob container.", e);
         }
-
     }
 
     private static BlobContainerClient GetBlobContainer(Input input)
