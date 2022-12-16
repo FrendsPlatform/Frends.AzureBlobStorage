@@ -3,6 +3,8 @@ using Azure.Storage.Blobs;
 using Frends.AzureBlobStorage.DeleteContainer.Definitions;
 using System;
 using System.ComponentModel;
+using System.Reflection;
+using System.Runtime.Loader;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -11,8 +13,18 @@ namespace Frends.AzureBlobStorage.DeleteContainer;
 /// <summary>
 /// Azure Blob Storage Task.
 /// </summary>
-public static class AzureBlobStorage
+public class AzureBlobStorage
 {
+
+    /// For mem cleanup.
+    static AzureBlobStorage()
+    {
+        var currentAssembly = Assembly.GetExecutingAssembly();
+        var currentContext = AssemblyLoadContext.GetLoadContext(currentAssembly);
+        if (currentContext != null)
+            currentContext.Unloading += OnPluginUnloadingRequested;
+    }
+
     /// <summary>
     /// Deletes a container from Azure blob storage.
     /// [Documentation](https://tasks.frends.com/tasks/frends-tasks/Frends.AzureBlobStorage.DeleteContainer)
@@ -46,6 +58,7 @@ public static class AzureBlobStorage
         {
             throw new Exception("DeleteContaine: Error occured while trying to delete blob container.", e);
         }
+
     }
 
     private static BlobContainerClient GetBlobContainer(Input input)
@@ -68,5 +81,10 @@ public static class AzureBlobStorage
         {
             throw new Exception(@$"GetBlobContainer error {ex}");
         }
+    }
+
+    private static void OnPluginUnloadingRequested(AssemblyLoadContext obj)
+    {
+        obj.Unloading -= OnPluginUnloadingRequested;
     }
 }
