@@ -88,7 +88,7 @@ public class DeleteTest
         };
 
         var result = await AzureBlobStorage.DeleteBlob(input, options, default);
-        Assert.IsFalse(result.Success);
+        Assert.IsFalse(result.Success); 
         Assert.IsTrue(result.Info.Contains("doesn't exists in container"));
     }
 
