@@ -1,20 +1,24 @@
-﻿namespace Frends.AzureBlobStorage.DeleteContainer.Definitions
+﻿namespace Frends.AzureBlobStorage.DeleteContainer.Definitions;
+
+/// <summary>
+/// Result parameters.
+/// </summary>
+public class Result
 {
-    public class Result
-    {
-        /// <summary>
-        ///     Result as boolean. Returns true when contain has been deleted, return false when action isn't successful or container is not found.
-        /// </summary>
-        public bool ContainerWasDeleted { get; private set; }
+    /// <summary>
+    /// Returns true when container has been deleted.
+    /// </summary>
+    /// <example>true</example>
+    public bool ContainerWasDeleted { get; private set; }
 
-        /// <summary>
-        ///     Message string of description about action's result.
-        /// </summary>
-        public string Message { get; private set; }
+    /// <summary>
+    /// Description about action's result.
+    /// </summary>
+    /// <example>Container deleted successfully.</example>
+    public string Message { get; private set; }
 
-        public Result(bool containerWasDeleted, string message) {
-            this.ContainerWasDeleted = containerWasDeleted;
-            this.Message = message;
-        }
+    internal Result(bool containerWasDeleted, string message) {
+        ContainerWasDeleted = containerWasDeleted;
+        Message = message;
     }
 }
