@@ -1,18 +1,25 @@
 ﻿namespace Frends.AzureBlobStorage.DeleteBlob;
 
 /// <summary>
-/// Result-class for DeleteBlob-task.
+/// Result parameters.
 /// </summary>
 public class Result
 {
     /// <summary>
-    /// Was the operation successful?
+    /// Returns true if the blob has been deleted.
     /// </summary>
     /// <example>true</example>
     public bool Success { get; private set; }
 
-    internal Result(bool success)
+    /// <summary>
+    /// Additional information.
+    /// </summary>
+    /// <example>Blob file.txt deleted from container test-container."</example>
+    public string Info { get; private set; }
+
+    internal Result(bool success, string info)
     {
         Success = success;
+        Info = info;
     }
 }

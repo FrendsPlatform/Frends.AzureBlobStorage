@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.1.0] - 2022-12-20
+### Added
+- OAuth2 as a new additional authentication method.
+- New parameter 'Options.ThrowErrorIfBlobDoesNotExists' to choose if non existing blob throws an error or return an error as Result.Info.
+### Changed
+- New parameter 'Info' to result object.
+- Dependency update:
+    Removed dependencies:
+        System.ComponentModel.Annotations
+        Azure.Core
+        Azure.Storage.Common
+        MimeMapping
+        Microsoft.CSharp
+
+    Added dependencies:
+        Azure.Identity 1.8.0
+
+    Update dependencies:
+        Azure.Storage.Blobs 12.13.1 to 12.14.1
+
 ## [1.0.1] - 2022-08-31
 ### Changed
 - Security updated for dependency:

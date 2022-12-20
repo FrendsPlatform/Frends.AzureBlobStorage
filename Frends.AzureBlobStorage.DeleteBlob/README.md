@@ -1,5 +1,5 @@
 # Frends.AzureBlobStorage.DeleteBlob
-Frends task for deleting blob from Azure.
+Frends Task for deleting a blob from Azure Blob Storage.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT) 
 [![Build](https://github.com/FrendsPlatform/Frends.AzureBlobStorage/actions/workflows/DeleteBlob_build_and_test_on_main.yml/badge.svg)](https://github.com/FrendsPlatform/Frends.AzureBlobStorage/actions)
