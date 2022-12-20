@@ -14,6 +14,7 @@ public class Result
     /// <summary>
     /// Description about action's result.
     /// </summary>
+    /// <example>Container deleted successfully.</example>
     public string Message { get; private set; }
 
     internal Result(bool containerWasDeleted, string message) {
