@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 namespace Frends.AzureBlobStorage.DeleteBlob;
 
 /// <summary>
-/// Options-class for DeleteBlob-task.
+/// Options parameters.
 /// </summary>
 public class Options
 {
@@ -21,4 +21,12 @@ public class Options
     /// <example>0x9FE13BAA323E5A4</example>
     [DisplayFormat(DataFormatString = "Text")]
     public string VerifyETagWhenDeleting { get; set; }
+
+    /// <summary>
+    /// If true, throw an error if blob to be deleted doesn't exists.
+    /// If false, Task will return Success = true.
+    /// </summary>
+    /// <example>false</example>
+    [DefaultValue(false)]
+    public bool ThrowErrorIfBlobDoesNotExists { get; set; }
 }
