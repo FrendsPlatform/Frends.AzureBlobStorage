@@ -25,7 +25,7 @@ public class ReadTest
     public void ReadBlobSAS()
     {
         source = new Source
-        {
+        { 
             AuthenticationMethod = AuthenticationMethod.SASToken,
             URI = $"https://testsorage01.blob.core.windows.net/{_containerName}/{_blobName}?",
             SASToken = GetServiceSasUriForBlob(),
