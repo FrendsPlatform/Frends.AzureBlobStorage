@@ -8,7 +8,7 @@ namespace Frends.AzureBlobStorage.ReadBlob.Tests;
 
 [TestFixture]
 public class ReadTest
-{
+{ 
     Source source;
     Options options;
 
