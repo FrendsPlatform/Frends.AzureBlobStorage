@@ -18,6 +18,7 @@ jobs:
       env_var_name_3: HiQ_AzureBlobStorage_AppID
       env_var_name_4: HiQ_AzureBlobStorage_ClientSecret
       env_var_name_5: HiQ_AzureBlobStorage_TenantID
+
     secrets:
       badge_service_api_key: ${{ secrets.BADGE_SERVICE_API_KEY }}
       test_feed_api_key: ${{ secrets.TASKS_TEST_FEED_API_KEY }}
