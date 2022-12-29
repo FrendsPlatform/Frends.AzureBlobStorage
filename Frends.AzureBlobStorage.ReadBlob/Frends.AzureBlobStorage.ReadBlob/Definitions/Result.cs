@@ -1,20 +1,19 @@
-﻿namespace Frends.AzureBlobStorage.ReadBlob.Definitions
+﻿namespace Frends.AzureBlobStorage.ReadBlob.Definitions;
+
+/// <summary>
+/// Task's result.
+/// </summary>
+public class Result
 {
     /// <summary>
-    ///     Returns encoded blob content.
+    /// Encoded blob content.
     /// </summary>
-    public class Result
-    {
-        /// <summary>
-        /// Encoded blob content.
-        /// </summary>
-        /// <example>"line1\r\nline2\r\nline3"</example>
-        public string Content { get; private set; }
+    /// <example>"line1\r\nline2\r\nline3"</example>
+    public string Content { get; private set; }
 
-        internal Result(string content)
-        {
-            Content = content;
-        }
+    internal Result(string content)
+    {
+        Content = content;
     }
 }
 
