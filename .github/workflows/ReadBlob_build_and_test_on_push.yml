@@ -12,7 +12,7 @@ jobs:
   build:
     uses: FrendsPlatform/FrendsTasks/.github/workflows/build_test.yml@main
     with:
-      workdir: Frends.AzureBlobStorage.DeleteBlob
+      workdir: Frends.AzureBlobStorage.ReadBlob
       env_var_name_1: HiQ_AzureBlobStorage_ConnString
       env_var_name_2: HiQ_AzureBlobStorage_AppID
       env_var_name_3: HiQ_AzureBlobStorage_ClientSecret
