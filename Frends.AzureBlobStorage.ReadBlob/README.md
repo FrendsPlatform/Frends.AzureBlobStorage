@@ -1,5 +1,5 @@
 # Frends.AzureBlobStorage.ReadBlob
-FRENDS Task for reading a file from Azure Storage.
+Frends Task to read a single blob from Azure Blob Storage.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT) 
 [![Build](https://github.com/FrendsPlatform/Frends.AzureBlobStorage/actions/workflows/ReadBlob_build_and_test_on_main.yml/badge.svg)](https://github.com/FrendsPlatform/Frends.AzureBlobStorage/actions)
