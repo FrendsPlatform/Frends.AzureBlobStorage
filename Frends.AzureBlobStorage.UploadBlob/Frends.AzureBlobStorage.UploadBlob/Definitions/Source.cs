@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 namespace Frends.AzureBlobStorage.UploadBlob.Definitions;
 
 /// <summary>
-/// Input-class for UploadBlob-task.
+/// Source parameters.
 /// </summary>
 public class Source
 {

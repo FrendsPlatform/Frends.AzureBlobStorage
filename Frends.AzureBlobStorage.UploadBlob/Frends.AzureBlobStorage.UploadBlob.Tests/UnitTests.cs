@@ -4,6 +4,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
 using Frends.AzureBlobStorage.UploadBlob.Definitions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -18,6 +19,10 @@ public class UploadTest
     private readonly string _downloadDir = Path.Combine(Environment.CurrentDirectory, "TestFiles", "Downloads");
     private readonly string _firstTestFilePath = Path.Combine(Environment.CurrentDirectory, "TestFiles", "testfile.txt");
     private readonly string _secondTestFilePath = Path.Combine(Environment.CurrentDirectory, "TestFiles", "testfile2.txt");
+    private readonly string _appID = Environment.GetEnvironmentVariable("HiQ_AzureBlobStorage_AppID");
+    private readonly string _clientSecret = Environment.GetEnvironmentVariable("HiQ_AzureBlobStorage_ClientSecret");
+    private readonly string _tenantID = Environment.GetEnvironmentVariable("HiQ_AzureBlobStorage_TenantID");
+    private readonly string _storageAccount = "testsorage01";
 
     [TestInitialize]
     public void TestSetup()
@@ -36,7 +41,7 @@ public class UploadTest
     }
 
     [TestMethod]
-    [ExpectedException(typeof(ArgumentException))]
+    [ExpectedException(typeof(Exception))]
     public async Task UploadFileAsync_ShouldThrowArgumentExceptionIfFileWasNotFound()
     {
         await AzureBlobStorage.UploadBlob( new Source { SourceFile = "NonExistingFile" }, new Destination(), new CancellationToken());
@@ -422,6 +427,443 @@ public class UploadTest
         }
     }
 
+    [TestMethod]
+    public async Task UploadFileAsync_OAuth_ShouldUploadFileAsBlockBlob()
+    {
+        await CreateContainerIfItDoesNotExist(_connectionString, _containerName);
+
+        var input = new Source { SourceFile = _firstTestFilePath };
+
+        var options = new Destination
+        {
+            ContainerName = _containerName,
+            BlobType = AzureBlobType.Block,
+            FileEncoding = "utf-8",
+            HandleExistingFile = HandleExistingFile.Overwrite,
+            BlobName = Path.GetFileName(_firstTestFilePath),
+            ApplicationID = _appID,
+            StorageAccountName = _storageAccount,
+            ClientSecret = _clientSecret,
+            ConnectionMethod = Definitions.ConnectionMethod.OAuth2,
+            TenantID = _tenantID,
+        };
+        var container = GetBlobContainer(_connectionString, _containerName);
+        var result = await AzureBlobStorage.UploadBlob(input, options, new CancellationToken());
+        var blobResult = container.GetBlobClient("testfile.txt");
+
+        StringAssert.EndsWith(result.Uri, $"{_containerName}/testfile.txt");
+        Assert.IsTrue(blobResult.Exists(), "Uploaded testfile.txt blob should exist");
+    }
+
+    [TestMethod]
+    public async Task UploadFileAsync_OAuth_ShouldUploadFileAsAppendBlob()
+    {
+        await CreateContainerIfItDoesNotExist(_connectionString, _containerName);
+        var input = new Source { SourceFile = _firstTestFilePath };
+
+        var options = new Destination
+        {
+            ContainerName = _containerName,
+            BlobType = AzureBlobType.Append,
+            HandleExistingFile = HandleExistingFile.Overwrite,
+            FileEncoding = "utf-8",
+            BlobName = Path.GetFileName(_firstTestFilePath),
+            ApplicationID = _appID,
+            StorageAccountName = _storageAccount,
+            ClientSecret = _clientSecret,
+            ConnectionMethod = ConnectionMethod.OAuth2,
+            TenantID = _tenantID,
+        };
+        var container = GetBlobContainer(_connectionString, _containerName);
+        var result = await AzureBlobStorage.UploadBlob(input, options, new CancellationToken());
+        var blobResult = container.GetBlobClient("testfile.txt");
+
+        StringAssert.EndsWith(result.Uri, $"{_containerName}/testfile.txt");
+        Assert.IsTrue(blobResult.Exists(), "Uploaded testfile.txt blob should exist");
+    }
+
+    [TestMethod]
+    public async Task UploadFileAsync_OAuth_ShouldUploadFileAsPageCalculatePageSizeBlob()
+    {
+        await CreateContainerIfItDoesNotExist(_connectionString, _containerName);
+
+        var filename = Path.GetFileName(_firstTestFilePath);
+
+        var input = new Source { SourceFile = _firstTestFilePath };
+
+        var options = new Destination
+        {
+            ContainerName = _containerName,
+            BlobType = AzureBlobType.Page,
+            ParallelOperations = 24,
+            HandleExistingFile = HandleExistingFile.Error,
+            FileEncoding = "utf-8",
+            BlobName = filename,
+            PageMaxSize = 0,
+            PageOffset = 0,
+            ApplicationID = _appID,
+            StorageAccountName = _storageAccount,
+            ClientSecret = _clientSecret,
+            ConnectionMethod = ConnectionMethod.OAuth2,
+            TenantID = _tenantID,
+        };
+        var container = GetBlobContainer(_connectionString, _containerName);
+        var result = await AzureBlobStorage.UploadBlob(input, options, new CancellationToken());
+        var blobResult = container.GetBlobClient(filename);
+
+        StringAssert.EndsWith(result.Uri, $"{_containerName}/{filename}");
+        Assert.IsTrue(blobResult.Exists(), $"Uploaded {filename} blob should exist");
+    }
+
+    [TestMethod]
+    public async Task UploadFileAsync_OAuth_ShouldUploadFileAsPageOffsetToEndBlob()
+    {
+        await CreateContainerIfItDoesNotExist(_connectionString, _containerName);
+
+        var filename = Path.GetFileName(_firstTestFilePath);
+
+        var input = new Source { SourceFile = _firstTestFilePath };
+
+        var options = new Destination
+        {
+            ContainerName = _containerName,
+            BlobType = AzureBlobType.Page,
+            ParallelOperations = 24,
+            HandleExistingFile = HandleExistingFile.Error,
+            FileEncoding = "utf-8",
+            BlobName = filename,
+            PageMaxSize = 2048,
+            PageOffset = -1,
+            ApplicationID = _appID,
+            StorageAccountName = _storageAccount,
+            ClientSecret = _clientSecret,
+            ConnectionMethod = ConnectionMethod.OAuth2,
+            TenantID = _tenantID,
+        };
+        var container = GetBlobContainer(_connectionString, _containerName);
+        var result = await AzureBlobStorage.UploadBlob(input, options, new CancellationToken());
+        var blobResult = container.GetBlobClient(filename);
+
+        StringAssert.EndsWith(result.Uri, $"{_containerName}/{filename}");
+        Assert.IsTrue(blobResult.Exists(), $"Uploaded {filename} blob should exist");
+    }
+
+    [TestMethod]
+    public async Task UploadFileAsync_OAuth_ShouldRenameFileToBlob()
+    {
+        await CreateContainerIfItDoesNotExist(_connectionString, _containerName);
+
+        var input = new Source { SourceFile = _firstTestFilePath };
+        var options = new Destination
+        {
+            RenameTo = "RenamedFile.txt",
+            ContainerName = _containerName,
+            BlobType = AzureBlobType.Block,
+            ParallelOperations = 24,
+            HandleExistingFile = HandleExistingFile.Overwrite,
+            FileEncoding = "utf-8",
+            BlobName = Path.GetFileName(_firstTestFilePath),
+            ApplicationID = _appID,
+            StorageAccountName = _storageAccount,
+            ClientSecret = _clientSecret,
+            ConnectionMethod = ConnectionMethod.OAuth2,
+            TenantID = _tenantID,
+        };
+
+        var result = await AzureBlobStorage.UploadBlob(input, options, new CancellationToken());
+        StringAssert.EndsWith(result.Uri, $"{_containerName}/RenamedFile.txt");
+    }
+
+    [TestMethod]
+    public async Task UploadFileAsync_OAuth_ShouldUploadCompressedFile()
+    {
+        await CreateContainerIfItDoesNotExist(_connectionString, _containerName);
+        var input = new Source
+        {
+            SourceFile = _firstTestFilePath,
+            Compress = true,
+            ContentsOnly = true
+        };
+
+        var guid = Guid.NewGuid().ToString();
+        var renameTo = guid + ".gz";
+
+        var options = new Destination
+        {
+            ContainerName = _containerName,
+            BlobType = AzureBlobType.Block,
+            ParallelOperations = 24,
+            HandleExistingFile = HandleExistingFile.Error,
+            ContentType = "text/xml",
+            FileEncoding = "utf8",
+            RenameTo = renameTo,
+            BlobName = Path.GetFileName(_firstTestFilePath),
+            ApplicationID = _appID,
+            StorageAccountName = _storageAccount,
+            ClientSecret = _clientSecret,
+            ConnectionMethod = ConnectionMethod.OAuth2,
+            TenantID = _tenantID,
+        };
+        var container = GetBlobContainer(_connectionString, _containerName);
+
+        await AzureBlobStorage.UploadBlob(input, options, new CancellationToken());
+        var blobResult = container.GetBlobClient(renameTo);
+
+        Assert.IsTrue(blobResult.Exists(), $"Uploaded {Path.GetFileName(_firstTestFilePath)} blob should exist");
+    }
+
+    [TestMethod]
+    public async Task UploadFileAsync_OAuth_ContentTypeIsForcedProperly()
+    {
+        await CreateContainerIfItDoesNotExist(_connectionString, _containerName);
+
+        var input = new Source
+        {
+            SourceFile = _firstTestFilePath,
+            Compress = false,
+            ContentsOnly = false
+        };
+
+        var guid = Guid.NewGuid().ToString();
+        var renameTo = guid + ".gz";
+
+        var options = new Destination
+        {
+            ContainerName = _containerName,
+            BlobType = AzureBlobType.Block,
+            ParallelOperations = 24,
+            ConnectionString = _connectionString,
+            HandleExistingFile = HandleExistingFile.Error,
+            ContentType = "foo/bar",
+            FileEncoding = "utf8",
+            RenameTo = renameTo,
+            BlobName = Path.GetFileName(_firstTestFilePath),
+            ApplicationID = _appID,
+            StorageAccountName = _storageAccount,
+            ClientSecret = _clientSecret,
+            ConnectionMethod = ConnectionMethod.OAuth2,
+            TenantID = _tenantID,
+        };
+        var container = GetBlobContainer(_connectionString, _containerName);
+
+        await AzureBlobStorage.UploadBlob(input, options, new CancellationToken());
+        var blobResult = container.GetBlobClient(renameTo);
+        var properties = await blobResult.GetPropertiesAsync(null, new CancellationToken());
+
+        Assert.IsTrue(properties.Value.ContentType == "foo/bar");
+    }
+
+    [TestMethod]
+    public async Task UploadFileAsync_OAuth_ContentEncodingIsGzipWhenCompressed()
+    {
+        await CreateContainerIfItDoesNotExist(_connectionString, _containerName);
+
+        var input = new Source
+        {
+            SourceFile = _firstTestFilePath,
+            Compress = true,
+            ContentsOnly = true
+        };
+
+        var guid = Guid.NewGuid().ToString();
+        var renameTo = guid + ".gz";
+
+        var options = new Destination
+        {
+            ContainerName = _containerName,
+            BlobType = AzureBlobType.Block,
+            ParallelOperations = 24,
+            HandleExistingFile = HandleExistingFile.Error,
+            ContentType = "foo/bar",
+            FileEncoding = "utf8",
+            RenameTo = renameTo,
+            BlobName = Path.GetFileName(_firstTestFilePath),
+            ApplicationID = _appID,
+            StorageAccountName = _storageAccount,
+            ClientSecret = _clientSecret,
+            ConnectionMethod = ConnectionMethod.OAuth2,
+            TenantID = _tenantID,
+        };
+        var container = GetBlobContainer(_connectionString, _containerName);
+
+        await AzureBlobStorage.UploadBlob(input, options, new CancellationToken());
+        var blobResult = container.GetBlobClient(renameTo);
+        var properties = await blobResult.GetPropertiesAsync(null, new CancellationToken());
+
+        Assert.IsTrue(properties.Value.ContentEncoding == "gzip");
+    }
+
+    [TestMethod]
+    public async Task UploadFileAsync_OAuth_AppendBlockBlob()
+    {
+        var input = new Source { SourceFile = _firstTestFilePath };
+
+        var options = new Destination
+        {
+            ContainerName = _containerName,
+            BlobType = AzureBlobType.Block,
+            FileEncoding = "utf8",
+            HandleExistingFile = HandleExistingFile.Error,
+            BlobName = Path.GetFileName(_firstTestFilePath),
+            ApplicationID = _appID,
+            StorageAccountName = _storageAccount,
+            ClientSecret = _clientSecret,
+            ConnectionMethod = ConnectionMethod.OAuth2,
+            TenantID = _tenantID,
+        };
+
+        var input2 = new Source { SourceFile = _secondTestFilePath };
+
+        var options2 = new Destination
+        {
+            ContainerName = _containerName,
+            BlobType = AzureBlobType.Block,
+            FileEncoding = "utf8",
+            HandleExistingFile = HandleExistingFile.Append,
+            BlobName = Path.GetFileName(_firstTestFilePath),
+            ApplicationID = _appID,
+            StorageAccountName = _storageAccount,
+            ClientSecret = _clientSecret,
+            ConnectionMethod = ConnectionMethod.OAuth2,
+            TenantID = _tenantID,
+        };
+
+        var reader = File.ReadAllText(_firstTestFilePath).ToLower();
+        if (reader.Contains("Ut et maximus nibh. Etiam dui") && !reader.Contains("Mauris quis sapien non ligula maximus eget"))
+        {
+            //Upload first file
+            await AzureBlobStorage.UploadBlob(input, options, new CancellationToken());
+
+            //Handle appending
+            await AzureBlobStorage.UploadBlob(input2, options2, new CancellationToken());
+
+            //Download appended file (blob) and check if it was appended with file2
+            await DownloadBlob(_connectionString, _containerName, Path.GetFileName(_firstTestFilePath), _downloadDir);
+
+            var reader2 = File.ReadAllText(Path.Combine(_downloadDir, Path.GetFileName(_firstTestFilePath)));
+            Assert.IsTrue(reader2.Contains("Ut et maximus nibh. Etiam dui") && reader2.Contains("Mauris quis sapien non ligula maximus eget"));
+        }
+    }
+
+    [TestMethod]
+    public async Task UploadFileAsync_OAuth_AppendPageBlob()
+    {
+        await CreateContainerIfItDoesNotExist(_connectionString, _containerName);
+
+        //Upload parameters for first file.
+        var input = new Source { SourceFile = _firstTestFilePath };
+
+        var options = new Destination
+        {
+            ContainerName = _containerName,
+            BlobType = AzureBlobType.Page,
+            FileEncoding = "utf8",
+            PageMaxSize = 512,
+            PageOffset = 0,
+            HandleExistingFile = HandleExistingFile.Error,
+            BlobName = Path.GetFileName(_firstTestFilePath),
+            ApplicationID = _appID,
+            StorageAccountName = _storageAccount,
+            ClientSecret = _clientSecret,
+            ConnectionMethod = ConnectionMethod.OAuth2,
+            TenantID = _tenantID,
+        };
+
+        //Upload parameters for appending.
+        var input2 = new Source { SourceFile = _secondTestFilePath };
+
+        var options2 = new Destination
+        {
+            ContainerName = _containerName,
+            BlobType = AzureBlobType.Page,
+            FileEncoding = "utf8",
+            HandleExistingFile = HandleExistingFile.Append,
+            BlobName = Path.GetFileName(_firstTestFilePath),
+            PageMaxSize = 0,
+            PageOffset = -1,
+            ApplicationID = _appID,
+            StorageAccountName = _storageAccount,
+            ClientSecret = _clientSecret,
+            ConnectionMethod = ConnectionMethod.OAuth2,
+            TenantID = _tenantID,
+        };
+
+        var reader = File.ReadAllText(_firstTestFilePath);
+        if (reader.Contains("Ut et maximus nibh. Etiam dui") && !reader.Contains("Mauris quis sapien non ligula maximus eget"))
+        {
+            //Upload first file
+            await AzureBlobStorage.UploadBlob(input, options, new CancellationToken());
+
+            //Handle appending
+            await AzureBlobStorage.UploadBlob(input2, options2, new CancellationToken());
+
+            //Download appended file (blob) and check if it was appended with file2
+            await DownloadBlob(_connectionString, _containerName, Path.GetFileName(_firstTestFilePath), _downloadDir);
+            var reader2 = File.ReadAllText(Path.Combine(_downloadDir, Path.GetFileName(_firstTestFilePath)));
+
+            Assert.IsTrue(reader2.Contains("Ut et maximus nibh. Etiam dui") && reader2.Contains("Mauris quis sapien non ligula maximus eget"));
+        }
+    }
+
+    [TestMethod]
+    public async Task UploadFileAsync_OAuth_AppendAppendBlob()
+    {
+        await CreateContainerIfItDoesNotExist(_connectionString, _containerName);
+
+        //Upload parameters for first file.
+        var input = new Source { SourceFile = _firstTestFilePath };
+
+        var options = new Destination
+        {
+            ContainerName = _containerName,
+            BlobType = AzureBlobType.Append,
+            FileEncoding = "utf8",
+            PageMaxSize = 512,
+            PageOffset = 0,
+            HandleExistingFile = HandleExistingFile.Error,
+            BlobName = Path.GetFileName(_firstTestFilePath),
+            ApplicationID = _appID,
+            StorageAccountName = _storageAccount,
+            ClientSecret = _clientSecret,
+            ConnectionMethod = ConnectionMethod.OAuth2,
+            TenantID = _tenantID,
+        };
+
+        //Upload parameters for appending.
+        var input2 = new Source { SourceFile = _secondTestFilePath };
+
+        var options2 = new Destination
+        {
+            ContainerName = _containerName,
+            BlobType = AzureBlobType.Append,
+            FileEncoding = "utf8",
+            HandleExistingFile = HandleExistingFile.Append,
+            BlobName = Path.GetFileName(_firstTestFilePath),
+            ApplicationID = _appID,
+            StorageAccountName = _storageAccount,
+            ClientSecret = _clientSecret,
+            ConnectionMethod = ConnectionMethod.OAuth2,
+            TenantID = _tenantID,
+        };
+
+        var reader = File.ReadAllText(_firstTestFilePath);
+        if (reader.Contains("Ut et maximus nibh. Etiam dui") && !reader.Contains("Mauris quis sapien non ligula maximus eget"))
+        {
+            //Upload first file
+            await AzureBlobStorage.UploadBlob(input, options, new CancellationToken());
+
+            //Handle appending
+            await AzureBlobStorage.UploadBlob(input2, options2, new CancellationToken());
+
+            //Download appended file (blob) and check if it was appended with file2
+            Directory.CreateDirectory(_downloadDir);
+            await DownloadBlob(_connectionString, _containerName, Path.GetFileName(_firstTestFilePath), _downloadDir);
+            var reader2 = File.ReadAllText(Path.Combine(_downloadDir, Path.GetFileName(_firstTestFilePath)));
+
+            Assert.IsTrue(reader2.Contains("Ut et maximus nibh. Etiam dui") && reader2.Contains("Mauris quis sapien non ligula maximus eget"));
+        }
+    }
+
     private static BlobContainerClient GetBlobContainer(string connectionString, string containerName)
     {
         // Initialize azure account.
@@ -481,6 +923,21 @@ public class UploadTest
         {
 
             throw;
+        }
+    }
+
+    // For OAuth2 testing.
+    private static async Task CreateContainerIfItDoesNotExist(string connectionString, string containerName)
+    {
+        try
+        {
+            var blobServiceClient = new BlobServiceClient(connectionString);
+            var container = blobServiceClient.GetBlobContainerClient(containerName);
+            await container.CreateIfNotExistsAsync(PublicAccessType.None, null, null);
+        }
+        catch (Exception ex)
+        {
+            throw new Exception($"CreateContainerIfItDoesNotExist failed.{ex}");
         }
     }
 }

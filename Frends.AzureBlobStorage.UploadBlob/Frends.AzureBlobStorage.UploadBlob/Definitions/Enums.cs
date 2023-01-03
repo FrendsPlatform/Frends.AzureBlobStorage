@@ -1,7 +1,7 @@
 ﻿namespace Frends.AzureBlobStorage.UploadBlob.Definitions;
 
 /// <summary>
-/// Blob type of uploaded blob.
+/// Blob type options.
 /// </summary>
 public enum AzureBlobType
 {
@@ -40,4 +40,15 @@ public enum HandleExistingFile
     /// Append blob with 'Source File'. Block and Page blob will be downloaded as temp file which will be deleted after local append and reupload processes are complete. No downloading needed for Append Blob.
     /// </summary>
     Append
+}
+
+/// <summary>
+/// Connection methods.
+/// </summary>
+public enum ConnectionMethod
+{
+#pragma warning disable CS1591 // self explanatory
+    ConnectionString,
+    OAuth2
+#pragma warning restore CS1591 // self explanatory
 }

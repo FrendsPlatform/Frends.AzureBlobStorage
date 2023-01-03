@@ -1,5 +1,5 @@
 # Frends.AzureBlobStorage.UploadBlob
-FRENDS Task for uploading a file to Azure.
+Frends Task to upload a single blob to Azure Blob Storage.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT) 
 [![Build](https://github.com/FrendsPlatform/Frends.AzureBlobStorage/actions/workflows/UploadBlob_build_and_test_on_main.yml/badge.svg)](https://github.com/FrendsPlatform/Frends.AzureBlobStorage/actions)
