@@ -233,7 +233,7 @@ public class UploadTest
         var blobResult = container.GetBlobClient(renameTo);
         var properties = await blobResult.GetPropertiesAsync(null, new CancellationToken());
 
-        Assert.IsTrue(properties.Value.ContentType == "foo/bar");
+        Assert.AreEqual("foo/bar", properties.Value.ContentType);
     }
 
     [TestMethod]
@@ -267,7 +267,7 @@ public class UploadTest
         var blobResult = container.GetBlobClient(renameTo);
         var properties = await blobResult.GetPropertiesAsync(null, new CancellationToken());
 
-        Assert.IsTrue(properties.Value.ContentEncoding == "gzip");
+        Assert.AreEqual("gzip", properties.Value.ContentEncoding);
     }
 
     /// <summary>
@@ -650,7 +650,7 @@ public class UploadTest
         var blobResult = container.GetBlobClient(renameTo);
         var properties = await blobResult.GetPropertiesAsync(null, new CancellationToken());
 
-        Assert.IsTrue(properties.Value.ContentType == "foo/bar");
+        Assert.AreEqual("foo/bar", properties.Value.ContentType);
     }
 
     [TestMethod]
@@ -690,7 +690,7 @@ public class UploadTest
         var blobResult = container.GetBlobClient(renameTo);
         var properties = await blobResult.GetPropertiesAsync(null, new CancellationToken());
 
-        Assert.IsTrue(properties.Value.ContentEncoding == "gzip");
+        Assert.AreEqual("gzip", properties.Value.ContentEncoding);
     }
 
     [TestMethod]

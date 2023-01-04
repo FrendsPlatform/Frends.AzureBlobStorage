@@ -109,6 +109,7 @@ public class Destination
     /// <summary>
     /// How existing blob will be handled.
     /// </summary>
+    /// <example>HandleExistingFile.Error</example>
     [DefaultValue(HandleExistingFile.Error)]
     public HandleExistingFile HandleExistingFile { get; set; }
 

@@ -32,6 +32,7 @@ public class AzureBlobStorage
 
     /// <summary>
     /// Uploads a single file to Azure blob storage.
+    /// [Documentation](https://tasks.frends.com/tasks/frends-tasks/Frends.AzureBlobStorage.UploadBlob)
     /// </summary>
     /// <param name="source">Source parameters</param>
     /// <param name="destination">Destination parameters</param>
