@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.1.0] - 2023-01-03
+### Added
+- OAuth2 as a new additional authentication method.
+
 ## [1.0.2] - 2022-07-29
 ### Added
 - Append any type of blob. Fixes for Page and Append blob upload.

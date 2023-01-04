@@ -9,22 +9,60 @@ namespace Frends.AzureBlobStorage.UploadBlob.Definitions;
 public class Destination
 {
     /// <summary>
-    /// Connection string to Azure Blob Storage.
+    /// Which connection method should be used for connecting to Azure Blob Storage?
     /// </summary>
-    /// <example>DefaultEndpointsProtocol=https;AccountName=account;AccountKey=acCouNtKeY;EndpointSuffix=core.windows.net</example>
+    /// <example>ConnectionMethod.ConnectionString</example>
+    [DefaultValue(ConnectionMethod.ConnectionString)]
+    public ConnectionMethod ConnectionMethod { get; set; }
+
+    /// <summary>
+    /// Name of the Azure blob storage container which will be deleted.
+    /// </summary>
+    /// <example>test-container</example>
+    public string ContainerName { get; set; }
+
+    /// <summary>
+    /// Connection string to Azure storage.
+    /// </summary>
+    /// <example>DefaultEndpointsProtocol=https;AccountName=accountname;AccountKey=Pdlrxyz==;EndpointSuffix=core.windows.net</example>
+    [UIHint(nameof(ConnectionMethod), "", ConnectionMethod.ConnectionString)]
     [PasswordPropertyText]
     public string ConnectionString { get; set; }
 
     /// <summary>
-    /// Name of the Azure Blob Storage container where the data will be uploaded. 
+    /// Application (Client) ID of Azure AD Application.
     /// </summary>
-    /// <example>UploadContainer</example>
-    public string ContainerName { get; set; }
+    /// <example>Y6b1hf2a-80e2-xyz2-qwer3h-3a7c3a8as4b7f</example>
+    [UIHint(nameof(ConnectionMethod), "", ConnectionMethod.OAuth2)]
+    public string ApplicationID { get; set; }
+
+    /// <summary>
+    /// Tenant ID of Azure Tenant.
+    /// </summary>
+    /// <example>Y6b1hf2a-80e2-xyz2-qwer3h-3a7c3a8as4b7f</example>
+    [UIHint(nameof(ConnectionMethod), "", ConnectionMethod.OAuth2)]
+    public string TenantID { get; set; }
+
+    /// <summary>
+    /// Client Secret of Azure AD Application.
+    /// </summary>
+    /// <example>Password!</example>
+    [UIHint(nameof(ConnectionMethod), "", ConnectionMethod.OAuth2)]
+    [PasswordPropertyText]
+    public string ClientSecret { get; set; }
+
+    /// <summary>
+    /// Name of the storage account.
+    /// </summary>
+    /// <example>Storager</example>
+    [UIHint(nameof(ConnectionMethod), "", ConnectionMethod.OAuth2)]
+    public string StorageAccountName { get; set; }
 
     /// <summary>
     /// Determines if the container should be created if it does not exist. See https://docs.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata for naming rules.
     /// </summary>
     /// <example>true</example>
+    [UIHint(nameof(ConnectionMethod), "", ConnectionMethod.ConnectionString)]
     [DefaultValue(true)]
     public bool CreateContainerIfItDoesNotExist { get; set; }
 
@@ -71,6 +109,7 @@ public class Destination
     /// <summary>
     /// How existing blob will be handled.
     /// </summary>
+    /// <example>HandleExistingFile.Error</example>
     [DefaultValue(HandleExistingFile.Error)]
     public HandleExistingFile HandleExistingFile { get; set; }
 

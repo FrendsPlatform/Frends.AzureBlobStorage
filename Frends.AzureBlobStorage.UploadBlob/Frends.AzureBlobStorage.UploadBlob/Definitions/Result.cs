@@ -1,19 +1,25 @@
 ﻿namespace Frends.AzureBlobStorage.UploadBlob.Definitions;
 
 /// <summary>
-/// Result-class for UploadBlob-task.
+/// Result.
 /// </summary>
 public class Result
 {
     /// <summary>
-    /// File which was uploaded to Azure.
+    /// Uploaded file.
     /// </summary>
     /// <example>c:\temp\testfile.txt</example>
-    public string SourceFile { get; set; }
+    public string SourceFile { get; private set; }
 
     /// <summary>
-    /// URI of the blob.
+    /// Blob's URI.
     /// </summary>
     /// <example>https://storage.blob.core.windows.net/container/testfile.txt</example>
-    public string Uri { get; set; }
+    public string Uri { get; private set; }
+
+    internal Result(string sourceFile, string uri)
+    {
+        SourceFile = sourceFile;
+        Uri = uri;
+    }
 }
