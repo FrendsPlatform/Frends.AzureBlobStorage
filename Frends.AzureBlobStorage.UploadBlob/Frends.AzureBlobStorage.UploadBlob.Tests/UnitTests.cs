@@ -48,6 +48,33 @@ public class UploadTest
     }
 
     [TestMethod]
+    public async Task UploadFileAsync_ShouldUploadFileAsBlockBlob_WithTags()
+    {
+        var tags = new Tag[]
+        {
+           new Tag { Name = "TagName", Value = "TagValue" }
+        };
+
+        var input = new Source { SourceFile = _firstTestFilePath, Tags = tags };
+
+        var options = new Destination
+        {
+            ContainerName = _containerName,
+            BlobType = AzureBlobType.Block,
+            ConnectionString = _connectionString,
+            CreateContainerIfItDoesNotExist = true,
+            FileEncoding = "utf-8",
+            HandleExistingFile = HandleExistingFile.Overwrite,
+        };
+        var container = GetBlobContainer(_connectionString, _containerName);
+        var result = await AzureBlobStorage.UploadBlob(input, options, new CancellationToken());
+        var blobResult = container.GetBlobClient("testfile.txt");
+
+        StringAssert.EndsWith(result.Uri, $"{_containerName}/testfile.txt");
+        Assert.IsTrue(blobResult.Exists(), "Uploaded testfile.txt blob should exist");
+    }
+
+    [TestMethod]
     public async Task UploadFileAsync_ShouldUploadFileAsBlockBlob()
     {
         var input = new Source { SourceFile = _firstTestFilePath };

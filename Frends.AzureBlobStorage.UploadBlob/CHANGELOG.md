@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.2.0] - 2023-01-27
+### Added
+- New feature to add index tags to uploaded blobs (Block and Append).
+
 ## [1.1.0] - 2023-01-03
 ### Added
 - OAuth2 as a new additional authentication method.
