@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using Azure;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
 namespace Frends.AzureBlobStorage.UploadBlob.Definitions;
@@ -30,4 +31,30 @@ public class Source
     [DefaultValue(false)]
     [DisplayName("Gzip compression")]
     public bool Compress { get; set; }
+
+    /// <summary>
+    /// Tags for the uploaded blob (AzureBlobType: Block and Append).
+    /// </summary>
+    /// <example>{name, value}</example>
+    public Tag[] Tags { get; set; }
+}
+
+/// <summary>
+/// Tag parameters.
+/// </summary>
+public class Tag
+{
+    /// <summary>
+    /// Name of the tag.
+    /// </summary>
+    /// <example>Name</example>
+    [DisplayFormat(DataFormatString = "Text")]
+    public string Name { get; set; }
+
+    /// <summary>
+    /// Value of the tag.
+    /// </summary>
+    /// <example>Value</example>
+    [DisplayFormat(DataFormatString = "Text")]
+    public string Value { get; set; }
 }

@@ -14,6 +14,7 @@ using Azure.Storage;
 using MimeMapping;
 using System.IO.Compression;
 using Azure.Identity;
+using System.Collections.Generic;
 
 namespace Frends.AzureBlobStorage.UploadBlob;
 /// <summary>
@@ -31,7 +32,7 @@ public class AzureBlobStorage
     }
 
     /// <summary>
-    /// Uploads a single file to Azure blob storage.
+    /// Uploads a single file to Azure Blob Storage.
     /// [Documentation](https://tasks.frends.com/tasks/frends-tasks/Frends.AzureBlobStorage.UploadBlob)
     /// </summary>
     /// <param name="source">Source parameters</param>
@@ -42,12 +43,12 @@ public class AzureBlobStorage
     {
         var fi = new FileInfo(source.SourceFile);
         CheckParameters(destination, fi);
-        
+
         var blob = GetBlobClient(destination);
 
-        if (destination.HandleExistingFile is HandleExistingFile.Error && await BlobExists(blob, destination, cancellationToken)) throw new Exception("UploadBlob: Blob already exists.");
-        if (destination.HandleExistingFile is HandleExistingFile.Overwrite && await BlobExists(blob, destination, cancellationToken)) await blob.DeleteIfExistsAsync(DeleteSnapshotsOption.None, null, cancellationToken);
-        if (destination.HandleExistingFile is HandleExistingFile.Append && await BlobExists(blob, destination, cancellationToken)) fi = await AppendAny(blob, source, destination, cancellationToken);
+        if (destination.HandleExistingFile is HandleExistingFile.Error && await BlobExists(blob, cancellationToken)) throw new Exception("UploadBlob: Blob already exists.");
+        if (destination.HandleExistingFile is HandleExistingFile.Overwrite && await BlobExists(blob, cancellationToken)) await blob.DeleteIfExistsAsync(DeleteSnapshotsOption.None, null, cancellationToken);
+        if (destination.HandleExistingFile is HandleExistingFile.Append && await BlobExists(blob, cancellationToken)) fi = await AppendAny(blob, source, destination, cancellationToken);
 
         if (fi != null)
         {
@@ -79,7 +80,13 @@ public class AzureBlobStorage
         var encoding = GetEncoding(destination.FileEncoding);
 
         var progressHandler = new Progress<long>(progress => { Console.WriteLine("Bytes uploaded: {0}", progress); });
-        
+
+        var tags = new Dictionary<string, string>();
+        if (source.Tags != null)
+            if (source.Tags.Length > 0)
+                foreach (var tag in source.Tags)
+                    tags.Add(tag.Name, tag.Value);
+
         switch (destination.BlobType)
         {
             case AzureBlobType.Append:
@@ -95,7 +102,12 @@ public class AzureBlobStorage
                         appendBlobClient = new AppendBlobClient(url, credentials);
                     }
 
-                    var appendBlobCreateOptions = new AppendBlobCreateOptions { HttpHeaders = new BlobHttpHeaders { ContentType = contentType, ContentEncoding = source.Compress ? "gzip" : encoding.WebName } };
+                    var appendBlobCreateOptions = new AppendBlobCreateOptions
+                    {
+                        HttpHeaders = new BlobHttpHeaders { ContentType = contentType, ContentEncoding = source.Compress ? "gzip" : encoding.WebName },
+                        Tags = tags.Count > 0 ? tags : null
+                    };
+
                     await appendBlobClient.CreateAsync(appendBlobCreateOptions, cancellationToken);
                     using var appendGetStream = GetStream(false, true, encoding, fi);
                     await appendBlobClient.AppendBlockAsync(appendGetStream, null, null, progressHandler, cancellationToken);
@@ -103,7 +115,7 @@ public class AzureBlobStorage
                 }
                 catch (Exception ex)
                 {
-                    throw new Exception($"UploadBlob (Append): An error occured while uploading file. {ex}");
+                    throw new Exception($"UploadBlob (Append): An error occured while uploading file.", ex);
                 }
 
             case AzureBlobType.Block:
@@ -123,7 +135,8 @@ public class AzureBlobStorage
                     {
                         ProgressHandler = progressHandler,
                         TransferOptions = new StorageTransferOptions { MaximumConcurrency = destination.ParallelOperations },
-                        HttpHeaders = new BlobHttpHeaders { ContentType = contentType, ContentEncoding = source.Compress ? "gzip" : encoding.WebName }
+                        HttpHeaders = new BlobHttpHeaders { ContentType = contentType, ContentEncoding = source.Compress ? "gzip" : encoding.WebName },
+                        Tags = tags.Count > 0 ? tags : null
                     };
                     using var blockGetStream = GetStream(source.Compress, source.ContentsOnly, encoding, fi);
                     await blobClient.UploadAsync(blockGetStream, blobUploadOptions, cancellationToken);
@@ -135,7 +148,7 @@ public class AzureBlobStorage
                 }
                 catch (Exception ex)
                 {
-                    throw new Exception($"UploadBlob (Block): An error occured while uploading file. {ex}");
+                    throw new Exception($"UploadBlob (Block): An error occured while uploading file.", ex);
                 }
 
             case AzureBlobType.Page:
@@ -184,7 +197,7 @@ public class AzureBlobStorage
 
     }
 
-    private static async Task<bool> BlobExists(BlobClient blob, Destination destination, CancellationToken cancellationToken)
+    private static async Task<bool> BlobExists(BlobClient blob, CancellationToken cancellationToken)
     {
         try
         {
