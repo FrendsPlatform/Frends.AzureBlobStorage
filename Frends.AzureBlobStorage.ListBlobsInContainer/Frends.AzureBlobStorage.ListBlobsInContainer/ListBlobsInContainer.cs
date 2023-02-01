@@ -62,7 +62,7 @@ public class AzureBlobStorage
                         blobListing.Add(new BlobData
                         {
                             Type = blobItem.Properties.BlobType.ToString(),
-                            URI =  @$"{blobContainerClient.Uri}/{blobItem.Name}",
+                            URL =  @$"{blobContainerClient.Uri}/{blobItem.Name}",
                             Name = blobItem.Name,
                             ETag = blobItem.Properties.ETag.ToString()
                         });
@@ -87,7 +87,7 @@ public class AzureBlobStorage
                             blobListing.Add(new BlobData
                             {
                                 Type = blobItem.Blob.Properties.BlobType.ToString(),
-                                URI = @$"{blobContainerClient.Uri}/{blobItem.Blob.Name}",
+                                URL = @$"{blobContainerClient.Uri}/{blobItem.Blob.Name}",
                                 Name = blobItem.Blob.Name,
                                 ETag = blobItem.Blob.Properties.ETag.ToString()
                             });
@@ -97,7 +97,7 @@ public class AzureBlobStorage
                             blobListing.Add(new BlobData
                             {
                                 Type = "Directory",
-                                URI = $"{blobContainerClient.Uri}/{blobItem.Prefix}",
+                                URL = $"{blobContainerClient.Uri}/{blobItem.Prefix}",
                                 Name = blobItem.Prefix,
                                 ETag = null
                             });

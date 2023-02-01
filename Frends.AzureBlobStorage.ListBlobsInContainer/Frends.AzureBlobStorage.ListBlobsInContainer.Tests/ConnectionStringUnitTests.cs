@@ -57,13 +57,13 @@ public class ConnectionStringUnitTests
             {
                 Assert.IsTrue(result.BlobList.Any(x => x.Name == "Temp/SubFolderFile"));
                 Assert.IsTrue(result.BlobList.Any(x => x.Name == "Temp/SubFolderFile2"));
-                Assert.IsTrue(result.BlobList.Any(x => x.URI.Contains("/Temp/SubFolderFile")));
-                Assert.IsTrue(result.BlobList.Any(x => x.URI.Contains("/Temp/SubFolderFile2")));
+                Assert.IsTrue(result.BlobList.Any(x => x.URL.Contains("/Temp/SubFolderFile")));
+                Assert.IsTrue(result.BlobList.Any(x => x.URL.Contains("/Temp/SubFolderFile2")));
             }
             else
             {
                 Assert.IsTrue(result.BlobList.Any(x => x.Name == "Temp/"));
-                Assert.IsTrue(result.BlobList.Any(x => x.URI.Contains("/Temp/")));
+                Assert.IsTrue(result.BlobList.Any(x => x.URL.Contains("/Temp/")));
             }
 
             Assert.IsTrue(result.BlobList.Any(x => x.Name == "TestFile.txt"));
@@ -97,10 +97,10 @@ public class ConnectionStringUnitTests
 
             Assert.IsFalse(result.BlobList.Any(x => x.Name == "Temp/SubFolderFile"));
             Assert.IsFalse(result.BlobList.Any(x => x.Name == "Temp/SubFolderFile2"));
-            Assert.IsFalse(result.BlobList.Any(x => x.URI.Contains("/Temp/SubFolderFile")));
-            Assert.IsFalse(result.BlobList.Any(x => x.URI.Contains("/Temp/SubFolderFile2")));
+            Assert.IsFalse(result.BlobList.Any(x => x.URL.Contains("/Temp/SubFolderFile")));
+            Assert.IsFalse(result.BlobList.Any(x => x.URL.Contains("/Temp/SubFolderFile2")));
             Assert.IsFalse(result.BlobList.Any(x => x.Name == "Temp/"));
-            Assert.IsFalse(result.BlobList.Any(x => x.URI.Contains("/Temp/")));
+            Assert.IsFalse(result.BlobList.Any(x => x.URL.Contains("/Temp/")));
 
             Assert.IsTrue(result.BlobList.Any(x => x.Name == "TestFile.txt"));
             Assert.IsTrue(result.BlobList.Any(x => x.Name == "TestFile2.txt"));
