@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.0.0] - 2022-04-14
+## [1.1.0] - 2023-02-01
 ### Added
 - OAuth2 authentication method.
 
