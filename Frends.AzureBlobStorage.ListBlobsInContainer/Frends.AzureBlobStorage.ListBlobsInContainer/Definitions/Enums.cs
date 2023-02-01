@@ -1,34 +1,38 @@
-﻿namespace Frends.AzureBlobStorage.ListBlobsInContainer.Definitions
+﻿namespace Frends.AzureBlobStorage.ListBlobsInContainer.Definitions;
+
+/// <summary>
+/// Authentication options.
+/// </summary>
+public enum AuthenticationMethod
 {
     /// <summary>
-    /// Authentication options.
+    /// Authenticate with connectiong string.
     /// </summary>
-    public enum AuthenticationMethod
-    {
-        /// <summary>
-        /// Authenticate with connectiong string.
-        /// </summary>
-        ConnectionString,
-
-        /// <summary>
-        /// Authenticate with SAS Token. Requires Storage URI.
-        /// </summary>
-        SASToken
-    }
+    ConnectionString,
 
     /// <summary>
-    /// Listing options.
+    /// Authenticate with SAS Token. Requires Storage URI.
     /// </summary>
-    public enum ListingStructure
-    {
-        /// <summary>
-        /// Flat listing structure.
-        /// </summary>
-        Flat,
+    SASToken,
 
-        /// <summary>
-        /// Hierarchical listing structure.
-        /// </summary>
-        Hierarchical
-    }
+    /// <summary>
+    /// OAuth2.
+    /// </summary>
+    OAuth2
+}
+
+/// <summary>
+/// Listing options.
+/// </summary>
+public enum ListingStructure
+{
+    /// <summary>
+    /// Flat listing structure.
+    /// </summary>
+    Flat,
+
+    /// <summary>
+    /// Hierarchical listing structure.
+    /// </summary>
+    Hierarchical
 }

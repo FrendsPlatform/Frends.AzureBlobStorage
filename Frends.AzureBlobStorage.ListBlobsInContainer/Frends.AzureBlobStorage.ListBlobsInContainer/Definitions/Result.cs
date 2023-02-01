@@ -1,15 +1,19 @@
 ﻿using System.Collections.Generic;
 
-namespace Frends.AzureBlobStorage.ListBlobsInContainer.Definitions
+namespace Frends.AzureBlobStorage.ListBlobsInContainer.Definitions;
+
+/// <summary>
+/// Task's result.
+/// </summary>
+public class Result
 {
     /// <summary>
-    /// Returns list of blobs and subdirectories in Azure Storage container with flat or hierarchical listing structure.
+    /// List of blobs.
     /// </summary>
-    public class Result
+    public List<BlobData> BlobList { get; private set; }
+
+    internal Result(List<BlobData> blobList)
     {
-        /// <summary>
-        /// List of blobs.
-        /// </summary>
-        public List<BlobData> BlobList { get; set; }
+        BlobList = blobList;
     }
 }
