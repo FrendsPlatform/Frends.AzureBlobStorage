@@ -6,6 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Blobs;
 using Frends.AzureBlobStorage.DownloadBlob.Definitions;
+
 namespace Frends.AzureBlobStorage.DownloadBlob.Tests;
 
 [TestClass]
@@ -123,5 +124,14 @@ public class UnitTests
         Assert.IsTrue(File.Exists(result.FullPath));
         var fileContent = File.ReadAllText(result.FullPath);
         Assert.IsTrue(fileContent.Contains(@"<input>WhatHasBeenSeenCannotBeUnseen</input>"));
+    }
+
+    [TestMethod]
+    public async Task DownloadBlobAsync_EmptyEncoding()
+    {
+        var source = _source;
+        source.Encoding = "";
+        await AzureBlobStorage.DownloadBlob(_source, _destination, default);
+        Assert.AreEqual(1, Directory.GetFiles(_destinationDirectory).Length);
     }
 }

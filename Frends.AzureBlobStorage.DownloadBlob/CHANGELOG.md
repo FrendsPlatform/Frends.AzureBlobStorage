@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.1.1] - 2023-02-08
+### Fixed
+- Fixed issue with empty encoding parameter.
+- Memory leak fix by unloading assembly context after Task execution.
+
 ## [1.1.0] - 2022-12-01
 ### Added
 - OAuth autentication method

@@ -8,6 +8,8 @@ using System.ComponentModel;
 using Azure.Storage.Blobs;
 using Frends.AzureBlobStorage.DownloadBlob.Definitions;
 using Azure.Identity;
+using System.Reflection;
+using System.Runtime.Loader;
 
 namespace Frends.AzureBlobStorage.DownloadBlob;
 
@@ -16,6 +18,15 @@ namespace Frends.AzureBlobStorage.DownloadBlob;
 /// </summary>
 public static class AzureBlobStorage
 {
+    /// For mem cleanup.
+    static AzureBlobStorage()
+    {
+        var currentAssembly = Assembly.GetExecutingAssembly();
+        var currentContext = AssemblyLoadContext.GetLoadContext(currentAssembly);
+        if (currentContext != null)
+            currentContext.Unloading += OnPluginUnloadingRequested;
+    }
+
     /// <summary>
     /// Downloads Blob from Azure Blob Storage.
     /// [Documentation](https://tasks.frends.com/tasks/frends-tasks/Frends.AzureBlobStorage.DownloadBlob)
@@ -62,7 +73,8 @@ public static class AzureBlobStorage
             else
                 await blob.DownloadToAsync(fullDestinationPath, cancellationToken);
 
-            CheckAndFixFileEncoding(fullDestinationPath, destination.Directory, fileExtension, source.Encoding);
+            if (!string.IsNullOrEmpty(source.Encoding))
+                CheckAndFixFileEncoding(fullDestinationPath, destination.Directory, fileExtension, source.Encoding);
 
             return new Result(fileName, destination.Directory, fullDestinationPath);
         }
@@ -74,38 +86,32 @@ public static class AzureBlobStorage
 
     private static void CheckAndFixFileEncoding(string fullPath, string directory, string fileExtension, string targetEncoding)
     {
-        var encoding = "";
+        string encoding;
 
         using (var reader = new StreamReader(fullPath, true))
         {
             reader.Read();
             encoding = reader.CurrentEncoding.BodyName;
         }
-
         if (targetEncoding.ToLower() != encoding)
         {
             Encoding newEncoding;
-
             try
             {
                 newEncoding = Encoding.GetEncoding(targetEncoding.ToLower());
             }
-            catch
+            catch (Exception)
             {
                 throw new Exception("Provided encoding is not supported. Please check supported encodings from Encoding-option.");
             }
-
             var tempFilePath = Path.Combine(directory, "encodingTemp" + fileExtension);
-
             using (var sr = new StreamReader(fullPath, true))
             using (var sw = new StreamWriter(tempFilePath, false, newEncoding))
             {
                 var line = "";
-
                 while ((line = sr.ReadLine()) != null)
                     sw.WriteLine(line);
             }
-
             File.Delete(fullPath);
             File.Copy(tempFilePath, fullPath);
             File.Delete(tempFilePath);
@@ -130,5 +136,10 @@ public static class AzureBlobStorage
                 return new BlobClient(url, credentials);
             default: throw new NotSupportedException();
         }
+    }
+
+    private static void OnPluginUnloadingRequested(AssemblyLoadContext obj)
+    {
+        obj.Unloading -= OnPluginUnloadingRequested;
     }
 }
