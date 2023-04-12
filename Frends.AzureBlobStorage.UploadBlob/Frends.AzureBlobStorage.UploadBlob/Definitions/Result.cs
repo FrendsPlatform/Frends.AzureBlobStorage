@@ -1,25 +1,29 @@
-﻿namespace Frends.AzureBlobStorage.UploadBlob.Definitions;
+﻿using System.Collections.Generic;
+
+namespace Frends.AzureBlobStorage.UploadBlob.Definitions;
 
 /// <summary>
-/// Result.
+/// Task's result.
 /// </summary>
 public class Result
 {
     /// <summary>
-    /// Uploaded file.
+    /// Operation complete.
+    /// Operation is seens as completed if an ignorable error has occured and Options.ThrowErrorOnFailure is set to false.
     /// </summary>
-    /// <example>c:\temp\testfile.txt</example>
-    public string SourceFile { get; private set; }
+    /// <example>true</example>
+    public bool Success { get; private set; }
 
     /// <summary>
-    /// Blob's URI.
+    /// This object contains the source file path and the URL of the blob. 
+    /// If an ignorable error occurs, such as when a blob already exists and Options.ThrowErrorOnFailure is set to false, the URL will be replaced with the corresponding error message.age.
     /// </summary>
-    /// <example>https://storage.blob.core.windows.net/container/testfile.txt</example>
-    public string Uri { get; private set; }
+    /// <example>{ { c:\temp\examplefile.txt, https://storage.blob.core.windows.net/container/examplefile.txt }, { c:\temp\examplefile2.txt, Blob examplefile2 already exists. } }</example>
+    public Dictionary<string, string> Data { get; private set; }
 
-    internal Result(string sourceFile, string uri)
+    internal Result(bool success, Dictionary<string, string> data)
     {
-        SourceFile = sourceFile;
-        Uri = uri;
+        Success = success;
+        Data = data;
     }
 }
