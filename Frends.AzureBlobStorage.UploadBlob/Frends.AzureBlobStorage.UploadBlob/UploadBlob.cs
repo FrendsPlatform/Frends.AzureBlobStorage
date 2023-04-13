@@ -11,8 +11,6 @@ using System.ComponentModel;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Reflection;
-using System.Runtime.Loader;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,15 +22,6 @@ namespace Frends.AzureBlobStorage.UploadBlob;
 /// </summary>
 public class AzureBlobStorage
 {
-    /// For mem cleanup.
-    static AzureBlobStorage()
-    {
-        var currentAssembly = Assembly.GetExecutingAssembly();
-        var currentContext = AssemblyLoadContext.GetLoadContext(currentAssembly);
-        if (currentContext != null)
-            currentContext.Unloading += OnPluginUnloadingRequested;
-    }
-
     /// <summary>
     /// Frends Task to upload blobs to Azure Blob Storage.
     /// [Documentation](https://tasks.frends.com/tasks/frends-tasks/Frends.AzureBlobStorage.UploadBlob)
@@ -489,7 +478,6 @@ public class AzureBlobStorage
             throw new Exception("Source.SourceFile must be empty when Source.SourceType is Directory.");
         if (string.IsNullOrWhiteSpace(source.SourceDirectory) && source.SourceType is UploadSourceType.Directory)
             throw new Exception("Source.SourceDirectory value is empty.");
-
         if (!string.IsNullOrWhiteSpace(source.SourceFile) && source.SourceType is UploadSourceType.Directory && File.Exists(source.SourceFile))
             throw new Exception(@$"Source file {source.SourceFile} doesn't exists.");
         if (!string.IsNullOrWhiteSpace(source.SourceDirectory) && source.SourceType is UploadSourceType.File)
@@ -498,18 +486,11 @@ public class AzureBlobStorage
             throw new Exception("Source.SourceFile not found.");
         if (string.IsNullOrWhiteSpace(source.SourceFile) && source.SourceType is UploadSourceType.File)
             throw new Exception("Source.SourceFile not found.");
-
-
         if (destination.ConnectionMethod is ConnectionMethod.OAuth2 && (destination.ApplicationID is null || destination.ClientSecret is null || destination.TenantID is null || destination.StorageAccountName is null))
             throw new Exception("Destination.StorageAccountName, Destination.ClientSecret, Destination.ApplicationID and Destination.TenantID parameters can't be empty when Destination.ConnectionMethod = OAuth.");
         if (string.IsNullOrWhiteSpace(destination.ConnectionString) && destination.ConnectionMethod is ConnectionMethod.ConnectionString)
             throw new Exception("Destination.ConnectionString parameter can't be empty when Destination.ConnectionMethod = ConnectionString.");
         if (string.IsNullOrWhiteSpace(destination.ContainerName))
             throw new Exception("Destination.ContainerName parameter can't be empty.");
-    }
-
-    private static void OnPluginUnloadingRequested(AssemblyLoadContext obj)
-    {
-        obj.Unloading -= OnPluginUnloadingRequested;
     }
 }
