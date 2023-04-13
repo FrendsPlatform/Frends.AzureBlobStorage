@@ -1,7 +1,18 @@
 ﻿namespace Frends.AzureBlobStorage.UploadBlob.Definitions;
 
 /// <summary>
-/// Blob type options.
+/// Upload a single file or entire directory.
+/// </summary>
+public enum UploadSourceType
+{
+#pragma warning disable CS1591 // self explanatory
+    File,
+    Directory
+#pragma warning restore CS1591 // self explanatory
+}
+
+/// <summary>
+/// Blob types.
 /// </summary>
 public enum AzureBlobType
 {
@@ -22,7 +33,7 @@ public enum AzureBlobType
 }
 
 /// <summary>
-/// How existing blob will be handled.
+/// How to handle an existing blob.
 /// </summary>
 public enum HandleExistingFile
 {
