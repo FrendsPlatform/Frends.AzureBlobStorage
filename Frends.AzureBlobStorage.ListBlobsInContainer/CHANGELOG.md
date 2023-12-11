@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.1.1] - 2023-12-11
+### Added
+- Result.CreatedOn.
+- Result.LastModified.
+
 ## [1.1.0] - 2023-02-01
 ### Added
 - OAuth2 authentication method.
