@@ -97,6 +97,8 @@ public class SASUnitTests
             Assert.IsTrue(result.BlobList.Any(x => x.Name == "TestFile2.txt"));
             Assert.IsTrue(result.BlobList.Any(x => x.ETag != null));
             Assert.IsTrue(result.BlobList.Any(x => x.Type != null));
+            Assert.IsTrue(result.BlobList.Any(x => x.CreatedOn != null));
+            Assert.IsTrue(result.BlobList.Any(x => x.LastModified != null));
         }
     }
 
@@ -134,6 +136,8 @@ public class SASUnitTests
             Assert.IsTrue(result.BlobList.Any(x => x.Name == "TestFile2.txt"));
             Assert.IsTrue(result.BlobList.Any(x => x.ETag != null));
             Assert.IsTrue(result.BlobList.Any(x => x.Type != null));
+            Assert.IsTrue(result.BlobList.Any(x => x.CreatedOn != null));
+            Assert.IsTrue(result.BlobList.Any(x => x.LastModified != null));
         }
     }
 
