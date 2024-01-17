@@ -7,8 +7,6 @@ using System.Threading.Tasks;
 using Azure.Storage.Blobs.Models;
 using System.Collections.Generic;
 using System.Threading;
-using System.Reflection;
-using System.Runtime.Loader;
 using Azure.Identity;
 
 namespace Frends.AzureBlobStorage.ListBlobsInContainer;
@@ -18,15 +16,6 @@ namespace Frends.AzureBlobStorage.ListBlobsInContainer;
 /// </summary>
 public class AzureBlobStorage
 {
-    /// For mem cleanup.
-    static AzureBlobStorage()
-    {
-        var currentAssembly = Assembly.GetExecutingAssembly();
-        var currentContext = AssemblyLoadContext.GetLoadContext(currentAssembly);
-        if (currentContext != null)
-            currentContext.Unloading += OnPluginUnloadingRequested;
-    }
-
     /// <summary>
     /// List blobs and directories from Azure Blob Storage container.
     /// [Documentation](https://tasks.frends.com/tasks/frends-tasks/Frends.AzureBlobStorage.ListBlobsInContainer)
@@ -116,7 +105,7 @@ public class AzureBlobStorage
         }
         catch (Exception ex)
         {
-            throw new Exception("ListBlobHandler error: ", ex);
+            throw new ArgumentException("ListBlobHandler error: ", ex);
         }
     }
 
@@ -143,12 +132,7 @@ public class AzureBlobStorage
         }
         catch (Exception ex)
         {
-            throw new Exception("GetBlobContainerClient error: ", ex);
+            throw new ArgumentException("GetBlobContainerClient error: ", ex);
         }
-    }
-
-    private static void OnPluginUnloadingRequested(AssemblyLoadContext obj)
-    {
-        obj.Unloading -= OnPluginUnloadingRequested;
     }
 }
