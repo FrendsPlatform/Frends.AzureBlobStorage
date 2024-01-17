@@ -43,7 +43,7 @@ public class ConnectionStringUnitTests
             ContainerName = _containerName
         };
 
-        foreach(var structure in listing) 
+        foreach (var structure in listing)
         {
             var options = new Options
             {
@@ -53,7 +53,7 @@ public class ConnectionStringUnitTests
 
             var result = await AzureBlobStorage.ListBlobsInContainer(source, options, default);
 
-            if(structure is ListingStructure.Flat)
+            if (structure is ListingStructure.Flat)
             {
                 Assert.IsTrue(result.BlobList.Any(x => x.Name == "Temp/SubFolderFile"));
                 Assert.IsTrue(result.BlobList.Any(x => x.Name == "Temp/SubFolderFile2"));
@@ -74,7 +74,7 @@ public class ConnectionStringUnitTests
             Assert.IsTrue(result.BlobList.Any(x => x.LastModified != null));
         }
     }
-    
+
     [TestMethod]
     public async Task ListBlob_ConnectionString_Prefix()
     {
@@ -145,37 +145,29 @@ public class ConnectionStringUnitTests
 
             byte[] bytes;
 
-            try
+            var files = new List<string>()
             {
-                var files = new List<string>()
-                {
-                    "TestFile.txt", "TestFile2.txt", "Temp/SubFolderFile", "Temp/SubFolderFile2"
-                };
+                "TestFile.txt", "TestFile2.txt", "Temp/SubFolderFile", "Temp/SubFolderFile2"
+            };
 
-
-                foreach(var file in files )
-                {
-                    Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), "Temp"));
-
-                    var tempFile = Directory.GetCurrentDirectory() + "/" + file;
-                    using (StreamWriter sw = File.CreateText(tempFile))
-                        sw.WriteLine($"This is {file}");
-                    
-                    using (var reader = new StreamReader(tempFile)) 
-                        bytes = Encoding.UTF32.GetBytes(reader.ReadToEnd());
-                    
-                    await container.UploadBlobAsync(file, new MemoryStream(bytes));
-                    
-                    if(File.Exists(tempFile))
-                        File.Delete(tempFile);
-
-                    if (Directory.Exists(Path.Combine(Directory.GetCurrentDirectory(), "Temp")))
-                        Directory.Delete(Path.Combine(Directory.GetCurrentDirectory(), "Temp"), true);
-                }
-            }
-            catch (Exception ex)
+            foreach (var file in files)
             {
-                throw new Exception(ex.Message);
+                Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), "Temp"));
+
+                var tempFile = Directory.GetCurrentDirectory() + "/" + file;
+                using StreamWriter sw = File.CreateText(tempFile);
+                sw.WriteLine($"This is {file}");
+
+                using var reader = new StreamReader(tempFile);
+                bytes = Encoding.UTF32.GetBytes(reader.ReadToEnd());
+
+                await container.UploadBlobAsync(file, new MemoryStream(bytes));
+
+                if (File.Exists(tempFile))
+                    File.Delete(tempFile);
+
+                if (Directory.Exists(Path.Combine(Directory.GetCurrentDirectory(), "Temp")))
+                    Directory.Delete(Path.Combine(Directory.GetCurrentDirectory(), "Temp"), true);
             }
         }
     }

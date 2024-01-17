@@ -17,7 +17,7 @@ namespace Frends.AzureBlobStorage.ListBlobsInContainer.Tests;
 
 [TestClass]
 public class SASUnitTests
-{ 
+{
     private readonly string _accessKey = Environment.GetEnvironmentVariable("HiQ_AzureBlobStorage_testsorage01AccessKey");
     private readonly string _connstring = Environment.GetEnvironmentVariable("HiQ_AzureBlobStorage_ConnString");
     private readonly string _containerName = $"test-container{DateTime.Now.ToString("mmssffffff", CultureInfo.InvariantCulture)}";
@@ -44,7 +44,6 @@ public class SASUnitTests
             URI = _uri,
             SASToken = "",
             ContainerName = _containerName,
-
         };
 
         var options = new Options
@@ -153,37 +152,29 @@ public class SASUnitTests
 
             byte[] bytes;
 
-            try
+            var files = new List<string>()
             {
-                var files = new List<string>()
-                {
-                    "TestFile.txt", "TestFile2.txt", "Temp/SubFolderFile", "Temp/SubFolderFile2"
-                };
+                "TestFile.txt", "TestFile2.txt", "Temp/SubFolderFile", "Temp/SubFolderFile2"
+            };
 
-
-                foreach(var file in files )
-                {
-                    Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), "Temp"));
-
-                    var tempFile = Directory.GetCurrentDirectory() + "/" + file;
-                    using (StreamWriter sw = File.CreateText(tempFile))
-                        sw.WriteLine($"This is {file}");
-                    
-                    using (var reader = new StreamReader(tempFile)) 
-                        bytes = Encoding.UTF32.GetBytes(reader.ReadToEnd());
-                    
-                    await container.UploadBlobAsync(file, new MemoryStream(bytes));
-                    
-                    if(File.Exists(tempFile))
-                        File.Delete(tempFile);
-
-                    if (Directory.Exists(Path.Combine(Directory.GetCurrentDirectory(), "Temp")))
-                        Directory.Delete(Path.Combine(Directory.GetCurrentDirectory(), "Temp"), true);
-                }
-            }
-            catch (Exception ex)
+            foreach (var file in files)
             {
-                throw new Exception(ex.Message);
+                Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), "Temp"));
+
+                var tempFile = Directory.GetCurrentDirectory() + "/" + file;
+                using StreamWriter sw = File.CreateText(tempFile);
+                sw.WriteLine($"This is {file}");
+
+                using var reader = new StreamReader(tempFile);
+                bytes = Encoding.UTF32.GetBytes(reader.ReadToEnd());
+                    
+                await container.UploadBlobAsync(file, new MemoryStream(bytes));
+                    
+                if(File.Exists(tempFile))
+                    File.Delete(tempFile);
+
+                if (Directory.Exists(Path.Combine(Directory.GetCurrentDirectory(), "Temp")))
+                    Directory.Delete(Path.Combine(Directory.GetCurrentDirectory(), "Temp"), true);
             }
         }
     }

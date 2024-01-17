@@ -26,10 +26,10 @@ public class AzureBlobStorage
     /// <returns>List { string Type, string Name, string URL, string ETag, DateTimeOffset? CreatedOn, DateTimeOffset? LastModified  }</returns>
     public static async Task<Result> ListBlobsInContainer([PropertyTab] Source source, [PropertyTab] Options options, CancellationToken cancellationToken)
     {
-        return new Result ( await ListBlobHandler(source, options, cancellationToken) );
+        return new Result(await ListBlobHandler(source, options, cancellationToken));
     }
 
-    private static async Task<List<BlobData>> ListBlobHandler(Source source, Options options,  CancellationToken cancellationToken)
+    private static async Task<List<BlobData>> ListBlobHandler(Source source, Options options, CancellationToken cancellationToken)
     {
         var blobContainerClient = GetBlobContainerClient(source);
         var blobListing = new List<BlobData>();
@@ -45,13 +45,13 @@ public class AzureBlobStorage
                     var blobItems = flatEnumerator.Current;
 
                     foreach (var blobItem in blobItems.Values)
-                    { 
+                    {
                         cancellationToken.ThrowIfCancellationRequested();
 
                         blobListing.Add(new BlobData
                         {
                             Type = blobItem.Properties.BlobType.ToString(),
-                            URL =  @$"{blobContainerClient.Uri}/{blobItem.Name}",
+                            URL = @$"{blobContainerClient.Uri}/{blobItem.Name}",
                             Name = blobItem.Name,
                             ETag = blobItem.Properties.ETag.ToString(),
                             CreatedOn = blobItem.Properties.CreatedOn,
