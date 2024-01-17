@@ -46,7 +46,7 @@ public class OAuthUnitTests
             ContainerName = _containerName,
         };
 
-        foreach(var structure in listing) 
+        foreach (var structure in listing)
         {
             var options = new Options
             {
@@ -56,7 +56,7 @@ public class OAuthUnitTests
 
             var result = await AzureBlobStorage.ListBlobsInContainer(source, options, default);
 
-            if(structure is ListingStructure.Flat)
+            if (structure is ListingStructure.Flat)
             {
                 Assert.IsTrue(result.BlobList.Any(x => x.Name == "Temp/SubFolderFile"));
                 Assert.IsTrue(result.BlobList.Any(x => x.Name == "Temp/SubFolderFile2"));
@@ -77,7 +77,7 @@ public class OAuthUnitTests
             Assert.IsTrue(result.BlobList.Any(x => x.LastModified != null));
         }
     }
-    
+
     [TestMethod]
     public async Task ListBlob_OAuth_Prefix()
     {

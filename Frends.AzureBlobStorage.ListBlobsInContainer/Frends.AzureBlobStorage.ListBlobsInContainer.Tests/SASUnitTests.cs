@@ -49,7 +49,7 @@ public class SASUnitTests
             ListingStructure = ListingStructure.Flat,
         };
 
-        var ex = await Assert.ThrowsExceptionAsync<Exception>(async () => await AzureBlobStorage.ListBlobsInContainer(source, options, default));
+        var ex = await Assert.ThrowsExceptionAsync<ArgumentException>(async () => await AzureBlobStorage.ListBlobsInContainer(source, options, default));
         Assert.AreEqual("SAS Token and URI required.", ex.InnerException.Message);
     }
 
@@ -136,8 +136,6 @@ public class SASUnitTests
             Assert.IsTrue(result.BlobList.Any(x => x.LastModified != null));
         }
     }
-
-    
 
     private string GenerateSASToken()
     {
