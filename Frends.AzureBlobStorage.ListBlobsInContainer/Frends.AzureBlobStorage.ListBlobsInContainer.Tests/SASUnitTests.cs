@@ -1,17 +1,14 @@
 ﻿using Azure.Storage;
-using Azure.Storage.Blobs;
-using Azure.Storage.Blobs.Models;
 using Azure.Storage.Sas;
 using Frends.AzureBlobStorage.ListBlobsInContainer.Definitions;
+using Frends.AzureBlobStorage.ListBlobsInContainer.Tests.lib;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
+
 
 namespace Frends.AzureBlobStorage.ListBlobsInContainer.Tests;
 
@@ -26,13 +23,13 @@ public class SASUnitTests
     [TestInitialize]
     public async Task Init()
     {
-        await CreateContainerAndTestFiles(false);
+        await Helper.CreateContainerAndTestFiles(false, _connstring, _containerName);
     }
 
     [TestCleanup]
     public async Task CleanUp()
     {
-        await CreateContainerAndTestFiles(true);
+        await Helper.CreateContainerAndTestFiles(true, _connstring, _containerName);
     }
 
     [TestMethod]
@@ -140,44 +137,7 @@ public class SASUnitTests
         }
     }
 
-    private async Task CreateContainerAndTestFiles(bool delete)
-    {
-        var blobServiceClient = new BlobServiceClient(_connstring);
-        var container = blobServiceClient.GetBlobContainerClient(_containerName);
-        if (delete)
-            await container.DeleteIfExistsAsync();
-        else
-        {
-            await container.CreateIfNotExistsAsync(PublicAccessType.None, null, null, new CancellationToken());
-
-            byte[] bytes;
-
-            var files = new List<string>()
-            {
-                "TestFile.txt", "TestFile2.txt", "Temp/SubFolderFile", "Temp/SubFolderFile2"
-            };
-
-            foreach (var file in files)
-            {
-                Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), "Temp"));
-
-                var tempFile = Directory.GetCurrentDirectory() + "/" + file;
-                using StreamWriter sw = File.CreateText(tempFile);
-                sw.WriteLine($"This is {file}");
-
-                using var reader = new StreamReader(tempFile);
-                bytes = Encoding.UTF32.GetBytes(reader.ReadToEnd());
-                    
-                await container.UploadBlobAsync(file, new MemoryStream(bytes));
-                    
-                if(File.Exists(tempFile))
-                    File.Delete(tempFile);
-
-                if (Directory.Exists(Path.Combine(Directory.GetCurrentDirectory(), "Temp")))
-                    Directory.Delete(Path.Combine(Directory.GetCurrentDirectory(), "Temp"), true);
-            }
-        }
-    }
+    
 
     private string GenerateSASToken()
     {
