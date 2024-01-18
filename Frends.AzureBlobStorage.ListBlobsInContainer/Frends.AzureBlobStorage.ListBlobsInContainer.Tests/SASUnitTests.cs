@@ -144,7 +144,7 @@ public class SASUnitTests
             BlobContainerName = _containerName,
             ExpiresOn = DateTime.UtcNow.AddMinutes(5)
         };
-        //blobSasBuilder.SetPermissions(BlobAccountSasPermissions.List);
+
         blobSasBuilder.SetPermissions(BlobContainerSasPermissions.List);
         var sasToken = blobSasBuilder.ToSasQueryParameters(new StorageSharedKeyCredential("testsorage01", _accessKey)).ToString();
         return sasToken;
