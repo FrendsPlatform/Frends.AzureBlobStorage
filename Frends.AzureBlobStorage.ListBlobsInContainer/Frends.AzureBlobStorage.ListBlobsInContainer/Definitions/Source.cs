@@ -11,7 +11,7 @@ public class Source
     /// Authentication method to use when connecting to Azure Blob Storage.
     /// </summary>
     /// <example>AuthenticationMethod.ConnectionString</example>
-    [DefaultValue (AuthenticationMethod.ConnectionString)]
+    [DefaultValue(AuthenticationMethod.ConnectionString)]
     public AuthenticationMethod AuthenticationMethod { get; set; }
 
     /// <summary>

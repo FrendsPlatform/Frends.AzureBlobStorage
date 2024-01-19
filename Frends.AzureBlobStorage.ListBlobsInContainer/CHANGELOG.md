@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.2] - 2024-01-17
+### Updated
+- Azure.Identity from 1.8.1 to 1.10.2
+- Azure.Storage.Blobs from 12.11.0 to 12.13.0
+### Fixed
+- Documentation fixes.
+- Changed the Task to throw ArgumentException instead of generic Exception.
+
 ## [1.1.1] - 2023-12-11
 ### Added
 - Result.CreatedOn.

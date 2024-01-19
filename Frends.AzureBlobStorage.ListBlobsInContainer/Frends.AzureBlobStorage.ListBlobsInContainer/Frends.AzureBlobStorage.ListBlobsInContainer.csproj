@@ -2,8 +2,8 @@
 
   <PropertyGroup>
 	<TargetFrameworks>net6.0</TargetFrameworks>
-	<Version>1.1.1</Version>
-	<Authors>Frends / ttossavainen</Authors>
+	<Version>1.1.2</Version>
+	<Authors>Frends</Authors>
 	<Copyright>Frends</Copyright>
 	<Company>Frends</Company>
 	<Product>Frends</Product>
@@ -12,7 +12,7 @@
 	<GenerateDocumentationFile>true</GenerateDocumentationFile>
 	<Description>Frends Task to list blobs and directories from Azure Blob Storage container.</Description>
 	<PackageProjectUrl>https://frends.com/</PackageProjectUrl>
-	<RepositoryUrl>https://github.com/FrendsPlatform/Frends.AzureBlobStorage</RepositoryUrl>
+	<RepositoryUrl>https://github.com/FrendsPlatform/Frends.AzureBlobStorage/tree/main/Frends.AzureBlobStorage.ListBlobsInContainer</RepositoryUrl>
   </PropertyGroup>
 	
   <ItemGroup>
@@ -22,8 +22,8 @@
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="Azure.Identity" Version="1.8.1" />
-    <PackageReference Include="Azure.Storage.Blobs" Version="12.11.0" />
+    <PackageReference Include="Azure.Identity" Version="1.10.4" />
+    <PackageReference Include="Azure.Storage.Blobs" Version="12.19.1" />
     <PackageReference Include="System.ComponentModel.Annotations" Version="4.7.0" />
   </ItemGroup>
 

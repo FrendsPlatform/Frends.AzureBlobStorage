@@ -12,6 +12,7 @@ public class Options
     /// Hierarchical listing returns container's blobs and subdirectories names such as file.txt or directoryname/. 
     /// Flat listing does the same as hierarchical listing but also returns blobs in those subdirectories such as directoryname/file.txt.
     /// </summary>
+    /// <example>ListingStructure.Flat</example>
     [DefaultValue(ListingStructure.Flat)]
     public ListingStructure ListingStructure { get; set; }
 
