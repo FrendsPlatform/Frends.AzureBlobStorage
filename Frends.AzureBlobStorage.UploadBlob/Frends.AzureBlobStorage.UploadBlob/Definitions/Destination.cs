@@ -9,7 +9,7 @@ namespace Frends.AzureBlobStorage.UploadBlob.Definitions;
 public class Destination
 {
     /// <summary>
-    /// Which connection method should be used to connect to Azure Blob Storage?
+    /// Connection method to be used to connect to Azure Blob Storage.
     /// </summary>
     /// <example>ConnectionMethod.ConnectionString</example>
     [DefaultValue(ConnectionMethod.ConnectionString)]
@@ -29,6 +29,7 @@ public class Destination
     /// <example>DefaultEndpointsProtocol=https;AccountName=accountname;AccountKey=Pdlrxyz==;EndpointSuffix=core.windows.net</example>
     [UIHint(nameof(ConnectionMethod), "", ConnectionMethod.ConnectionString)]
     [PasswordPropertyText]
+    [DisplayFormat(DataFormatString = "Text")]
     public string ConnectionString { get; set; }
 
     /// <summary>
@@ -39,7 +40,7 @@ public class Destination
     public string StorageAccountName { get; set; }
 
     /// <summary>
-    /// Application (Client) ID of Azure AD Application
+    /// Application (Client) ID of Azure AD Application.
     /// </summary>
     /// <example>Y6b1hf2a-80e2-xyz2-qwer3h-3a7c3a8as4b7f</example>
     [UIHint(nameof(ConnectionMethod), "", ConnectionMethod.OAuth2)]

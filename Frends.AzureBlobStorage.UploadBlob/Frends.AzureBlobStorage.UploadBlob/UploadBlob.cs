@@ -35,12 +35,12 @@ public class AzureBlobStorage
     {
         var results = new Dictionary<string, string>();
         var fi = string.IsNullOrWhiteSpace(source.SourceFile) ? null : new FileInfo(source.SourceFile);
-        var handledFile = "";
+        var handledFile = string.Empty;
 
         try
         {
             CheckParameters(destination, source);
-            var blobName = "";
+            var blobName = string.Empty;
 
             if (destination.CreateContainerIfItDoesNotExist && destination.ConnectionMethod is ConnectionMethod.ConnectionString)
                 await CreateContainerIfItDoesNotExist(destination.ConnectionString, destination.ContainerName.ToLower(), cancellationToken);
@@ -67,7 +67,7 @@ public class AzureBlobStorage
                                 fileName = RenameFile(fileName, source.Compress, file);
 
                             var parentDirectory = Path.GetFileName(Path.GetDirectoryName(file.ToString()));
-                            var withDir = "";
+                            var withDir = string.Empty;
                             if (string.IsNullOrWhiteSpace(source.BlobFolderName))
                                 withDir = Path.Combine(parentDirectory, fileName);
                             else
@@ -133,6 +133,11 @@ public class AzureBlobStorage
             foreach (var tag in source.Tags)
                 tags.Add(tag.Name, tag.Value);
 
+
+        var credentials = destination.ConnectionMethod is not ConnectionMethod.ConnectionString ? new ClientSecretCredential(destination.TenantID, destination.ApplicationID, destination.ClientSecret, new ClientSecretCredentialOptions()) : null;
+        var url = destination.ConnectionMethod is not ConnectionMethod.ConnectionString ? new Uri($"https://{destination.StorageAccountName}.blob.core.windows.net/{destination.ContainerName.ToLower()}/{blobName}") : null;
+
+            
         switch (destination.BlobType)
         {
             case AzureBlobType.Append:
@@ -142,11 +147,7 @@ public class AzureBlobStorage
                     if (destination.ConnectionMethod is ConnectionMethod.ConnectionString)
                         appendBlobClient = new AppendBlobClient(destination.ConnectionString, destination.ContainerName.ToLower(), blobName);
                     else
-                    {
-                        var credentials = new ClientSecretCredential(destination.TenantID, destination.ApplicationID, destination.ClientSecret, new ClientSecretCredentialOptions());
-                        var url = new Uri($"https://{destination.StorageAccountName}.blob.core.windows.net/{destination.ContainerName.ToLower()}/{blobName}");
                         appendBlobClient = new AppendBlobClient(url, credentials);
-                    }
 
                     var exists = false;
                     exists = await appendBlobClient.ExistsAsync(cancellationToken);
@@ -195,11 +196,7 @@ public class AzureBlobStorage
                     if (destination.ConnectionMethod is ConnectionMethod.ConnectionString)
                         blobClient = new BlobClient(destination.ConnectionString, destination.ContainerName.ToLower(), blobName);
                     else
-                    {
-                        var credentials = new ClientSecretCredential(destination.TenantID, destination.ApplicationID, destination.ClientSecret, new ClientSecretCredentialOptions());
-                        var url = new Uri($"https://{destination.StorageAccountName}.blob.core.windows.net/{destination.ContainerName.ToLower()}/{blobName}");
                         blobClient = new BlobClient(url, credentials);
-                    }
 
                     var exists = await blobClient.ExistsAsync(cancellationToken);
 
@@ -225,10 +222,10 @@ public class AzureBlobStorage
                         Tags = tags.Count > 0 ? tags : null
                     };
 
-                    using (var stream = GetStream(source.Compress, source.ContentsOnly, encoding, fi))
-                    {
-                        await blobClient.UploadAsync(stream, blobUploadOptions, cancellationToken);
-                    }
+                    using var stream = GetStream(source.Compress, source.ContentsOnly, encoding, fi);
+                    
+                    await blobClient.UploadAsync(stream, blobUploadOptions, cancellationToken);
+                    
 
                     //Delete temp file
                     if (File.Exists(fi.FullName) && Path.GetDirectoryName(fi.FullName) != Path.GetDirectoryName(source.SourceFile) && Path.GetDirectoryName(fi.FullName) != source.SourceDirectory)
@@ -248,11 +245,7 @@ public class AzureBlobStorage
                     if (destination.ConnectionMethod is ConnectionMethod.ConnectionString)
                         pageBlobClient = new PageBlobClient(destination.ConnectionString, destination.ContainerName.ToLower(), blobName);
                     else
-                    {
-                        var credentials = new ClientSecretCredential(destination.TenantID, destination.ApplicationID, destination.ClientSecret, new ClientSecretCredentialOptions());
-                        var url = new Uri($"https://{destination.StorageAccountName}.blob.core.windows.net/{destination.ContainerName.ToLower()}/{blobName}");
                         pageBlobClient = new PageBlobClient(url, credentials);
-                    }
 
                     var origSize = 0;
                     var exists = false;
@@ -294,22 +287,20 @@ public class AzureBlobStorage
                     // Fill file until size is multiple of 512.
                     if (destination.ResizeFile && bytesMissing > 0)
                     {
-                        using (var fileStream = new FileStream(fi.FullName, FileMode.Append))
-                        {
-                            fileStream.Write(new byte[bytesMissing], 0, bytesMissing);
-                        }
+                        using var fileStream = new FileStream(fi.FullName, FileMode.Append);
+
+                        fileStream.Write(new byte[bytesMissing], 0, bytesMissing);
 
                         if (exists)
                             await pageBlobClient.ResizeAsync(fiMinLenght + bytesMissing, cancellationToken: cancellationToken);
                     }
 
                     using var pageGetStream = GetStream(false, true, encoding, fi);
-                    {
-                        if (!exists)
-                            await pageBlobClient.CreateAsync(requiredSize, cancellationToken: cancellationToken);
 
-                        await pageBlobClient.UploadPagesAsync(pageGetStream, offset: destination.PageOffset == -1 ? origSize : destination.PageOffset, cancellationToken: cancellationToken);
-                    }
+                    if (!exists)
+                        await pageBlobClient.CreateAsync(requiredSize, cancellationToken: cancellationToken);
+
+                    await pageBlobClient.UploadPagesAsync(pageGetStream, offset: destination.PageOffset == -1 ? origSize : destination.PageOffset, cancellationToken: cancellationToken);
 
                     if (Path.GetDirectoryName(fi.FullName) != Path.GetDirectoryName(source.SourceFile) && Path.GetDirectoryName(fi.FullName) != source.SourceDirectory)
                         fi.Delete();
@@ -402,14 +393,10 @@ public class AzureBlobStorage
                 if (pageBlobClient != null)
                     await pageBlobClient.DownloadToAsync(tempFile, cancellationToken);
 
-                using (var sourceData = new StreamReader(sourceFile))
-                {
-                    using (var destinationFile = File.AppendText(tempFile))
-                    {
-                        var line = await sourceData.ReadLineAsync();
-                        await destinationFile.WriteAsync(line);
-                    };
-                }
+                using var sourceData = new StreamReader(sourceFile);
+                using var destinationFile = File.AppendText(tempFile);
+                var line = await sourceData.ReadLineAsync();
+                await destinationFile.WriteAsync(line);
 
                 return new FileInfo(tempFile);
             }
@@ -441,12 +428,12 @@ public class AzureBlobStorage
             {
                 if (!fromString) fileStream.CopyTo(gzip);
                 else
-                    using (var reader = new StreamReader(fileStream, encoding))
-                    {
-                        var content = reader.ReadToEnd();
-                        using var encodedMemory = new MemoryStream(encoding.GetBytes(content));
-                        encodedMemory.CopyTo(gzip);
-                    }
+                {
+                    using var reader = new StreamReader(fileStream, encoding);
+                    var content = reader.ReadToEnd();
+                    using var encodedMemory = new MemoryStream(encoding.GetBytes(content));
+                    encodedMemory.CopyTo(gzip);
+                }   
             }
             bytes = outStream.ToArray();
         }
