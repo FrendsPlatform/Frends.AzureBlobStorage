@@ -4,8 +4,6 @@ using Azure.Storage.Blobs.Models;
 using Frends.AzureBlobStorage.DeleteBlob.Definitions;
 using System;
 using System.ComponentModel;
-using System.Reflection;
-using System.Runtime.Loader;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -16,16 +14,6 @@ namespace Frends.AzureBlobStorage.DeleteBlob;
 /// </summary>
 public class AzureBlobStorage
 {
-
-    /// For mem cleanup.
-    static AzureBlobStorage()
-    {
-        var currentAssembly = Assembly.GetExecutingAssembly();
-        var currentContext = AssemblyLoadContext.GetLoadContext(currentAssembly);
-        if (currentContext != null)
-            currentContext.Unloading += OnPluginUnloadingRequested;
-    }
-
     /// <summary>
     /// Delete a single blob from Azure Blob Storage.
     /// [Documentation](https://tasks.frends.com/tasks/frends-tasks/Frends.AzureBlobStorage.DeleteBlob)
@@ -55,7 +43,7 @@ public class AzureBlobStorage
                 : null;
 
             var result = await blob.DeleteIfExistsAsync(
-                options.SnapshotDeleteOption.ConvertEnum<DeleteSnapshotsOption>(), accessCondition,
+                ConvertEnum<DeleteSnapshotsOption>(options.SnapshotDeleteOption), accessCondition,
                 cancellationToken);
 
             return new Result(result, $"Blob {input.BlobName} deleted from container {input.ContainerName}.");
@@ -78,8 +66,8 @@ public class AzureBlobStorage
         }
     }
 
-    private static void OnPluginUnloadingRequested(AssemblyLoadContext obj)
+    private static TEnum ConvertEnum<TEnum>(Enum source)
     {
-        obj.Unloading -= OnPluginUnloadingRequested;
+        return (TEnum)Enum.Parse(typeof(TEnum), source.ToString(), true);
     }
 }
