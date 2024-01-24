@@ -134,10 +134,9 @@ public class AzureBlobStorage
                 tags.Add(tag.Name, tag.Value);
 
 
-        var credentials = destination.ConnectionMethod is not ConnectionMethod.ConnectionString ? new ClientSecretCredential(destination.TenantID, destination.ApplicationID, destination.ClientSecret, new ClientSecretCredentialOptions()) : null;
-        var url = destination.ConnectionMethod is not ConnectionMethod.ConnectionString ? new Uri($"https://{destination.StorageAccountName}.blob.core.windows.net/{destination.ContainerName.ToLower()}/{blobName}") : null;
+        ClientSecretCredential credentials = destination.ConnectionMethod is not ConnectionMethod.ConnectionString ? new ClientSecretCredential(destination.TenantID, destination.ApplicationID, destination.ClientSecret, new ClientSecretCredentialOptions()) : null;
+        Uri url = destination.ConnectionMethod is not ConnectionMethod.ConnectionString ? new Uri($"https://{destination.StorageAccountName}.blob.core.windows.net/{destination.ContainerName.ToLower()}/{blobName}") : null;
 
-            
         switch (destination.BlobType)
         {
             case AzureBlobType.Append:
@@ -223,9 +222,7 @@ public class AzureBlobStorage
                     };
 
                     using var stream = GetStream(source.Compress, source.ContentsOnly, encoding, fi);
-                    
                     await blobClient.UploadAsync(stream, blobUploadOptions, cancellationToken);
-                    
 
                     //Delete temp file
                     if (File.Exists(fi.FullName) && Path.GetDirectoryName(fi.FullName) != Path.GetDirectoryName(source.SourceFile) && Path.GetDirectoryName(fi.FullName) != source.SourceDirectory)
@@ -422,21 +419,23 @@ public class AzureBlobStorage
             return new MemoryStream(bytes);
         }
 
-        using (var outStream = new MemoryStream())
+        using var outStream = new MemoryStream();
+        using var gzip = new GZipStream(outStream, CompressionMode.Compress);
+
+        if (!fromString)
         {
-            using (var gzip = new GZipStream(outStream, CompressionMode.Compress))
-            {
-                if (!fromString) fileStream.CopyTo(gzip);
-                else
-                {
-                    using var reader = new StreamReader(fileStream, encoding);
-                    var content = reader.ReadToEnd();
-                    using var encodedMemory = new MemoryStream(encoding.GetBytes(content));
-                    encodedMemory.CopyTo(gzip);
-                }   
-            }
-            bytes = outStream.ToArray();
+            fileStream.CopyTo(gzip);
         }
+        else
+        {
+            using var reader = new StreamReader(fileStream, encoding);
+            var content = reader.ReadToEnd();
+            using var encodedMemory = new MemoryStream(encoding.GetBytes(content));
+            encodedMemory.CopyTo(gzip);
+        }   
+            
+        bytes = outStream.ToArray();
+
         fileStream.Close();
         fileStream.Dispose();
 
