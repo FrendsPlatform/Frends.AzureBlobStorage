@@ -88,7 +88,7 @@ public class DeleteTest
         };
 
         var result = await AzureBlobStorage.DeleteBlob(input, options, default);
-        Assert.IsFalse(result.Success); 
+        Assert.IsFalse(result.Success);
         Assert.IsTrue(result.Info.Contains("doesn't exists in container"));
     }
 
@@ -213,11 +213,9 @@ public class DeleteTest
     {
         try
         {
-            var fileStream = File.OpenRead(fileInfo.FullName);
+            using var fileStream = File.OpenRead(fileInfo.FullName);
             var blobClient = new BlobClient(_connectionString, _containerName, fileInfo.Name);
             await blobClient.UploadAsync(fileStream);
-            fileStream.Close();
-            fileStream.Dispose();
         }
         catch (Exception ex)
         {
