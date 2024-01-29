@@ -411,40 +411,47 @@ public class AzureBlobStorage
 
     private static Stream GetStream(bool compress, bool fromString, Encoding encoding, FileInfo file)
     {
-        using var fileStream = File.OpenRead(file.FullName);
+        var fileStream = File.OpenRead(file.FullName);
 
-        if (!compress && !fromString)
-            return fileStream;
-
-        byte[] bytes;
-
-        if (!compress)
+        try
         {
-            using (var reader = new StreamReader(fileStream, encoding)) bytes = encoding.GetBytes(reader.ReadToEnd());
-            return new MemoryStream(bytes);
+            if (!compress && !fromString)
+                return fileStream;
+
+            byte[] bytes;
+
+            if (!compress)
+            {
+                using (var reader = new StreamReader(fileStream, encoding)) bytes = encoding.GetBytes(reader.ReadToEnd());
+                return new MemoryStream(bytes);
+            }
+
+            using var outStream = new MemoryStream();
+            using var gzip = new GZipStream(outStream, CompressionMode.Compress);
+
+            if (!fromString)
+            {
+                fileStream.CopyTo(gzip);
+            }
+            else
+            {
+                using var reader = new StreamReader(fileStream, encoding);
+                var content = reader.ReadToEnd();
+                using var encodedMemory = new MemoryStream(encoding.GetBytes(content));
+                encodedMemory.CopyTo(gzip);
+            }
+
+            bytes = outStream.ToArray();
+
+            fileStream.Close();
+
+            var memStream = new MemoryStream(bytes);
+            return memStream;
         }
-
-        using var outStream = new MemoryStream();
-        using var gzip = new GZipStream(outStream, CompressionMode.Compress);
-
-        if (!fromString)
+        finally
         {
-            fileStream.CopyTo(gzip);
+            fileStream.Dispose();
         }
-        else
-        {
-            using var reader = new StreamReader(fileStream, encoding);
-            var content = reader.ReadToEnd();
-            using var encodedMemory = new MemoryStream(encoding.GetBytes(content));
-            encodedMemory.CopyTo(gzip);
-        }
-
-        bytes = outStream.ToArray();
-
-        fileStream.Close();
-
-        var memStream = new MemoryStream(bytes);
-        return memStream;
     }
 
     private static Encoding GetEncoding(string target)
