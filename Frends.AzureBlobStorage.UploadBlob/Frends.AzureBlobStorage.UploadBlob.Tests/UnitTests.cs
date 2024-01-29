@@ -12,13 +12,11 @@ namespace Frends.AzureBlobStorage.UploadBlob.Tests;
 [TestClass]
 public class UnitTests
 {
-    private readonly string _connectionString = "DefaultEndpointsProtocol=https;AccountName=frendstaskstestcontainer;AccountKey=yOXxbwdupxEB3zJMjv8EFFUYxrCoxtolvua16qm3s731J0J0wBi0d0+/NUQa/BxcVbfeVjvXW2Xg+ASt79RWQw==;EndpointSuffix=core.windows.net";// "DefaultEndpointsProtocol=https;AccountName=frendstasktestcontainer;AccountKey=/Wxlr6/YqsQ9BGn73iJOcxEUcfl+dhwuLFElK80VjnvZ2RUec9MBNq+LeQpfunKY3dq2gdegpGyG+AStpJXVyQ==;EndpointSuffix=core.windows.net"; // Environment.GetEnvironmentVariable("HiQ_AzureBlobStorage_ConnString");
-
-    // DefaultEndpointsProtocol=https;AccountName=frendstasktestcontainer;AccountKey=gMFs3PTEq6hewH2HerB+xmNphiUPWmsVMhRnYl8PnIi/mkA4PYOT+otR2M6ThjaoeuTdi1PfQJJ5+AStXia7AQ==;EndpointSuffix=core.windows.net
+    private readonly string _connectionString = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_ConnString");
     private string _containerName;
-    private readonly string _appID = "9c3c8ae9-1370-453c-a87f-34992eaf2edf"; //Environment.GetEnvironmentVariable("HiQ_AzureBlobStorage_AppID");
-    private readonly string _clientSecret = "26s8Q~i7_mF4UaDcMIHD.T5gxK_6mSRgBwdyRaAD"; // Environment.GetEnvironmentVariable("HiQ_AzureBlobStorage_ClientSecret");
-    private readonly string _tenantID = "97759401-0ff9-42fb-8eae-9163e29d19bf"; // Environment.GetEnvironmentVariable("HiQ_AzureBlobStorage_TenantID");
+    private readonly string _appID = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_AppID");
+    private readonly string _clientSecret = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_ClientSecret");
+    private readonly string _tenantID = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_TenantID");
     private readonly string _storageAccount = "frendstaskstestcontainer";
     private readonly string _testFileDir = Path.Combine(Environment.CurrentDirectory, "TestFiles");
     private readonly string _testfile = Path.Combine(Environment.CurrentDirectory, "TestFiles", "testfile.txt");
@@ -100,17 +98,6 @@ public class UnitTests
     }
 
     [TestMethod]
-    public async Task test()
-    {
-        var container = GetBlobContainer(_connectionString, _containerName);
-
-        var resultWithTags = await AzureBlobStorage.UploadBlob(_source, _destinationCS, _options, default);
-        Assert.IsTrue(resultWithTags.Success);
-        Assert.IsTrue(resultWithTags.Data.ContainsValue($"{container.Uri}/testfile.txt"));
-        Assert.IsTrue(await container.GetBlobClient("testfile.txt").ExistsAsync(), "Uploaded testfile.txt blob should exist");
-    }
-
-    [TestMethod]
     public async Task UploadFile_WithAndWithoutTags()
     {
         var container = GetBlobContainer(_connectionString, _containerName);
@@ -164,10 +151,10 @@ public class UnitTests
             _destinationOA.BlobType = blobtype;
 
             // Connection string
-            //var result = await AzureBlobStorage.UploadBlob(_source, _destinationCS, _options, default);
-            //Assert.IsTrue(result.Success);
-            //Assert.IsTrue(result.Data.ContainsValue($"{container.Uri}/SomeBlob"));
-            //Assert.IsTrue(await container.GetBlobClient("SomeBlob").ExistsAsync(), "Uploaded SomeBlob blob should exist");
+            var result = await AzureBlobStorage.UploadBlob(_source, _destinationCS, _options, default);
+            Assert.IsTrue(result.Success);
+            Assert.IsTrue(result.Data.ContainsValue($"{container.Uri}/SomeBlob"));
+            Assert.IsTrue(await container.GetBlobClient("SomeBlob").ExistsAsync(), "Uploaded SomeBlob blob should exist");
 
             //OAuth
             var result2 = await AzureBlobStorage.UploadBlob(_source, _destinationOA, _options, default);
