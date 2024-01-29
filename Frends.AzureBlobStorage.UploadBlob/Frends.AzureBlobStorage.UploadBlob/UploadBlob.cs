@@ -34,7 +34,7 @@ public class AzureBlobStorage
     public static async Task<Result> UploadBlob([PropertyTab] Source source, [PropertyTab] Destination destination, [PropertyTab] Options options, CancellationToken cancellationToken)
     {
         var results = new Dictionary<string, string>();
-        var fi = string.IsNullOrWhiteSpace(source.SourceFile) ? null : new FileInfo(source.SourceFile);
+        var fi = string.IsNullOrEmpty(source.SourceFile) ? null : new FileInfo(source.SourceFile);
         var handledFile = string.Empty;
 
         try
@@ -121,7 +121,6 @@ public class AzureBlobStorage
 
     private static async Task<string> HandleUpload(Source source, Destination destination, Options options, FileInfo fi, string blobName, CancellationToken cancellationToken)
     {
-        var result = new Dictionary<string, string>();
         blobName = string.IsNullOrWhiteSpace(source.BlobName) ? blobName : source.BlobName;
 
         var contentType = string.IsNullOrWhiteSpace(destination.ContentType) ? MimeUtility.GetMimeMapping(fi.Name) : destination.ContentType;
@@ -349,19 +348,19 @@ public class AzureBlobStorage
     {
         try
         {
-            Task<Azure.Response<BlobProperties>> blobProperties = null;
+            BlobProperties blobProperties = null;
 
             if (blob is null && appendBlobClient is null && pageBlobClient is null)
                 throw new Exception("AppendAny exception: Client missing.");
             if (blob != null)
-                blobProperties = blob.GetPropertiesAsync(cancellationToken: cancellationToken);
+                blobProperties = await blob.GetPropertiesAsync(cancellationToken: cancellationToken);
             if (appendBlobClient != null)
-                blobProperties = appendBlobClient.GetPropertiesAsync(cancellationToken: cancellationToken);
+                blobProperties = await appendBlobClient.GetPropertiesAsync(cancellationToken: cancellationToken);
             if (pageBlobClient != null)
-                blobProperties = pageBlobClient.GetPropertiesAsync(cancellationToken: cancellationToken);
+                blobProperties = await pageBlobClient.GetPropertiesAsync(cancellationToken: cancellationToken);
 
             //Block and Page blobs need to be downloaded and handled in temp because file size can be too large for memory stream.
-            if (blobProperties.Result.Value.BlobType.Equals(BlobType.Append))
+            if (blobProperties.BlobType.Equals(BlobType.Append))
             {
                 var appendBlobMaxAppendBlockBytes = appendBlobClient.AppendBlobMaxAppendBlockBytes;
 
