@@ -438,7 +438,7 @@ public class AzureBlobStorage
             var content = reader.ReadToEnd();
             using var encodedMemory = new MemoryStream(encoding.GetBytes(content));
             encodedMemory.CopyTo(gzip);
-        }   
+        }
             
         bytes = outStream.ToArray();
 
