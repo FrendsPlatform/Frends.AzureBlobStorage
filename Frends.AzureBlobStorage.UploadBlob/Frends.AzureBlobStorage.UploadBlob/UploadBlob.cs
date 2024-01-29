@@ -221,8 +221,10 @@ public class AzureBlobStorage
                         Tags = tags.Count > 0 ? tags : null
                     };
 
-                    using var stream = GetStream(source.Compress, source.ContentsOnly, encoding, fi);
-                    await blobClient.UploadAsync(stream, blobUploadOptions, cancellationToken);
+                    using (var stream = GetStream(source.Compress, source.ContentsOnly, encoding, fi))
+                    {
+                        await blobClient.UploadAsync(stream, blobUploadOptions, cancellationToken);
+                    }
 
                     //Delete temp file
                     if (File.Exists(fi.FullName) && Path.GetDirectoryName(fi.FullName) != Path.GetDirectoryName(source.SourceFile) && Path.GetDirectoryName(fi.FullName) != source.SourceDirectory)
@@ -390,10 +392,14 @@ public class AzureBlobStorage
                 if (pageBlobClient != null)
                     await pageBlobClient.DownloadToAsync(tempFile, cancellationToken);
 
-                using var sourceData = new StreamReader(sourceFile);
-                using var destinationFile = File.AppendText(tempFile);
-                var line = await sourceData.ReadLineAsync();
-                await destinationFile.WriteAsync(line);
+                using (var sourceData = new StreamReader(sourceFile))
+                {
+                    using (var destinationFile = File.AppendText(tempFile))
+                    {
+                        var line = await sourceData.ReadLineAsync();
+                        await destinationFile.WriteAsync(line);
+                    }
+                }
 
                 return new FileInfo(tempFile);
             }
