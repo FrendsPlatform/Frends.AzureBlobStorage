@@ -412,7 +412,7 @@ public class AzureBlobStorage
 
     private static Stream GetStream(bool compress, bool fromString, Encoding encoding, FileInfo file)
     {
-        var fileStream = File.OpenRead(file.FullName);
+        using var fileStream = File.OpenRead(file.FullName);
 
         if (!compress && !fromString)
             return fileStream;
@@ -439,11 +439,10 @@ public class AzureBlobStorage
             using var encodedMemory = new MemoryStream(encoding.GetBytes(content));
             encodedMemory.CopyTo(gzip);
         }
-            
+
         bytes = outStream.ToArray();
 
         fileStream.Close();
-        fileStream.Dispose();
 
         var memStream = new MemoryStream(bytes);
         return memStream;
