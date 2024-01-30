@@ -49,7 +49,7 @@ public class AzureBlobStorage
             switch (source.SourceType)
             {
                 case UploadSourceType.File:
-                    if (fi == null || File.Exists(source.SourceFile))
+                    if (fi == null)
                         throw new FileNotFoundException($"Source file '{source.SourceFile}' was not found.");
                     blobName = fi.Name;
                     if (!string.IsNullOrWhiteSpace(source.BlobName) || source.Compress)
@@ -95,23 +95,23 @@ public class AzureBlobStorage
         catch (Exception ex)
         {
             var error = new Dictionary<string, string>();
-            if (source.SourceType is UploadSourceType.Directory)
-            {
-                if (options.ThrowErrorOnFailure)
-                    throw new Exception($@"An exception occured while uploading directory. Last handled file: {handledFile}", ex);
-                else
-                {
-                    error.Add(null, $@"An exception occured while uploading directory. Last handled file: {handledFile}. {ex}");
-                    return new Result(false, error);
-                }
-            }
-            else
+            if (source.SourceType is UploadSourceType.File)
             {
                 if (options.ThrowErrorOnFailure)
                     throw new Exception("An exception occured.", ex);
                 else
                 {
                     error.Add(fi.FullName, $@"An exception occured. {ex}");
+                    return new Result(false, error);
+                }
+            }
+            else
+            {
+                if (options.ThrowErrorOnFailure)
+                    throw new Exception($@"An exception occured while uploading directory. Last handled file: {handledFile}", ex);
+                else
+                {
+                    error.Add(null, $@"An exception occured while uploading directory. Last handled file: {handledFile}. {ex}");
                     return new Result(false, error);
                 }
             }
