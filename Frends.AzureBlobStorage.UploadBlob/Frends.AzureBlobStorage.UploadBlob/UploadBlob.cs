@@ -67,11 +67,9 @@ public class AzureBlobStorage
                                 fileName = RenameFile(fileName, source.Compress, file);
 
                             var parentDirectory = Path.GetFileName(Path.GetDirectoryName(file.ToString()));
-                            var withDir = string.Empty;
-                            if (string.IsNullOrWhiteSpace(source.BlobFolderName))
-                                withDir = Path.Combine(parentDirectory, fileName);
-                            else
-                                withDir = Path.Combine(source.BlobFolderName, fileName);
+                            var withDir = string.IsNullOrWhiteSpace(source.BlobFolderName) 
+                                ? Path.Combine(parentDirectory, fileName) 
+                                : Path.Combine(source.BlobFolderName, fileName);
 
                             blobName = withDir.Replace("\\", "/");
 
@@ -133,19 +131,22 @@ public class AzureBlobStorage
                 tags.Add(tag.Name, tag.Value);
 
 
-        ClientSecretCredential credentials = destination.ConnectionMethod is not ConnectionMethod.ConnectionString ? new ClientSecretCredential(destination.TenantID, destination.ApplicationID, destination.ClientSecret, new ClientSecretCredentialOptions()) : null;
-        Uri url = destination.ConnectionMethod is not ConnectionMethod.ConnectionString ? new Uri($"https://{destination.StorageAccountName}.blob.core.windows.net/{destination.ContainerName.ToLower()}/{blobName}") : null;
+        ClientSecretCredential credentials = destination.ConnectionMethod is not ConnectionMethod.ConnectionString
+            ? new ClientSecretCredential(destination.TenantID, destination.ApplicationID, destination.ClientSecret, new ClientSecretCredentialOptions())
+            : null;
+
+        Uri url = destination.ConnectionMethod is not ConnectionMethod.ConnectionString
+            ? new Uri($"https://{destination.StorageAccountName}.blob.core.windows.net/{destination.ContainerName.ToLower()}/{blobName}")
+            : null;
 
         switch (destination.BlobType)
         {
             case AzureBlobType.Append:
                 try
                 {
-                    AppendBlobClient appendBlobClient;
-                    if (destination.ConnectionMethod is ConnectionMethod.ConnectionString)
-                        appendBlobClient = new AppendBlobClient(destination.ConnectionString, destination.ContainerName.ToLower(), blobName);
-                    else
-                        appendBlobClient = new AppendBlobClient(url, credentials);
+                    var appendBlobClient = destination.ConnectionMethod is ConnectionMethod.ConnectionString
+                        ? new AppendBlobClient(destination.ConnectionString, destination.ContainerName.ToLower(), blobName)
+                        : new AppendBlobClient(url, credentials);
 
                     var exists = false;
                     exists = await appendBlobClient.ExistsAsync(cancellationToken);
@@ -190,11 +191,9 @@ public class AzureBlobStorage
             case AzureBlobType.Block:
                 try
                 {
-                    BlobClient blobClient;
-                    if (destination.ConnectionMethod is ConnectionMethod.ConnectionString)
-                        blobClient = new BlobClient(destination.ConnectionString, destination.ContainerName.ToLower(), blobName);
-                    else
-                        blobClient = new BlobClient(url, credentials);
+                    var blobClient = destination.ConnectionMethod is ConnectionMethod.ConnectionString
+                        ? new BlobClient(destination.ConnectionString, destination.ContainerName.ToLower(), blobName)
+                        : new BlobClient(url, credentials);
 
                     var exists = await blobClient.ExistsAsync(cancellationToken);
 
@@ -239,11 +238,9 @@ public class AzureBlobStorage
             case AzureBlobType.Page:
                 try
                 {
-                    PageBlobClient pageBlobClient;
-                    if (destination.ConnectionMethod is ConnectionMethod.ConnectionString)
-                        pageBlobClient = new PageBlobClient(destination.ConnectionString, destination.ContainerName.ToLower(), blobName);
-                    else
-                        pageBlobClient = new PageBlobClient(url, credentials);
+                    var pageBlobClient = destination.ConnectionMethod is ConnectionMethod.ConnectionString
+                        ? new PageBlobClient(destination.ConnectionString, destination.ContainerName.ToLower(), blobName)
+                        : new PageBlobClient(url, credentials);
 
                     var origSize = 0;
                     var exists = false;
