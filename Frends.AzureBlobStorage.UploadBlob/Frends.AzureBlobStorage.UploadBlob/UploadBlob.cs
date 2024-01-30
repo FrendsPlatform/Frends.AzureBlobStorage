@@ -50,7 +50,7 @@ public class AzureBlobStorage
             {
                 case UploadSourceType.File:
                     if (fi == null)
-                        throw new FileNotFoundException($"Source file '{source.SourceFile}' was not found.");
+                        throw new FileNotFoundException($"Source file '{source.SourceFile}' was empty.");
                     blobName = fi.Name;
                     if (!string.IsNullOrWhiteSpace(source.BlobName) || source.Compress)
                         blobName = RenameFile(!string.IsNullOrWhiteSpace(source.BlobName) ? source.BlobName : fi.Name, source.Compress, fi);
@@ -75,7 +75,7 @@ public class AzureBlobStorage
                         results.Add(file.FullName, await HandleUpload(source, destination, options, file, blobName, cancellationToken));
                         handledFile = file.FullName;
                     }
-                        
+
                     if (!results.Any())
                     {
                         if (options.ThrowErrorOnFailure)
@@ -97,7 +97,10 @@ public class AzureBlobStorage
                     throw new Exception("An exception occured.", ex);
                 else
                 {
-                    error.Add(fi.FullName, $@"An exception occured. {ex}");
+                    if (fi == null)
+                        error.Add(string.Empty, $@"An exception occured. {ex}");
+                    else
+                        error.Add(fi.FullName, $@"An exception occured. {ex}");
                     return new Result(false, error);
                 }
             }
@@ -355,6 +358,8 @@ public class AzureBlobStorage
             if (pageBlobClient != null)
                 blobProperties = await pageBlobClient.GetPropertiesAsync(cancellationToken: cancellationToken);
 
+            if (blobProperties == null) throw new Exception("Blob properties couldn't be fetched.");
+            
             //Block and Page blobs need to be downloaded and handled in temp because file size can be too large for memory stream.
             if (blobProperties.BlobType.Equals(BlobType.Append))
             {
@@ -385,14 +390,10 @@ public class AzureBlobStorage
                 if (pageBlobClient != null)
                     await pageBlobClient.DownloadToAsync(tempFile, cancellationToken);
 
-                using (var sourceData = new StreamReader(sourceFile))
-                {
-                    using (var destinationFile = File.AppendText(tempFile))
-                    {
-                        var line = await sourceData.ReadLineAsync();
-                        await destinationFile.WriteAsync(line);
-                    }
-                }
+                using var sourceData = new StreamReader(sourceFile);
+                using var destinationFile = File.AppendText(tempFile);
+                var line = await sourceData.ReadLineAsync();
+                await destinationFile.WriteAsync(line);
 
                 return new FileInfo(tempFile);
             }
