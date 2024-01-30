@@ -35,10 +35,7 @@ public class AzureBlobStorage
     {
         var results = new Dictionary<string, string>();
 
-        if (string.IsNullOrEmpty(source.SourceFile))
-            throw new ArgumentException("Source file name can't be left empty.");
-
-        var fi = new FileInfo(source.SourceFile);
+        var fi = string.IsNullOrEmpty(source.SourceFile) ? null : new FileInfo(source.SourceFile);
         var handledFile = string.Empty;
 
         try
@@ -52,7 +49,8 @@ public class AzureBlobStorage
             switch (source.SourceType)
             {
                 case UploadSourceType.File:
-                    blobName = fi.Name;
+                    if (fi != null)
+                        blobName = fi.Name;
                     if (!string.IsNullOrWhiteSpace(source.BlobName) || source.Compress)
                         blobName = RenameFile(!string.IsNullOrWhiteSpace(source.BlobName) ? source.BlobName : fi.Name, source.Compress, fi);
                     results.Add(source.SourceFile, await HandleUpload(source, destination, options, fi, blobName, cancellationToken));
