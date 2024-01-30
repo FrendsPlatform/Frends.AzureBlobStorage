@@ -58,29 +58,25 @@ public class AzureBlobStorage
                     break;
                 case UploadSourceType.Directory:
                     var dir = string.IsNullOrWhiteSpace(source.SourceDirectory) ? null : source.SourceDirectory;
-                    var files = Directory.GetFiles(dir, string.IsNullOrWhiteSpace(source.SearchPattern) ? "*.*" : source.SearchPattern, SearchOption.AllDirectories);
-                    if (files.Length > 0)
+                    foreach (var file in Directory.GetFiles(dir, string.IsNullOrWhiteSpace(source.SearchPattern) ? "*.*" : source.SearchPattern, SearchOption.AllDirectories)
+                        .Select(e => new FileInfo(e)))
                     {
-                        for (var i = 0; i < files.Length; i++)
-                        {
-                            var file = new FileInfo(files[i]);
-                            var fileName = file.Name;
+                        var fileName = file.Name;
+                        if (source.Compress)
+                            fileName = RenameFile(fileName, source.Compress, file);
 
-                            if (source.Compress)
-                                fileName = RenameFile(fileName, source.Compress, file);
+                        var parentDirectory = Path.GetFileName(Path.GetDirectoryName(file.ToString()));
+                        var withDir = string.IsNullOrWhiteSpace(source.BlobFolderName)
+                            ? Path.Combine(parentDirectory, fileName)
+                            : Path.Combine(source.BlobFolderName, fileName);
 
-                            var parentDirectory = Path.GetFileName(Path.GetDirectoryName(file.ToString()));
-                            var withDir = string.IsNullOrWhiteSpace(source.BlobFolderName)
-                                ? Path.Combine(parentDirectory, fileName)
-                                : Path.Combine(source.BlobFolderName, fileName);
+                        blobName = withDir.Replace("\\", "/");
 
-                            blobName = withDir.Replace("\\", "/");
-
-                            results.Add(file.FullName, await HandleUpload(source, destination, options, file, blobName, cancellationToken));
-                            handledFile = file.FullName;
-                        }
+                        results.Add(file.FullName, await HandleUpload(source, destination, options, file, blobName, cancellationToken));
+                        handledFile = file.FullName;
                     }
-                    else
+                        
+                    if (!results.Any())
                     {
                         if (options.ThrowErrorOnFailure)
                             throw new Exception(@$"No files were found in the directory {dir}.");
