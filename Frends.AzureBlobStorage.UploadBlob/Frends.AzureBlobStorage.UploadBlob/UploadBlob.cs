@@ -363,6 +363,8 @@ public class AzureBlobStorage
             //Block and Page blobs need to be downloaded and handled in temp because file size can be too large for memory stream.
             if (blobProperties.BlobType.Equals(BlobType.Append))
             {
+                if (appendBlobClient == null)
+                    throw new Exception("AppendAny exception: Client missing.");
                 var appendBlobMaxAppendBlockBytes = appendBlobClient.AppendBlobMaxAppendBlockBytes;
 
                 using var file = File.OpenRead(sourceFile);
