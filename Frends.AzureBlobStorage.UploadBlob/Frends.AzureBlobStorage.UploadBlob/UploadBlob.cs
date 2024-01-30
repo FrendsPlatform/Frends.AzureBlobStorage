@@ -359,7 +359,7 @@ public class AzureBlobStorage
                 blobProperties = await pageBlobClient.GetPropertiesAsync(cancellationToken: cancellationToken);
 
             if (blobProperties == null) throw new Exception("Blob properties couldn't be fetched.");
-            
+
             //Block and Page blobs need to be downloaded and handled in temp because file size can be too large for memory stream.
             if (blobProperties.BlobType.Equals(BlobType.Append))
             {
