@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.0.1] - 2024-01-29
+### Updated
+- Azure.Identity to version 1.10.4
+- Azure.Storage.Blobs to version 12.19.1
+
 ## [2.0.0] - 2023-04-06
 ##Added:
 Option to choose whether to upload a directory or just a single blob.
