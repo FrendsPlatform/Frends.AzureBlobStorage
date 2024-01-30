@@ -34,7 +34,11 @@ public class AzureBlobStorage
     public static async Task<Result> UploadBlob([PropertyTab] Source source, [PropertyTab] Destination destination, [PropertyTab] Options options, CancellationToken cancellationToken)
     {
         var results = new Dictionary<string, string>();
-        var fi = string.IsNullOrEmpty(source.SourceFile) ? null : new FileInfo(source.SourceFile);
+
+        if (string.IsNullOrEmpty(source.SourceFile))
+            throw new ArgumentException("Source file name can't be left empty.");
+
+        var fi = new FileInfo(source.SourceFile);
         var handledFile = string.Empty;
 
         try
@@ -67,8 +71,8 @@ public class AzureBlobStorage
                                 fileName = RenameFile(fileName, source.Compress, file);
 
                             var parentDirectory = Path.GetFileName(Path.GetDirectoryName(file.ToString()));
-                            var withDir = string.IsNullOrWhiteSpace(source.BlobFolderName) 
-                                ? Path.Combine(parentDirectory, fileName) 
+                            var withDir = string.IsNullOrWhiteSpace(source.BlobFolderName)
+                                ? Path.Combine(parentDirectory, fileName)
                                 : Path.Combine(source.BlobFolderName, fileName);
 
                             blobName = withDir.Replace("\\", "/");
@@ -447,7 +451,6 @@ public class AzureBlobStorage
         {
             fileStream.Dispose();
         }
-        
     }
 
     private static Encoding GetEncoding(string target)
