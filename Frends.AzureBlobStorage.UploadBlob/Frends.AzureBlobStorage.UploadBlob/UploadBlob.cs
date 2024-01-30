@@ -49,8 +49,9 @@ public class AzureBlobStorage
             switch (source.SourceType)
             {
                 case UploadSourceType.File:
-                    if (fi != null)
-                        blobName = fi.Name;
+                    if (fi == null || File.Exists(source.SourceFile))
+                        throw new FileNotFoundException($"Source file '{source.SourceFile}' was not found.");
+                    blobName = fi.Name;
                     if (!string.IsNullOrWhiteSpace(source.BlobName) || source.Compress)
                         blobName = RenameFile(!string.IsNullOrWhiteSpace(source.BlobName) ? source.BlobName : fi.Name, source.Compress, fi);
                     results.Add(source.SourceFile, await HandleUpload(source, destination, options, fi, blobName, cancellationToken));
