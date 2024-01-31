@@ -3,8 +3,6 @@ using Azure.Storage.Blobs;
 using Frends.AzureBlobStorage.DeleteContainer.Definitions;
 using System;
 using System.ComponentModel;
-using System.Reflection;
-using System.Runtime.Loader;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -15,16 +13,6 @@ namespace Frends.AzureBlobStorage.DeleteContainer;
 /// </summary>
 public class AzureBlobStorage
 {
-
-    /// For mem cleanup.
-    static AzureBlobStorage()
-    {
-        var currentAssembly = Assembly.GetExecutingAssembly();
-        var currentContext = AssemblyLoadContext.GetLoadContext(currentAssembly);
-        if (currentContext != null)
-            currentContext.Unloading += OnPluginUnloadingRequested;
-    }
-
     /// <summary>
     /// Deletes a container from Azure blob storage.
     /// [Documentation](https://tasks.frends.com/tasks/frends-tasks/Frends.AzureBlobStorage.DeleteContainer)
@@ -39,16 +27,16 @@ public class AzureBlobStorage
             throw new ArgumentNullException("Input.StorageAccountName, Input.ClientSecret, Input.ApplicationID and Input.TenantID parameters can't be empty when Input.ConnectionMethod = OAuth.");
         if (string.IsNullOrWhiteSpace(input.ConnectionString) && input.ConnectionMethod is ConnectionMethod.ConnectionString)
             throw new ArgumentNullException("ConnectionString parameter can't be empty when Input.ConnectionMethod = ConnectionString.");
-        if(string.IsNullOrWhiteSpace(input.ContainerName))
+        if (string.IsNullOrWhiteSpace(input.ContainerName))
             throw new ArgumentNullException("ContainerName parameter can't be empty.");
 
         try
         {
             var container = GetBlobContainer(input);
-        
-            if (!await container.ExistsAsync(cancellationToken) && !options.ThrowErrorIfContainerDoesNotExists) 
+
+            if (!await container.ExistsAsync(cancellationToken) && !options.ThrowErrorIfContainerDoesNotExists)
                 return new Result(false, "Container not found.");
-            else if (!await container.ExistsAsync(cancellationToken) && options.ThrowErrorIfContainerDoesNotExists) 
+            if (!await container.ExistsAsync(cancellationToken) && options.ThrowErrorIfContainerDoesNotExists)
                 throw new Exception("DeleteContainer error: Container not found.");
 
             var result = await container.DeleteIfExistsAsync(null, cancellationToken);
@@ -80,10 +68,5 @@ public class AzureBlobStorage
         {
             throw new Exception(@$"GetBlobContainer error {ex}");
         }
-    }
-
-    private static void OnPluginUnloadingRequested(AssemblyLoadContext obj)
-    {
-        obj.Unloading -= OnPluginUnloadingRequested;
     }
 }
