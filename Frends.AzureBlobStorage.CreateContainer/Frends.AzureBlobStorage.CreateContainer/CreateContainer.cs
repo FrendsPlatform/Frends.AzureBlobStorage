@@ -39,8 +39,7 @@ public static class AzureBlobStorage
     {
         try
         {
-            ClientSecretCredential credentials = null;
-            BlobServiceClient blobServiceClient = null;
+            BlobServiceClient blobServiceClient;
 
             switch (input.ConnectionMethod)
             {
@@ -48,12 +47,8 @@ public static class AzureBlobStorage
                     blobServiceClient = new BlobServiceClient(input.ConnectionString);
                     return blobServiceClient.GetBlobContainerClient(input.ContainerName);
                 case ConnectionMethod.OAuth2:
-                    foreach (var _conn in input.Connection)
-                    {
-                        credentials = new ClientSecretCredential(_conn.TenantID, _conn.ApplicationID, _conn.ClientSecret, new ClientSecretCredentialOptions());
-
-                        blobServiceClient = new BlobServiceClient(new Uri($"https://{_conn.StorageAccountName}.blob.core.windows.net"), credentials);
-                    }
+                    var credentials = new ClientSecretCredential(input.TenantID, input.ApplicationID, input.ClientSecret, new ClientSecretCredentialOptions());
+                    blobServiceClient = new BlobServiceClient(new Uri($"https://{input.StorageAccountName}.blob.core.windows.net"), credentials);
                     return blobServiceClient.GetBlobContainerClient(input.ContainerName);
                     default: throw new NotSupportedException();
             }

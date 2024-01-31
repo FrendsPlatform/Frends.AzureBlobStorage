@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.1.1] - 2024-01-31
+## [1.2.0] - 2024-01-31
 ### Updated
 - Azure.Identity to version 1.10.4
 - Azure.Storage.Blobs to version 12.19.1

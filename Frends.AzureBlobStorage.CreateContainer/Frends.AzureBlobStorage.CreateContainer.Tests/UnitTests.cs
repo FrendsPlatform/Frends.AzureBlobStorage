@@ -11,7 +11,9 @@ namespace Frends.AzureBlobStorage.CreateContainer.Tests;
 [TestClass]
 public class UnitTests
 {
-    private readonly string _connectionString = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_ConnString"); 
+    Input input;
+
+    private readonly string _connectionString = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_ConnString");
     private readonly string _appID = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_AppID");
     private readonly string _tenantID = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_TenantID");
     private readonly string _clientSecret = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_ClientSecret");
@@ -35,8 +37,8 @@ public class UnitTests
     }
 
     [TestMethod]
-    public async Task TestCreateContainer() 
-    { 
+    public async Task TestCreateContainer()
+    {
         var result = await AzureBlobStorage.CreateContainer(new Input { ConnectionString = _connectionString, ContainerName = _containerName }, new CancellationToken());
         Assert.IsNotNull(result);
         Assert.AreEqual(new BlobClient(_connectionString, _containerName, "").Uri.ToString(), result.Uri);
@@ -61,19 +63,15 @@ public class UnitTests
     public async Task AccessTokenAuthenticationTest()
     {
         var containerName = "test" + Guid.NewGuid().ToString();
-        var _conn = new OAuthConnection()
+
+        input = new Input
         {
+            ConnectionMethod = ConnectionMethod.OAuth2,
+            ContainerName = containerName,
             StorageAccountName = _storageAccount,
             ApplicationID = _appID,
             TenantID = _tenantID,
             ClientSecret = _clientSecret
-        };
-
-        var input = new Input
-        {
-            ConnectionMethod = ConnectionMethod.OAuth2,
-            ContainerName = containerName,
-            Connection = new[] {_conn }
         };
 
         var result = await AzureBlobStorage.CreateContainer(input, default);
