@@ -1,8 +1,13 @@
 ﻿using Azure.Storage;
+using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
 using Azure.Storage.Sas;
 using Frends.AzureBlobStorage.ReadBlob.Definitions;
 using NUnit.Framework;
 using System;
+using System.Globalization;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace Frends.AzureBlobStorage.ReadBlob.Tests;
 
@@ -12,14 +17,38 @@ public class ReadTest
     Source source;
     Options options;
 
-    private readonly string _accessKey = Environment.GetEnvironmentVariable("HiQ_AzureBlobStorage_testsorage01AccessKey");
-    private readonly string _connstring = Environment.GetEnvironmentVariable("HiQ_AzureBlobStorage_ConnString");
-    private readonly string _appID = Environment.GetEnvironmentVariable("HiQ_AzureBlobStorage_AppID");
-    private readonly string _clientSecret = Environment.GetEnvironmentVariable("HiQ_AzureBlobStorage_ClientSecret");
-    private readonly string _tenantID = Environment.GetEnvironmentVariable("HiQ_AzureBlobStorage_TenantID");
-    private readonly string _storageaccount = "testsorage01";
-    private readonly string _containerName = "test";
+    private readonly string _connectionString = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_ConnString");
+    private readonly string _accessKey = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_frendstaskstestcontainerAccessKey");
+    private readonly string _connstring = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_ConnString");
+    private readonly string _appID = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_AppID");
+    private readonly string _clientSecret = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_ClientSecret");
+    private readonly string _tenantID = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_TenantID");
+    private readonly string _storageaccount = "frendstaskstestcontainer";
+    private static string _containerName;
     private readonly string _blobName = "test.txt";
+    private readonly string _testFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "../../../TestFiles", "TestFile.xml");
+
+    [SetUp]
+    public async Task SetUp()
+    {
+        var test = _testFilePath;
+        // Generate unique container name to avoid conflicts when running multiple tests
+        _containerName = $"test-container{DateTime.Now.ToString("mmssffffff", CultureInfo.InvariantCulture)}";
+
+        var blobServiceClient = new BlobServiceClient(_connectionString);
+        var container = blobServiceClient.GetBlobContainerClient(_containerName);
+        await container.CreateIfNotExistsAsync(PublicAccessType.None, null, null);
+        var blockBlob = container.GetBlobClient(_blobName);
+        await blockBlob.UploadAsync(_testFilePath, default);
+    }
+
+    [TearDown]
+    public async Task TearDown()
+    {
+        var blobServiceClient = new BlobServiceClient(_connectionString);
+        var container = blobServiceClient.GetBlobContainerClient(_containerName);
+        await container.DeleteIfExistsAsync(null);
+    }
 
     [Test]
     public void ReadBlobSAS()
@@ -27,7 +56,7 @@ public class ReadTest
         source = new Source
         { 
             AuthenticationMethod = AuthenticationMethod.SASToken,
-            URI = $"https://testsorage01.blob.core.windows.net/{_containerName}/{_blobName}?",
+            URI = $"https://{_storageaccount}.blob.core.windows.net/{_containerName}/{_blobName}?",
             SASToken = GetServiceSasUriForBlob(),
             ContainerName = _containerName,
             BlobName = _blobName
@@ -95,7 +124,7 @@ public class ReadTest
         var source = new Source
         {
             AuthenticationMethod = AuthenticationMethod.SASToken,
-            URI = $"https://testsorage01.blob.core.windows.net/{_containerName}/{_blobName}?",
+            URI = $"https://{_storageaccount}.blob.core.windows.net/{_containerName}/{_blobName}?",
             SASToken = "",
             ContainerName = _containerName,
             BlobName = _blobName
