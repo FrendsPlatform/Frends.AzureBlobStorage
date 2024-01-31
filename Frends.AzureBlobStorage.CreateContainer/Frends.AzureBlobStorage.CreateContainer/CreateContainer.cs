@@ -50,7 +50,7 @@ public static class AzureBlobStorage
                     var credentials = new ClientSecretCredential(input.TenantID, input.ApplicationID, input.ClientSecret, new ClientSecretCredentialOptions());
                     blobServiceClient = new BlobServiceClient(new Uri($"https://{input.StorageAccountName}.blob.core.windows.net"), credentials);
                     return blobServiceClient.GetBlobContainerClient(input.ContainerName);
-                    default: throw new NotSupportedException();
+                default: throw new NotSupportedException();
             }
         }
         catch (Exception ex)
