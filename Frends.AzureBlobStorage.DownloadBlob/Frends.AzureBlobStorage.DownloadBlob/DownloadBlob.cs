@@ -89,10 +89,9 @@ public static class AzureBlobStorage
             Encoding newEncoding;
             try
             {
-                if (CodePagesEncodingProvider.Instance.GetEncoding(targetEncoding.ToLower()) != null)
-                    newEncoding = CodePagesEncodingProvider.Instance.GetEncoding(targetEncoding.ToLower());
-                else
-                    newEncoding = Encoding.GetEncoding(targetEncoding.ToLower());
+                newEncoding = CodePagesEncodingProvider.Instance.GetEncoding(targetEncoding.ToLower()) != null
+                    ? CodePagesEncodingProvider.Instance.GetEncoding(targetEncoding.ToLower())
+                    : Encoding.GetEncoding(targetEncoding.ToLower());
             }
             catch (Exception)
             {
