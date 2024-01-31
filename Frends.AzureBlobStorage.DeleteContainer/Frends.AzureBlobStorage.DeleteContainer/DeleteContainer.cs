@@ -33,7 +33,7 @@ public class AzureBlobStorage
         try
         {
             var container = GetBlobContainer(input);
-        
+
             if (!await container.ExistsAsync(cancellationToken) && !options.ThrowErrorIfContainerDoesNotExists)
                 return new Result(false, "Container not found.");
             if (!await container.ExistsAsync(cancellationToken) && options.ThrowErrorIfContainerDoesNotExists)
