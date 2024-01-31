@@ -17,7 +17,8 @@ public class Result
     /// <example>Container deleted successfully.</example>
     public string Message { get; private set; }
 
-    internal Result(bool containerWasDeleted, string message) {
+    internal Result(bool containerWasDeleted, string message)
+    {
         ContainerWasDeleted = containerWasDeleted;
         Message = message;
     }
