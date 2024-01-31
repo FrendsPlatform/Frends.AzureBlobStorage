@@ -62,7 +62,7 @@ public class UnitTests
     [TestMethod]
     public async Task AccessTokenAuthenticationTest()
     {
-        var containerName = "test" + Guid.NewGuid().ToString();
+        var containerName = $"test{Guid.NewGuid()}";
 
         input = new Input
         {
