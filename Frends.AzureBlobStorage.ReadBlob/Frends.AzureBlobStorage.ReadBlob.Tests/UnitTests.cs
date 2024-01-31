@@ -135,7 +135,7 @@ public class ReadTest
         };
 
         var ex = Assert.ThrowsAsync<Exception>(() => AzureBlobStorage.ReadBlob(source, options, default));
-        Assert.That(ex.Message.Equals("SAS Token and URI required."));
+        Assert.AreEqual("SAS Token and URI required.", ex.Message);
     }
 
     /// <summary>
@@ -157,7 +157,7 @@ public class ReadTest
         };
 
         var ex = Assert.ThrowsAsync<Exception>(() => AzureBlobStorage.ReadBlob(source, options, default));
-        Assert.That(ex.Message.Equals("Connection string required."));
+        Assert.AreEqual("Connection string required.", ex.Message);
     }
 
     /// <summary>
