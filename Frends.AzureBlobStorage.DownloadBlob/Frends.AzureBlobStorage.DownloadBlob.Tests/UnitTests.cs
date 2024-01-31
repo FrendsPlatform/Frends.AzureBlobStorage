@@ -129,4 +129,18 @@ public class UnitTests
         await AzureBlobStorage.DownloadBlob(_source, _destination, default);
         Assert.AreEqual(1, Directory.GetFiles(_destinationDirectory).Length);
     }
+
+    [TestMethod]
+    public async Task DownloadBlobAsync_DifferentEncoding()
+    {
+        var encodings = new string[] { "utf-8", "windows-1252", "unicode", "ascii" };
+        var source = _source;
+
+        foreach (var encoding in encodings)
+        {
+            source.Encoding = encoding;
+            await AzureBlobStorage.DownloadBlob(_source, _destination, default);
+            Assert.AreEqual(1, Directory.GetFiles(_destinationDirectory).Length);
+        }
+    }
 }

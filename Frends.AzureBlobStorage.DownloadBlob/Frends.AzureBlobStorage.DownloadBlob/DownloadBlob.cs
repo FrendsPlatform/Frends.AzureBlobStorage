@@ -89,11 +89,14 @@ public static class AzureBlobStorage
             Encoding newEncoding;
             try
             {
-                newEncoding = Encoding.GetEncoding(targetEncoding.ToLower());
+                if (CodePagesEncodingProvider.Instance.GetEncoding(targetEncoding.ToLower()) != null)
+                    newEncoding = CodePagesEncodingProvider.Instance.GetEncoding(targetEncoding.ToLower());
+                else
+                    newEncoding = Encoding.GetEncoding(targetEncoding.ToLower());
             }
             catch (Exception)
             {
-                throw new Exception("Provided encoding is not supported. Please check supported encodings from Encoding-option.");
+                throw new Exception($"Provided encoding {targetEncoding} is not supported. Please check supported encodings from Encoding-option.");
             }
             var tempFilePath = Path.Combine(directory, "encodingTemp" + fileExtension);
             using (var sr = new StreamReader(fullPath, true))
