@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0] - 2024-01-31
+###Updated
+- 
+### Fixed
+- Fixed issue with empty encoding parameter.
+- Memory leak fix by unloading assembly context after Task execution.
+
 ## [1.1.1] - 2023-02-08
 ### Fixed
 - Fixed issue with empty encoding parameter.
