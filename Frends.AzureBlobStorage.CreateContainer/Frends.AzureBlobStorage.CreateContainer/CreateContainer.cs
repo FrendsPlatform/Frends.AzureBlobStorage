@@ -15,7 +15,7 @@ namespace Frends.AzureBlobStorage.CreateContainer;
 public static class AzureBlobStorage
 {
     /// <summary>
-    /// Create a container to Azure Blob Storage.
+    /// Frends Task for creating a container to Azure Blob Storage.
     /// [Documentation](https://tasks.frends.com/tasks/frends-tasks/Frends.AzureBlobStorage.CreateContainer)
     /// </summary>
     /// <param name="input">Input parameters.</param>
