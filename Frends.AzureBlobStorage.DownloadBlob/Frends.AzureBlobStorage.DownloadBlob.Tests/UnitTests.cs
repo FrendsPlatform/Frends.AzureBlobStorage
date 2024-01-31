@@ -93,10 +93,10 @@ public class UnitTests
     {
         // Download file with same name couple of time.
         _destination.FileExistsOperation = FileExistsAction.Overwrite;
-        
+
         for (int i = 0; i < 4; i++)
             await AzureBlobStorage.DownloadBlob(_source, _destination, default);
-        
+
         Assert.AreEqual(1, Directory.GetFiles(_destinationDirectory).Length);
     }
 

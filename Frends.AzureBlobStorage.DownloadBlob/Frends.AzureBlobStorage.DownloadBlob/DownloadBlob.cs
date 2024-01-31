@@ -46,13 +46,13 @@ public static class AzureBlobStorage
             if (destination.FileExistsOperation == FileExistsAction.Rename && File.Exists(fullDestinationPath))
             {
                 var increment = 1;
-                var incrementedFileName = fileName + "(" + increment.ToString() + ")" + fileExtension;
+                var incrementedFileName = $"{fileName}({increment}){fileExtension}";
 
                 while (File.Exists(Path.Combine(destination.Directory, incrementedFileName)))
                 {
                     cancellationToken.ThrowIfCancellationRequested();
                     increment++;
-                    incrementedFileName = fileName + "(" + increment.ToString() + ")" + fileExtension;
+                    incrementedFileName = $"{fileName}({increment}){fileExtension}";
                 }
 
                 fullDestinationPath = Path.Combine(destination.Directory, incrementedFileName);
@@ -61,9 +61,6 @@ public static class AzureBlobStorage
             }
             else
             {
-                var test1 = blob.BlobContainerName;
-                var test2 = blob.AccountName;
-                var test3 = blob.Uri;
                 await blob.DownloadToAsync(fullDestinationPath, cancellationToken);
             }
 
