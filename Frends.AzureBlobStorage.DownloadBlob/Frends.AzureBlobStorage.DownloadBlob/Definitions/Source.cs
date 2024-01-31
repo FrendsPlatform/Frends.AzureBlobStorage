@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 namespace Frends.AzureBlobStorage.DownloadBlob.Definitions;
 
 /// <summary>
-/// Input-class for DownloadBlob-task.
+/// Input class for DownloadBlob-task.
 /// </summary>
 public class Source
 {
