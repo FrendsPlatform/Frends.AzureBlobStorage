@@ -8,8 +8,6 @@ using System.ComponentModel;
 using Azure.Storage.Blobs;
 using Frends.AzureBlobStorage.DownloadBlob.Definitions;
 using Azure.Identity;
-using System.Reflection;
-using System.Runtime.Loader;
 
 namespace Frends.AzureBlobStorage.DownloadBlob;
 
@@ -18,15 +16,6 @@ namespace Frends.AzureBlobStorage.DownloadBlob;
 /// </summary>
 public static class AzureBlobStorage
 {
-    /// For mem cleanup.
-    static AzureBlobStorage()
-    {
-        var currentAssembly = Assembly.GetExecutingAssembly();
-        var currentContext = AssemblyLoadContext.GetLoadContext(currentAssembly);
-        if (currentContext != null)
-            currentContext.Unloading += OnPluginUnloadingRequested;
-    }
-
     /// <summary>
     /// Downloads Blob from Azure Blob Storage.
     /// [Documentation](https://tasks.frends.com/tasks/frends-tasks/Frends.AzureBlobStorage.DownloadBlob)
@@ -57,13 +46,13 @@ public static class AzureBlobStorage
             if (destination.FileExistsOperation == FileExistsAction.Rename && File.Exists(fullDestinationPath))
             {
                 var increment = 1;
-                var incrementedFileName = fileName + "(" + increment.ToString() + ")" + fileExtension;
+                var incrementedFileName = $"{fileName}({increment}){fileExtension}";
 
                 while (File.Exists(Path.Combine(destination.Directory, incrementedFileName)))
                 {
                     cancellationToken.ThrowIfCancellationRequested();
                     increment++;
-                    incrementedFileName = fileName + "(" + increment.ToString() + ")" + fileExtension;
+                    incrementedFileName = $"{fileName}({increment}){fileExtension}";
                 }
 
                 fullDestinationPath = Path.Combine(destination.Directory, incrementedFileName);
@@ -71,7 +60,9 @@ public static class AzureBlobStorage
                 await blob.DownloadToAsync(fullDestinationPath, cancellationToken);
             }
             else
+            {
                 await blob.DownloadToAsync(fullDestinationPath, cancellationToken);
+            }
 
             if (!string.IsNullOrEmpty(source.Encoding))
                 CheckAndFixFileEncoding(fullDestinationPath, destination.Directory, fileExtension, source.Encoding);
@@ -98,17 +89,19 @@ public static class AzureBlobStorage
             Encoding newEncoding;
             try
             {
-                newEncoding = Encoding.GetEncoding(targetEncoding.ToLower());
+                newEncoding = CodePagesEncodingProvider.Instance.GetEncoding(targetEncoding.ToLower()) != null
+                    ? CodePagesEncodingProvider.Instance.GetEncoding(targetEncoding.ToLower())
+                    : Encoding.GetEncoding(targetEncoding.ToLower());
             }
             catch (Exception)
             {
-                throw new Exception("Provided encoding is not supported. Please check supported encodings from Encoding-option.");
+                throw new Exception($"Provided encoding {targetEncoding} is not supported. Please check supported encodings from Encoding-option.");
             }
             var tempFilePath = Path.Combine(directory, "encodingTemp" + fileExtension);
             using (var sr = new StreamReader(fullPath, true))
             using (var sw = new StreamWriter(tempFilePath, false, newEncoding))
             {
-                var line = "";
+                var line = string.Empty;
                 while ((line = sr.ReadLine()) != null)
                     sw.WriteLine(line);
             }
@@ -125,21 +118,10 @@ public static class AzureBlobStorage
             case ConnectionMethod.ConnectionString:
                 return new BlobClient(source.ConnectionString, source.ContainerName, source.BlobName);
             case ConnectionMethod.OAuth2:
-                ClientSecretCredential credentials = null;
-                Uri url = null;
-                foreach (var _conn in source.Connection)
-                {
-                    credentials = new ClientSecretCredential(_conn.TenantID, _conn.ApplicationID, _conn.ClientSecret, new ClientSecretCredentialOptions());
-                    url = new Uri($"https://{_conn.StorageAccountName}.blob.core.windows.net/{source.ContainerName}/{source.BlobName}");
-                    break;
-                }
+                var credentials = new ClientSecretCredential(source.TenantID, source.ApplicationID, source.ClientSecret, new ClientSecretCredentialOptions());
+                var url = new Uri($"https://{source.StorageAccountName}.blob.core.windows.net/{source.ContainerName.ToLower()}/{source.BlobName}");
                 return new BlobClient(url, credentials);
             default: throw new NotSupportedException();
         }
-    }
-
-    private static void OnPluginUnloadingRequested(AssemblyLoadContext obj)
-    {
-        obj.Unloading -= OnPluginUnloadingRequested;
     }
 }

@@ -12,17 +12,17 @@ namespace Frends.AzureBlobStorage.DownloadBlob.Tests;
 [TestClass]
 public class UnitTests
 {
-    private readonly string _connectionString = Environment.GetEnvironmentVariable("HiQ_AzureBlobStorage_ConnString");
+    private readonly string _connectionString = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_ConnString");
     private readonly string _testBlob = "test-blob.txt";
     private string _containerName;
     private Destination _destination;
     private string _destinationDirectory;
     private Source _source;
     private readonly string _testFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TestFiles", "TestFile.xml");
-    private readonly string _appID = Environment.GetEnvironmentVariable("HiQ_AzureBlobStorage_AppID");
-    private readonly string _tenantID = Environment.GetEnvironmentVariable("HiQ_AzureBlobStorage_TenantID");
-    private readonly string _clientSecret = Environment.GetEnvironmentVariable("HiQ_AzureBlobStorage_ClientSecret");
-    private readonly string _storageAccount = "testsorage01";
+    private readonly string _appID = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_AppID");
+    private readonly string _tenantID = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_TenantID");
+    private readonly string _clientSecret = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_ClientSecret");
+    private readonly string _storageAccount = "frendstaskstestcontainer";
 
     [TestInitialize]
     public async Task TestSetup()
@@ -93,28 +93,23 @@ public class UnitTests
     {
         // Download file with same name couple of time.
         _destination.FileExistsOperation = FileExistsAction.Overwrite;
-        
+
         for (int i = 0; i < 4; i++)
             await AzureBlobStorage.DownloadBlob(_source, _destination, default);
-        
+
         Assert.AreEqual(1, Directory.GetFiles(_destinationDirectory).Length);
     }
 
     [TestMethod]
     public async Task AccessTokenAuthenticationTest()
     {
-        var _conn = new OAuthConnection()
-        {
-            StorageAccountName = _storageAccount,
-            ApplicationID = _appID,
-            TenantID = _tenantID,
-            ClientSecret = _clientSecret
-        };
-
         _source = new Source
         {
             ConnectionMethod = ConnectionMethod.OAuth2,
-            Connection = new[] { _conn },
+            StorageAccountName = _storageAccount,
+            ApplicationID = _appID,
+            TenantID = _tenantID,
+            ClientSecret = _clientSecret,
             BlobName = _testBlob,
             ContainerName = _containerName,
             Encoding = "utf-8"
@@ -133,5 +128,19 @@ public class UnitTests
         source.Encoding = "";
         await AzureBlobStorage.DownloadBlob(_source, _destination, default);
         Assert.AreEqual(1, Directory.GetFiles(_destinationDirectory).Length);
+    }
+
+    [TestMethod]
+    public async Task DownloadBlobAsync_DifferentEncoding()
+    {
+        var encodings = new string[] { "utf-8", "windows-1252", "unicode", "ascii" };
+        var source = _source;
+
+        foreach (var encoding in encodings)
+        {
+            source.Encoding = encoding;
+            await AzureBlobStorage.DownloadBlob(_source, _destination, default);
+            Assert.AreEqual(1, Directory.GetFiles(_destinationDirectory).Length);
+        }
     }
 }

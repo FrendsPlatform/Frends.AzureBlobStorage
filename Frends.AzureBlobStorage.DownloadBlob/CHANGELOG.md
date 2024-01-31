@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.2.0] - 2024-01-31
+### Updated
+- Azure.Identity to version 1.10.4
+- Azure.Storage.Blobs to version 12.19.1
+- Azure.Storage.Common to version 12.18.1
+- Azure.Core to version 1.36.0
+- MimeMapping to version 1.0.1.50
+### Fixed
+- [Breaking] Fixed Source parameters to be similar to the UploadFiles Task.
+
 ## [1.1.1] - 2023-02-08
 ### Fixed
 - Fixed issue with empty encoding parameter.
