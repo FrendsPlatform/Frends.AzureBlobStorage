@@ -13,7 +13,7 @@ namespace Frends.AzureBlobStorage.ReadBlob.Tests;
 
 [TestFixture]
 public class ReadTest
-{ 
+{
     Source source;
     Options options;
 
@@ -24,14 +24,13 @@ public class ReadTest
     private readonly string _clientSecret = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_ClientSecret");
     private readonly string _tenantID = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_TenantID");
     private readonly string _storageaccount = "frendstaskstestcontainer";
-    private static string _containerName;
+    private string _containerName;
     private readonly string _blobName = "test.txt";
     private readonly string _testFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "../../../TestFiles", "TestFile.xml");
 
     [SetUp]
     public async Task SetUp()
     {
-        var test = _testFilePath;
         // Generate unique container name to avoid conflicts when running multiple tests
         _containerName = $"test-container{DateTime.Now.ToString("mmssffffff", CultureInfo.InvariantCulture)}";
 
@@ -54,7 +53,7 @@ public class ReadTest
     public void ReadBlobSAS()
     {
         source = new Source
-        { 
+        {
             AuthenticationMethod = AuthenticationMethod.SASToken,
             URI = $"https://{_storageaccount}.blob.core.windows.net/{_containerName}/{_blobName}?",
             SASToken = GetServiceSasUriForBlob(),
@@ -121,7 +120,7 @@ public class ReadTest
     [Test]
     public void ReadBlobSasMissing()
     {
-        var source = new Source
+        source = new Source
         {
             AuthenticationMethod = AuthenticationMethod.SASToken,
             URI = $"https://{_storageaccount}.blob.core.windows.net/{_containerName}/{_blobName}?",
@@ -145,7 +144,7 @@ public class ReadTest
     [Test]
     public void ReadBlobConnectionStringMissing()
     {
-        var source = new Source
+        source = new Source
         {
             AuthenticationMethod = AuthenticationMethod.ConnectionString,
             ConnectionString = "",
