@@ -6,8 +6,6 @@ using Azure.Storage.Blobs;
 using Azure;
 using Frends.AzureBlobStorage.ReadBlob.Definitions;
 using System.Threading.Tasks;
-using System.Reflection;
-using System.Runtime.Loader;
 using Azure.Identity;
 
 namespace Frends.AzureBlobStorage.ReadBlob;
@@ -17,17 +15,8 @@ namespace Frends.AzureBlobStorage.ReadBlob;
 /// </summary>
 public class AzureBlobStorage
 {
-    /// For mem cleanup.
-    static AzureBlobStorage()
-    {
-        var currentAssembly = Assembly.GetExecutingAssembly();
-        var currentContext = AssemblyLoadContext.GetLoadContext(currentAssembly);
-        if (currentContext != null)
-            currentContext.Unloading += OnPluginUnloadingRequested;
-    }
-
     /// <summary>
-    /// Encode and read a single blob from Azure Storage.
+    /// Frends Task for encoding and reading a single blob from Azure Storage.
     /// [Documentation](https://tasks.frends.com/tasks/frends-tasks/Frends.AzureBlobStorage.ReadBlob)
     /// </summary>
     /// <param name="source">Source parameters.</param>
@@ -79,10 +68,5 @@ public class AzureBlobStorage
             Encode.ASCII => Encoding.ASCII.GetString(bytes),
             _ => Encoding.UTF8.GetString(bytes),
         };
-    }
-
-    private static void OnPluginUnloadingRequested(AssemblyLoadContext obj)
-    {
-        obj.Unloading -= OnPluginUnloadingRequested;
     }
 }
