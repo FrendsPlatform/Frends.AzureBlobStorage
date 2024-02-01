@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0] - 2024-01-31
+### Updated
+- Azure.Identity to version 1.10.4
+- Azure.Storage.Blobs to version 12.19.1
+## Fixed
+- Modified Input parameters to be similar to other AzureBlobStorage Tasks.
+
 ## [1.1.0] - 2022-11-28
 ### Added
 - OAuth autentication

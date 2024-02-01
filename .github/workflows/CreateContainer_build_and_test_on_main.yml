@@ -13,13 +13,13 @@ jobs:
     uses: FrendsPlatform/FrendsTasks/.github/workflows/build_main.yml@main
     with:
       workdir: Frends.AzureBlobStorage.CreateContainer
-      env_var_name_1: HiQ_AzureBlobStorage_ConnString
-      env_var_name_2: HiQ_AzureBlobStorage_AppID
-      env_var_name_3: HiQ_AzureBlobStorage_TenantID
-      env_var_name_4: HiQ_AzureBlobStorage_ClientSecret
+      env_var_name_1: Frends_AzureBlobStorage_ConnString
+      env_var_name_2: Frends_AzureBlobStorage_AppID
+      env_var_name_3: Frends_AzureBlobStorage_TenantID
+      env_var_name_4: Frends_AzureBlobStorage_ClientSecret
     secrets:
       badge_service_api_key: ${{ secrets.BADGE_SERVICE_API_KEY }}
-      env_var_value_1: ${{ secrets.HIQ_AZUREBLOBSTORAGE_CONNSTRING }}
-      env_var_value_2: ${{ secrets.HIQ_AZUREBLOBSTORAGE_APPID }}
-      env_var_value_3: ${{ secrets.HIQ_AZUREBLOBSTORAGE_TENANTID }}
-      env_var_value_4: ${{ secrets.HIQ_AZUREBLOBSTORAGE_CLIENTSECRET }}
+      env_var_value_1: ${{ secrets.FRENDS_AZUREBLOBSTORAGE_CONNSTRING }}
+      env_var_value_2: ${{ secrets.FRENDS_AZUREBLOBSTORAGE_APPID }}
+      env_var_value_3: ${{ secrets.FRENDS_AZUREBLOBSTORAGE_TENANTID }}
+      env_var_value_4: ${{ secrets.FRENDS_AZUREBLOBSTORAGE_CLIENTSECRET }}
