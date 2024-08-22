@@ -12,12 +12,12 @@ namespace Frends.AzureBlobStorage.ListBlobsInContainer.Tests;
 [TestClass]
 public class OAuthUnitTests
 {
-    private readonly string _connstring = Environment.GetEnvironmentVariable("HiQ_AzureBlobStorage_ConnString");
+    private readonly string _connstring = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_ConnString");
     private readonly string _containerName = $"test-container{DateTime.Now.ToString("mmssffffff", CultureInfo.InvariantCulture)}";
-    private readonly string _appID = Environment.GetEnvironmentVariable("HiQ_AzureBlobStorage_AppID");
-    private readonly string _tenantID = Environment.GetEnvironmentVariable("HiQ_AzureBlobStorage_TenantID");
-    private readonly string _clientSecret = Environment.GetEnvironmentVariable("HiQ_AzureBlobStorage_ClientSecret");
-    private readonly string _uri = Environment.GetEnvironmentVariable("HiQ_AzureBlobStorage_URI");
+    private readonly string _appID = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_AppID");
+    private readonly string _tenantID = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_TenantID");
+    private readonly string _clientSecret = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_ClientSecret");
+    private readonly string _storageaccount = "frendstaskstestcontainer";
 
     [TestInitialize]
     public async Task Init()
@@ -42,7 +42,7 @@ public class OAuthUnitTests
             ApplicationID = _appID,
             TenantID = _tenantID,
             ClientSecret = _clientSecret,
-            URI = _uri,
+            URI = $"https://{_storageaccount}.blob.core.windows.net",
             ContainerName = _containerName,
         };
 
@@ -89,7 +89,7 @@ public class OAuthUnitTests
             ApplicationID = _appID,
             TenantID = _tenantID,
             ClientSecret = _clientSecret,
-            URI = _uri,
+            URI = $"https://{_storageaccount}.blob.core.windows.net",
             ContainerName = _containerName,
         };
 

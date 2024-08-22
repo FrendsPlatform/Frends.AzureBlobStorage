@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.2.0] - 2024-08-21
+### Updated
+- Updated Azure.Identity to version 1.12.0.
+### Changed
+- Fixed outdated environment variable names in tests and workflows.
+
 ## [1.1.1] - 2024-01-24
 ### Updated
 - Azure.Identity to version 1.10.4

@@ -15,10 +15,10 @@ namespace Frends.AzureBlobStorage.ListBlobsInContainer.Tests;
 [TestClass]
 public class SASUnitTests
 {
-    private readonly string _accessKey = Environment.GetEnvironmentVariable("HiQ_AzureBlobStorage_testsorage01AccessKey");
-    private readonly string _connstring = Environment.GetEnvironmentVariable("HiQ_AzureBlobStorage_ConnString");
+    private readonly string _accessKey = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_frendstaskstestcontainerAccessKey");
+    private readonly string _connstring = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_ConnString");
     private readonly string _containerName = $"test-container{DateTime.Now.ToString("mmssffffff", CultureInfo.InvariantCulture)}";
-    private readonly string _uri = Environment.GetEnvironmentVariable("HiQ_AzureBlobStorage_URI");
+    private readonly string _storageaccount = "frendstaskstestcontainer";
 
     [TestInitialize]
     public async Task Init()
@@ -38,7 +38,7 @@ public class SASUnitTests
         var source = new Source
         {
             AuthenticationMethod = AuthenticationMethod.SASToken,
-            URI = _uri,
+            URI = $"https://{_storageaccount}.blob.core.windows.net",
             SASToken = "",
             ContainerName = _containerName,
         };
@@ -61,7 +61,7 @@ public class SASUnitTests
         var source = new Source
         {
             AuthenticationMethod = AuthenticationMethod.SASToken,
-            URI = _uri,
+            URI = $"https://{_storageaccount}.blob.core.windows.net",
             SASToken = GenerateSASToken(),
             ContainerName = _containerName
         };
@@ -106,7 +106,7 @@ public class SASUnitTests
         var source = new Source
         {
             AuthenticationMethod = AuthenticationMethod.SASToken,
-            URI = _uri,
+            URI = $"https://{_storageaccount}.blob.core.windows.net",
             SASToken = GenerateSASToken(),
             ContainerName = _containerName,
         };
@@ -146,7 +146,7 @@ public class SASUnitTests
         };
 
         blobSasBuilder.SetPermissions(BlobContainerSasPermissions.List);
-        var sasToken = blobSasBuilder.ToSasQueryParameters(new StorageSharedKeyCredential("testsorage01", _accessKey)).ToString();
+        var sasToken = blobSasBuilder.ToSasQueryParameters(new StorageSharedKeyCredential(_storageaccount, _accessKey)).ToString();
         return sasToken;
     }
 }

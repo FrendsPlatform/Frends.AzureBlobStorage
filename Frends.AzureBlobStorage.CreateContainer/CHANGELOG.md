@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.3.0] - 2024-08-21
+### Updated
+- Updated Azure.Identity to version 1.12.0.
+
 ## [1.2.0] - 2024-01-31
 ### Updated
 - Azure.Identity to version 1.10.4
