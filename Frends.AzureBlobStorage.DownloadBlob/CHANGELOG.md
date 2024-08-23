@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.3.0] - 2024-08-21
+### Changed
+- Updated Azure.Identity to version 1.12.0.
+- Removed dependencies Azure.Core and Azure.Storage.Common.
+
 ## [1.2.0] - 2024-01-31
 ### Updated
 - Azure.Identity to version 1.10.4
