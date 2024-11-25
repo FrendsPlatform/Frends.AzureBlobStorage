@@ -63,6 +63,7 @@ public class UnitTests
             PageOffset = default,
             ParallelOperations = default,
             ResizeFile = default,
+            TargetFolder = "targetfolder",
         };
 
         _destinationOA = new Destination
@@ -83,6 +84,7 @@ public class UnitTests
             PageOffset = default,
             ParallelOperations = default,
             ResizeFile = default,
+            TargetFolder = "targetfolder",
         };
 
         _options = new Options() { ThrowErrorOnFailure = true };
@@ -104,6 +106,8 @@ public class UnitTests
 
         var _sourceWithoutTags = _source;
         _sourceWithoutTags.Tags = null;
+        _destinationCS.TargetFolder = null;
+        _destinationOA.TargetFolder = null;
 
         foreach (var blobtype in _blobtypes)
         {
@@ -137,11 +141,13 @@ public class UnitTests
     [TestMethod]
     public async Task UploadFile_SetBlobName_ForceEncoding_ForceContentType()
     {
-        _source.BlobName = "SomeBlob";
+        _source.RenameToBlobName = "SomeBlob";
         _destinationCS.FileEncoding = "foo/bar";
         _destinationCS.ContentType = "text/xml";
+        _destinationCS.TargetFolder = null;
         _destinationOA.FileEncoding = "foo/bar";
         _destinationOA.ContentType = "text/xml";
+        _destinationOA.TargetFolder = null;
 
         var container = GetBlobContainer(_connectionString, _containerName);
 
@@ -167,7 +173,7 @@ public class UnitTests
     [TestMethod]
     public async Task UploadFile_Compress()
     {
-        _source.BlobName = "compress.gz";
+        _source.RenameToBlobName = "compress.gz";
         _source.Compress = true;
 
         var container = GetBlobContainer(_connectionString, _containerName);
@@ -180,14 +186,14 @@ public class UnitTests
             // connection string
             var result = await AzureBlobStorage.UploadBlob(_source, _destinationCS, _options, default);
             Assert.IsTrue(result.Success);
-            Assert.IsTrue(result.Data.ContainsValue($"{container.Uri}/compress.gz"));
-            Assert.IsTrue(await container.GetBlobClient("compress.gz").ExistsAsync(), "Uploaded SomeBlob blob should exist");
+            Assert.IsTrue(result.Data.ContainsValue($"{container.Uri}/targetfolder/compress.gz"));
+            Assert.IsTrue(await container.GetBlobClient("targetfolder/compress.gz").ExistsAsync(), "Uploaded SomeBlob blob should exist");
 
             // OAuth
             var result2 = await AzureBlobStorage.UploadBlob(_source, _destinationOA, _options, default);
             Assert.IsTrue(result2.Success);
-            Assert.IsTrue(result2.Data.ContainsValue($"{container.Uri}/compress.gz"));
-            Assert.IsTrue(await container.GetBlobClient("compress.gz").ExistsAsync(), "Uploaded SomeBlob blob should exist");
+            Assert.IsTrue(result2.Data.ContainsValue($"{container.Uri}/targetfolder/compress.gz"));
+            Assert.IsTrue(await container.GetBlobClient("targetfolder/compress.gz").ExistsAsync(), "Uploaded SomeBlob blob should exist");
         }
     }
 
@@ -196,7 +202,7 @@ public class UnitTests
     {
         var errorHandlers = new List<HandleExistingFile>() { HandleExistingFile.Append, HandleExistingFile.Overwrite, HandleExistingFile.Error };
         var _source2 = _source;
-        _source2.BlobName = "testfile.txt";
+        _source2.RenameToBlobName = "testfile.txt";
         _source2.SourceFile = _testfile2;
 
         foreach (var blobtype in _blobtypes)
@@ -217,23 +223,23 @@ public class UnitTests
                 var container = GetBlobContainer(_connectionString, _containerName);
                 var result = await AzureBlobStorage.UploadBlob(_source, _destinationCS, _options, default);
                 Assert.IsTrue(result.Success);
-                Assert.IsTrue(result.Data.ContainsValue($"{container.Uri}/testfile.txt"));
-                Assert.IsTrue(await container.GetBlobClient("testfile.txt").ExistsAsync(), "Uploaded testfile.txt blob should exist");
+                Assert.IsTrue(result.Data.ContainsValue($"{container.Uri}/targetfolder/testfile.txt"));
+                Assert.IsTrue(await container.GetBlobClient("targetfolder/testfile.txt").ExistsAsync(), "Uploaded targetfolder/testfile.txt blob should exist");
 
                 if (handler is HandleExistingFile.Append)
                 {
                     var result2 = await AzureBlobStorage.UploadBlob(_source2, _destinationCS, _options, default);
                     // You can use Azure Portal to check if the blob contains 2x "Etiam dui".
                     Assert.IsTrue(result2.Success);
-                    Assert.IsTrue(result2.Data.ContainsValue($"{container.Uri}/testfile.txt"));
-                    Assert.IsTrue(await container.GetBlobClient("testfile.txt").ExistsAsync(), "Uploaded testfile.txt blob should exist");
+                    Assert.IsTrue(result2.Data.ContainsValue($"{container.Uri}/targetfolder/testfile.txt"));
+                    Assert.IsTrue(await container.GetBlobClient("targetfolder/testfile.txt").ExistsAsync(), "Uploaded targetfolder/testfile.txt blob should exist");
                 }
                 else if (handler is HandleExistingFile.Overwrite)
                 {
                     var result2 = await AzureBlobStorage.UploadBlob(_source, _destinationCS, _options, default);
                     Assert.IsTrue(result2.Success);
-                    Assert.IsTrue(result2.Data.ContainsValue($"{container.Uri}/testfile.txt"));
-                    Assert.IsTrue(await container.GetBlobClient("testfile.txt").ExistsAsync(), "Uploaded testfile.txt blob should exist");
+                    Assert.IsTrue(result2.Data.ContainsValue($"{container.Uri}/targetfolder/testfile.txt"));
+                    Assert.IsTrue(await container.GetBlobClient("targetfolder/testfile.txt").ExistsAsync(), "Uploaded targetfolder/testfile.txt blob should exist");
                 }
                 else
                 {
@@ -269,10 +275,10 @@ public class UnitTests
 
             var resultWithTags = await AzureBlobStorage.UploadBlob(_source, _destinationCS, _options, default);
             Assert.IsTrue(resultWithTags.Success);
-            Assert.IsTrue(resultWithTags.Data.ContainsValue($"{container.Uri}/TestFiles/testfile.txt"));
-            Assert.IsTrue(await container.GetBlobClient("TestFiles/testfile.txt").ExistsAsync(), "Uploaded testfile.txt blob should exist");
-            Assert.IsTrue(resultWithTags.Data.ContainsValue($"{container.Uri}/TestFiles/testfile2.txt"));
-            Assert.IsTrue(await container.GetBlobClient("TestFiles/testfile2.txt").ExistsAsync(), "Uploaded testfile2.txt blob should exist");
+            Assert.IsTrue(resultWithTags.Data.ContainsValue($"{container.Uri}/targetfolder/TestFiles/testfile.txt"));
+            Assert.IsTrue(await container.GetBlobClient("targetfolder/TestFiles/testfile.txt").ExistsAsync(), "Uploaded testfile.txt blob should exist");
+            Assert.IsTrue(resultWithTags.Data.ContainsValue($"{container.Uri}/targetfolder/TestFiles/testfile2.txt"));
+            Assert.IsTrue(await container.GetBlobClient("targetfolder/TestFiles/testfile2.txt").ExistsAsync(), "Uploaded testfile2.txt blob should exist");
         }
     }
 
@@ -282,7 +288,9 @@ public class UnitTests
         _source.SourceType = UploadSourceType.Directory;
         _source.SourceDirectory = _testFileDir;
         _source.SourceFile = default;
-        _source.BlobFolderName = "RenameDir";
+        _source.RenameToFolderName = "RenameDir";
+        _destinationCS.TargetFolder = "";
+        _destinationOA.TargetFolder = "";
 
         var container = GetBlobContainer(_connectionString, _containerName);
 

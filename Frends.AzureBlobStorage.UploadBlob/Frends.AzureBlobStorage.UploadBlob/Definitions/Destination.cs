@@ -61,6 +61,12 @@ public class Destination
     [PasswordPropertyText]
     public string ClientSecret { get; set; }
 
+    /// <summary>
+    /// Specifies the target folder path for the blob in Azure Blob Storage.
+    /// This value will be prepended to blob names during upload, effectively creating a virtual directory structure.
+    /// </summary>
+    /// <example>backups/2024/</example>
+    public string TargetFolder { get; set; }
 
     /// <summary>
     /// Determines if the container should be created if it does not exist. 

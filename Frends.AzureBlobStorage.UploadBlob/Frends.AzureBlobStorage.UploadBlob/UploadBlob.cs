@@ -33,6 +33,11 @@ public class AzureBlobStorage
     /// <returns>Object { bool Success, Dictionary&lt;string, string&gt; Data }</returns>
     public static async Task<Result> UploadBlob([PropertyTab] Source source, [PropertyTab] Destination destination, [PropertyTab] Options options, CancellationToken cancellationToken)
     {
+        if (destination.ContainerName.Contains('/') || destination.ContainerName.Contains('\\'))
+        {
+            throw new Exception("The container name cannot contain '/' or '\\'.");
+        }
+
         var results = new Dictionary<string, string>();
 
         var fi = string.IsNullOrEmpty(source.SourceFile) ? null : new FileInfo(source.SourceFile);
@@ -52,8 +57,12 @@ public class AzureBlobStorage
                     if (fi == null)
                         throw new FileNotFoundException($"Source file '{source.SourceFile}' was empty.");
                     blobName = fi.Name;
-                    if (!string.IsNullOrWhiteSpace(source.BlobName) || source.Compress)
-                        blobName = RenameFile(!string.IsNullOrWhiteSpace(source.BlobName) ? source.BlobName : fi.Name, source.Compress, fi);
+                    if (!string.IsNullOrWhiteSpace(source.RenameToBlobName) || source.Compress)
+                        blobName = RenameFile(!string.IsNullOrWhiteSpace(source.RenameToBlobName) ? source.RenameToBlobName : fi.Name, source.Compress, fi);
+                    if (!string.IsNullOrWhiteSpace(destination.TargetFolder))
+                    {
+                        blobName = $"{destination.TargetFolder.TrimEnd('/', '\\')}/{blobName}";
+                    }
                     results.Add(source.SourceFile, await HandleUpload(source, destination, options, fi, blobName, cancellationToken));
                     break;
                 case UploadSourceType.Directory:
@@ -66,11 +75,16 @@ public class AzureBlobStorage
                             fileName = RenameFile(fileName, source.Compress, file);
 
                         var parentDirectory = Path.GetFileName(Path.GetDirectoryName(file.ToString()));
-                        var withDir = string.IsNullOrWhiteSpace(source.BlobFolderName)
+                        var withDir = string.IsNullOrWhiteSpace(source.RenameToFolderName)
                             ? Path.Combine(parentDirectory, fileName)
-                            : Path.Combine(source.BlobFolderName, fileName);
+                            : Path.Combine(source.RenameToFolderName, fileName);
 
                         blobName = withDir.Replace("\\", "/");
+
+                        if (!string.IsNullOrWhiteSpace(destination.TargetFolder))
+                        {
+                            blobName = $"{destination.TargetFolder.TrimEnd('/', '\\')}/{blobName}";
+                        }
 
                         results.Add(file.FullName, await HandleUpload(source, destination, options, file, blobName, cancellationToken));
                         handledFile = file.FullName;
@@ -121,7 +135,6 @@ public class AzureBlobStorage
 
     private static async Task<string> HandleUpload(Source source, Destination destination, Options options, FileInfo fi, string blobName, CancellationToken cancellationToken)
     {
-        blobName = string.IsNullOrWhiteSpace(source.BlobName) ? blobName : source.BlobName;
 
         var contentType = string.IsNullOrWhiteSpace(destination.ContentType) ? MimeUtility.GetMimeMapping(fi.Name) : destination.ContentType;
         var encoding = GetEncoding(destination.FileEncoding);
@@ -383,7 +396,16 @@ public class AzureBlobStorage
             }
             else
             {
-                var tempFile = Path.Combine(Path.GetTempPath(), blobName);
+                string normalizedBlobName = blobName.Replace('/', '\\');
+
+                var tempFile = Path.Combine(Path.GetTempPath(), normalizedBlobName);
+
+                string directoryPath = Path.GetDirectoryName(tempFile);
+
+                if (!Directory.Exists(directoryPath))
+                {
+                    Directory.CreateDirectory(directoryPath);
+                }
 
                 if (blob != null)
                     await blob.DownloadToAsync(tempFile, cancellationToken);
