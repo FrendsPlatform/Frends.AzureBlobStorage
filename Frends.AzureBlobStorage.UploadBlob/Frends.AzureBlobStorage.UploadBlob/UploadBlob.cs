@@ -125,7 +125,6 @@ public class AzureBlobStorage
 
         var contentType = string.IsNullOrWhiteSpace(destination.ContentType) ? MimeUtility.GetMimeMapping(fi.Name) : destination.ContentType;
         var encoding = GetEncoding(destination.FileEncoding);
-        var progressHandler = new Progress<long>(progress => { Console.WriteLine("Bytes uploaded: {0}", progress); });
 
         var tags = new Dictionary<string, string>();
         if (source.Tags != null && source.Tags.Length > 0)
@@ -180,7 +179,7 @@ public class AzureBlobStorage
 
                         await appendBlobClient.CreateAsync(appendBlobCreateOptions, cancellationToken);
                         using var appendGetStream = GetStream(false, true, encoding, fi);
-                        await appendBlobClient.AppendBlockAsync(appendGetStream, null, null, progressHandler, cancellationToken);
+                        await appendBlobClient.AppendBlockAsync(appendGetStream, null, null, null, cancellationToken);
                     }
 
                     return appendBlobClient.Uri.ToString();
@@ -215,7 +214,6 @@ public class AzureBlobStorage
 
                     var blobUploadOptions = new BlobUploadOptions
                     {
-                        ProgressHandler = progressHandler,
                         TransferOptions = new StorageTransferOptions { MaximumConcurrency = destination.ParallelOperations },
                         HttpHeaders = new BlobHttpHeaders { ContentType = contentType, ContentEncoding = source.Compress ? "gzip" : encoding.WebName },
                         Tags = tags.Count > 0 ? tags : null

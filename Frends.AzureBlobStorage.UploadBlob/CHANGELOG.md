@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.3.0] - 2024-12-11
+### Updated
+- Removed progress handler
+
 ## [2.2.0] - 2024-12-05
 ### Updated
 - Fixed GZip compression
