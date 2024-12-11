@@ -1,6 +1,6 @@
 # Changelog
 
-## [2.1.1] - 2024-12-05
+## [2.2.0] - 2024-12-05
 ### Updated
 - Fixed GZip compression
 
