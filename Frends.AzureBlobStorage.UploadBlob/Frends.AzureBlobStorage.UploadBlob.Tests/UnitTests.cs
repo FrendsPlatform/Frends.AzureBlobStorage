@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.IO.Compression;
 using System.Threading.Tasks;
 
 namespace Frends.AzureBlobStorage.UploadBlob.Tests;
@@ -182,6 +183,28 @@ public class UnitTests
             Assert.IsTrue(result.Success);
             Assert.IsTrue(result.Data.ContainsValue($"{container.Uri}/compress.gz"));
             Assert.IsTrue(await container.GetBlobClient("compress.gz").ExistsAsync(), "Uploaded SomeBlob blob should exist");
+
+            if (blobtype == AzureBlobType.Block)
+            {
+                var downloadedFilePath = Path.GetTempFileName();
+                try
+                {
+                    await container.GetBlobClient("compress.gz").DownloadToAsync(downloadedFilePath);
+
+                    using (var downloadedStream = File.OpenRead(downloadedFilePath))
+                    using (var gzipStream = new GZipStream(downloadedStream, CompressionMode.Decompress))
+                    using (var reader = new StreamReader(gzipStream))
+                    {
+                        var decompressedContent = await reader.ReadToEndAsync();
+                        var originalContent = await File.ReadAllTextAsync(_source.SourceFile);
+                        Assert.AreEqual(originalContent, decompressedContent, "Decompressed content should match original");
+                    }
+                }
+                finally
+                {
+                    if (File.Exists(downloadedFilePath)) File.Delete(downloadedFilePath);
+                }
+            }
 
             // OAuth
             var result2 = await AzureBlobStorage.UploadBlob(_source, _destinationOA, _options, default);

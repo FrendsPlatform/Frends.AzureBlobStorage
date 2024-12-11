@@ -417,31 +417,29 @@ public class AzureBlobStorage
 
             if (!compress)
             {
-                using (var reader = new StreamReader(fileStream, encoding)) bytes = encoding.GetBytes(reader.ReadToEnd());
+                using var reader = new StreamReader(fileStream, encoding);
+                bytes = encoding.GetBytes(reader.ReadToEnd());
                 return new MemoryStream(bytes);
             }
 
             using var outStream = new MemoryStream();
-            using var gzip = new GZipStream(outStream, CompressionMode.Compress);
-
-            if (!fromString)
+            using (var gzip = new GZipStream(outStream, CompressionMode.Compress, true))
             {
-                fileStream.CopyTo(gzip);
-            }
-            else
-            {
-                using var reader = new StreamReader(fileStream, encoding);
-                var content = reader.ReadToEnd();
-                using var encodedMemory = new MemoryStream(encoding.GetBytes(content));
-                encodedMemory.CopyTo(gzip);
+                if (!fromString)
+                {
+                    fileStream.CopyTo(gzip);
+                }
+                else
+                {
+                    using var reader = new StreamReader(fileStream, encoding);
+                    var content = reader.ReadToEnd();
+                    using var encodedMemory = new MemoryStream(encoding.GetBytes(content));
+                    encodedMemory.CopyTo(gzip);
+                }
             }
 
             bytes = outStream.ToArray();
-
-            fileStream.Close();
-
-            var memStream = new MemoryStream(bytes);
-            return memStream;
+            return new MemoryStream(bytes);
         }
         finally
         {
