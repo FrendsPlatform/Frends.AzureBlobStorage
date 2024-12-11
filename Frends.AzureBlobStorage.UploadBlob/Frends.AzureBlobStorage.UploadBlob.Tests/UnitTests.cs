@@ -17,7 +17,7 @@ public class UnitTests
     private readonly string _appID = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_AppID");
     private readonly string _clientSecret = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_ClientSecret");
     private readonly string _tenantID = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_TenantID");
-    private readonly string _storageAccount = "frendstaskstestcontainer";
+    private readonly string _storageAccount = "stataskdevelopment";
     private readonly string _testFileDir = Path.Combine(Environment.CurrentDirectory, "TestFiles");
     private readonly string _testfile = Path.Combine(Environment.CurrentDirectory, "TestFiles", "testfile.txt");
     private readonly string _testfile2 = Path.Combine(Environment.CurrentDirectory, "TestFiles", "testfile2.txt");

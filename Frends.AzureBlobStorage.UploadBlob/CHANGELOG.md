@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.1.1] - 2024-12-11
+### Updated
+- Removed progress handler
+
 ## [2.1.0] - 2024-08-21
 ### Updated
 - Updated Azure.Identity to version 1.12.0.
