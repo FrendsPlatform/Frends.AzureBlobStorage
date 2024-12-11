@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.0.0] - 2024-11-25
+### Added
+- New parameter: Destination.TargetFolder to specify a target folder path for uploaded blobs.
+### Changed
+- Renamed Source.BlobName to Source.RenameToBlobName and Source.BlobFolderName to Source.RenameToFolderName for improved clarity.
+
 ## [2.1.0] - 2024-08-21
 ### Updated
 - Updated Azure.Identity to version 1.12.0.

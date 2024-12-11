@@ -41,20 +41,20 @@ public class Source
     public string SourceFile { get; set; }
 
     /// <summary>
-    /// Name of the blob. If left empty, the blob's name will be the same as the source file.
+    /// Specifies a custom name for the blob in Azure Blob Storage. If left empty, the blob's name will be the same as the source file.
     /// </summary>
     /// <example>Renamed.txt</example>
     [UIHint(nameof(SourceType), "", UploadSourceType.File)]
     [DisplayFormat(DataFormatString = "Text")]
-    public string BlobName { get; set; }
+    public string RenameToBlobName { get; set; }
 
     /// <summary>
-    /// Name of the blob folder. If left empty, blob folder's name will be the same as source directory (e.g., 'Example' in C:\temp\Example).
+    /// Specifies a custom name for the blob folder in Azure Blob Storage.. If left empty, blob folder's name will be the same as source directory (e.g., 'Example' in C:\temp\Example).
     /// </summary>
     /// <example>ExampleDir</example>
     [UIHint(nameof(SourceType), "", UploadSourceType.Directory)]
     [DisplayFormat(DataFormatString = "Text")]
-    public string BlobFolderName { get; set; }
+    public string RenameToFolderName { get; set; }
 
     /// <summary>
     /// Use a stream to read the file's content
