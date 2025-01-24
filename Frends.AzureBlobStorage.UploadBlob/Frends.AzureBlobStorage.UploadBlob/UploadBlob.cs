@@ -1,4 +1,5 @@
-﻿using Azure.Identity;
+﻿using Azure;
+using Azure.Identity;
 using Azure.Storage;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
@@ -43,8 +44,8 @@ public class AzureBlobStorage
             CheckParameters(destination, source);
             var blobName = string.Empty;
 
-            if (destination.CreateContainerIfItDoesNotExist && destination.ConnectionMethod is ConnectionMethod.ConnectionString)
-                await CreateContainerIfItDoesNotExist(destination.ConnectionString, destination.ContainerName.ToLower(), cancellationToken);
+            if (destination.CreateContainerIfItDoesNotExist && (destination.ConnectionMethod is ConnectionMethod.ConnectionString || destination.ConnectionMethod is ConnectionMethod.OAuth2))
+                await CreateContainerIfItDoesNotExist(destination, destination.ContainerName.ToLower(), cancellationToken);
 
             switch (source.SourceType)
             {
@@ -121,33 +122,30 @@ public class AzureBlobStorage
 
     private static async Task<string> HandleUpload(Source source, Destination destination, Options options, FileInfo fi, string blobName, CancellationToken cancellationToken)
     {
-        blobName = string.IsNullOrWhiteSpace(source.BlobName) ? blobName : source.BlobName;
+        blobName = string.IsNullOrEmpty(source.BlobName) ? blobName : source.BlobName;
 
-        var contentType = string.IsNullOrWhiteSpace(destination.ContentType) ? MimeUtility.GetMimeMapping(fi.Name) : destination.ContentType;
-        var encoding = GetEncoding(destination.FileEncoding);
+        var contentType = string.IsNullOrEmpty(destination.ContentType) ? MimeUtility.GetMimeMapping(fi.Name) : destination.ContentType;
+        var encoding = GetEncoding(destination.Encoding, destination.FileEncodingString, destination.EnableBOM);
 
-        var tags = new Dictionary<string, string>();
-        if (source.Tags != null && source.Tags.Length > 0)
-            foreach (var tag in source.Tags)
-                tags.Add(tag.Name, tag.Value);
+        var tags = source.Tags != null ? source.Tags.ToDictionary(tag => tag.Name, tag => tag.Value) : new Dictionary<string, string>();
 
+        var credentials = destination.ConnectionMethod is ConnectionMethod.OAuth2 ? new ClientSecretCredential(destination.TenantID, destination.ApplicationID, destination.ClientSecret, new ClientSecretCredentialOptions()) : null;
 
-        ClientSecretCredential credentials = destination.ConnectionMethod is not ConnectionMethod.ConnectionString
-            ? new ClientSecretCredential(destination.TenantID, destination.ApplicationID, destination.ClientSecret, new ClientSecretCredentialOptions())
-            : null;
+        BlobContainerClient containerClient = null;
 
-        Uri url = destination.ConnectionMethod is not ConnectionMethod.ConnectionString
-            ? new Uri($"https://{destination.StorageAccountName}.blob.core.windows.net/{destination.ContainerName.ToLower()}/{blobName}")
-            : null;
+        if (destination.ConnectionMethod is ConnectionMethod.ConnectionString)
+            containerClient = new BlobContainerClient(destination.ConnectionString, destination.ContainerName.ToLower());
+        else if (destination.ConnectionMethod is ConnectionMethod.SASToken)
+            containerClient = new BlobContainerClient(new Uri($"{destination.Uri}/{destination.ContainerName}?"), new AzureSasCredential(destination.SASToken));
+
+        var overwrite = destination.HandleExistingFile == HandleExistingFile.Overwrite;
 
         switch (destination.BlobType)
         {
             case AzureBlobType.Append:
                 try
                 {
-                    var appendBlobClient = destination.ConnectionMethod is ConnectionMethod.ConnectionString
-                        ? new AppendBlobClient(destination.ConnectionString, destination.ContainerName.ToLower(), blobName)
-                        : new AppendBlobClient(url, credentials);
+                    AppendBlobClient appendBlobClient = destination.ConnectionMethod is ConnectionMethod.OAuth2 ? new AppendBlobClient(new Uri($"{destination.Uri}/{destination.ContainerName.ToLower()}/{blobName}"), credentials) : containerClient.GetAppendBlobClient(blobName);
 
                     var exists = false;
                     exists = await appendBlobClient.ExistsAsync(cancellationToken);
@@ -192,13 +190,12 @@ public class AzureBlobStorage
             case AzureBlobType.Block:
                 try
                 {
-                    var blobClient = destination.ConnectionMethod is ConnectionMethod.ConnectionString
-                        ? new BlobClient(destination.ConnectionString, destination.ContainerName.ToLower(), blobName)
-                        : new BlobClient(url, credentials);
+                    var blobname = blobName;
+                    BlobClient blobClient = destination.ConnectionMethod is ConnectionMethod.OAuth2 ? new BlobClient(new Uri($"{destination.Uri}/{destination.ContainerName.ToLower()}/{blobName}"), credentials) : containerClient.GetBlobClient(blobName);
 
                     var exists = await blobClient.ExistsAsync(cancellationToken);
 
-                    if (exists && destination.HandleExistingFile is HandleExistingFile.Error)
+                    if (exists.Value && destination.HandleExistingFile is HandleExistingFile.Error)
                     {
                         if (!options.ThrowErrorOnFailure)
                             return @$"Blob {blobName} already exists.";
@@ -206,14 +203,15 @@ public class AzureBlobStorage
                             throw new Exception(@$"Blob {blobName} already exists.");
                     }
 
-                    if (exists && destination.HandleExistingFile is HandleExistingFile.Overwrite)
+                    if (exists.Value && destination.HandleExistingFile is HandleExistingFile.Overwrite)
                         await blobClient.DeleteIfExistsAsync(DeleteSnapshotsOption.None, null, cancellationToken);
 
-                    if (exists && destination.HandleExistingFile is HandleExistingFile.Append)
+                    if (exists.Value && destination.HandleExistingFile is HandleExistingFile.Append)
                         fi = await AppendAny(blobClient, null, null, blobName, source.SourceFile, cancellationToken);
 
                     var blobUploadOptions = new BlobUploadOptions
                     {
+                        Conditions = overwrite ? null : new BlobRequestConditions { IfNoneMatch = new ETag("*") },
                         TransferOptions = new StorageTransferOptions { MaximumConcurrency = destination.ParallelOperations },
                         HttpHeaders = new BlobHttpHeaders { ContentType = contentType, ContentEncoding = source.Compress ? "gzip" : encoding.WebName },
                         Tags = tags.Count > 0 ? tags : null
@@ -238,9 +236,7 @@ public class AzureBlobStorage
             case AzureBlobType.Page:
                 try
                 {
-                    var pageBlobClient = destination.ConnectionMethod is ConnectionMethod.ConnectionString
-                        ? new PageBlobClient(destination.ConnectionString, destination.ContainerName.ToLower(), blobName)
-                        : new PageBlobClient(url, credentials);
+                    PageBlobClient pageBlobClient = destination.ConnectionMethod is ConnectionMethod.OAuth2 ? new PageBlobClient(new Uri($"{destination.Uri}/{destination.ContainerName.ToLower()}/{blobName}"), credentials) : containerClient.GetPageBlobClient(blobName);
 
                     var origSize = 0;
                     var exists = false;
@@ -327,11 +323,25 @@ public class AzureBlobStorage
         }
     }
 
-    private static async Task CreateContainerIfItDoesNotExist(string connectionString, string containerName, CancellationToken cancellationToken)
+    private static async Task CreateContainerIfItDoesNotExist(Destination destination, string containerName, CancellationToken cancellationToken)
     {
         try
         {
-            var blobServiceClient = new BlobServiceClient(connectionString);
+            BlobServiceClient blobServiceClient;
+            if (destination.ConnectionMethod is ConnectionMethod.ConnectionString)
+                blobServiceClient = new BlobServiceClient(destination.ConnectionString);
+            else if (destination.ConnectionMethod is ConnectionMethod.SASToken)
+            {
+                var serviceURI = new Uri($"{destination.Uri}");
+                blobServiceClient = new BlobServiceClient(serviceURI, new AzureSasCredential(destination.SASToken));
+            }
+            else
+            {
+                var serviceURI = new Uri($"{destination.Uri}");
+                var credentials = new ClientSecretCredential(destination.TenantID, destination.ApplicationID, destination.ClientSecret, new ClientSecretCredentialOptions());
+                blobServiceClient = new BlobServiceClient(serviceURI, credentials);
+            }
+
             var container = blobServiceClient.GetBlobContainerClient(containerName);
             await container.CreateIfNotExistsAsync(PublicAccessType.None, null, null, cancellationToken);
         }
@@ -447,40 +457,44 @@ public class AzureBlobStorage
         }
     }
 
-    private static Encoding GetEncoding(string target)
+    private static Encoding GetEncoding(FileEncoding encoding, string encodingString, bool enableBom)
     {
-        return target.ToLower() switch
+        return encoding switch
         {
-            "utf-32" => Encoding.UTF32,
-            "unicode" => Encoding.Unicode,
-            "ascii" => Encoding.ASCII,
-            _ => Encoding.UTF8,
+            FileEncoding.UTF8 => enableBom ? new UTF8Encoding(true) : new UTF8Encoding(false),
+            FileEncoding.ASCII => new ASCIIEncoding(),
+            FileEncoding.Default => Encoding.Default,
+            FileEncoding.WINDOWS1252 => CodePagesEncodingProvider.Instance.GetEncoding("windows-1252"),
+            FileEncoding.Other => CodePagesEncodingProvider.Instance.GetEncoding(encodingString),
+            _ => throw new ArgumentOutOfRangeException($"Unknown Encoding type: '{encoding}'."),
         };
     }
 
     private static void CheckParameters(Destination destination, Source source)
     {
-        if (!string.IsNullOrWhiteSpace(source.SourceDirectory) && source.SourceType is UploadSourceType.Directory && !Directory.Exists(source.SourceDirectory))
+        if (!string.IsNullOrEmpty(source.SourceDirectory) && source.SourceType is UploadSourceType.Directory && !Directory.Exists(source.SourceDirectory))
             throw new Exception(@$"Source directory {source.SourceDirectory} doesn't exists.");
-        if (!string.IsNullOrWhiteSpace(source.SourceDirectory) && source.SourceType is UploadSourceType.Directory && !Directory.EnumerateFileSystemEntries(source.SourceDirectory).Any())
+        if (!string.IsNullOrEmpty(source.SourceDirectory) && source.SourceType is UploadSourceType.Directory && !Directory.EnumerateFileSystemEntries(source.SourceDirectory).Any())
             throw new Exception(@$"Source directory {source.SourceDirectory} is empty.");
-        if (!string.IsNullOrWhiteSpace(source.SourceFile) && source.SourceType is UploadSourceType.Directory)
+        if (!string.IsNullOrEmpty(source.SourceFile) && source.SourceType is UploadSourceType.Directory)
             throw new Exception("Source.SourceFile must be empty when Source.SourceType is Directory.");
-        if (string.IsNullOrWhiteSpace(source.SourceDirectory) && source.SourceType is UploadSourceType.Directory)
+        if (string.IsNullOrEmpty(source.SourceDirectory) && source.SourceType is UploadSourceType.Directory)
             throw new Exception("Source.SourceDirectory value is empty.");
-        if (!string.IsNullOrWhiteSpace(source.SourceFile) && source.SourceType is UploadSourceType.Directory && File.Exists(source.SourceFile))
+        if (!string.IsNullOrEmpty(source.SourceFile) && source.SourceType is UploadSourceType.Directory && File.Exists(source.SourceFile))
             throw new Exception(@$"Source file {source.SourceFile} doesn't exists.");
-        if (!string.IsNullOrWhiteSpace(source.SourceDirectory) && source.SourceType is UploadSourceType.File)
+        if (!string.IsNullOrEmpty(source.SourceDirectory) && source.SourceType is UploadSourceType.File)
             throw new Exception("Source.SourceDirectory must be empty when Source.SourceType is Directory.");
-        if (string.IsNullOrWhiteSpace(source.SourceFile) && source.SourceType is UploadSourceType.File)
+        if (string.IsNullOrEmpty(source.SourceFile) && source.SourceType is UploadSourceType.File)
             throw new Exception("Source.SourceFile not found.");
-        if (string.IsNullOrWhiteSpace(source.SourceFile) && source.SourceType is UploadSourceType.File)
+        if (string.IsNullOrEmpty(source.SourceFile) && source.SourceType is UploadSourceType.File)
             throw new Exception("Source.SourceFile not found.");
-        if (destination.ConnectionMethod is ConnectionMethod.OAuth2 && (destination.ApplicationID is null || destination.ClientSecret is null || destination.TenantID is null || destination.StorageAccountName is null))
+        if (destination.ConnectionMethod is ConnectionMethod.OAuth2 && (destination.ApplicationID is null || destination.ClientSecret is null || destination.TenantID is null || destination.Uri is null))
             throw new Exception("Destination.StorageAccountName, Destination.ClientSecret, Destination.ApplicationID and Destination.TenantID parameters can't be empty when Destination.ConnectionMethod = OAuth.");
-        if (string.IsNullOrWhiteSpace(destination.ConnectionString) && destination.ConnectionMethod is ConnectionMethod.ConnectionString)
+        if (destination.ConnectionMethod is ConnectionMethod.ConnectionString && string.IsNullOrEmpty(destination.ConnectionString))
             throw new Exception("Destination.ConnectionString parameter can't be empty when Destination.ConnectionMethod = ConnectionString.");
-        if (string.IsNullOrWhiteSpace(destination.ContainerName))
+        if (destination.ConnectionMethod is ConnectionMethod.SASToken && (string.IsNullOrEmpty(destination.Uri) || string.IsNullOrEmpty(destination.SASToken)))
+            throw new Exception("Destination.SASToken and Destination.URI parameters can't be empty when Destination.ConnectionMethod = SASToken.");
+        if (string.IsNullOrEmpty(destination.ContainerName))
             throw new Exception("Destination.ContainerName parameter can't be empty.");
     }
 }
