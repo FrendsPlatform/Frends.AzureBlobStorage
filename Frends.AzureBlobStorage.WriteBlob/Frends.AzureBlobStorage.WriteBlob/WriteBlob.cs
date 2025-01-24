@@ -62,7 +62,7 @@ public class AzureBlobStorage
 
             if (destination.CreateContainerIfItDoesNotExist && (destination.ConnectionMethod is ConnectionMethod.ConnectionString || destination.ConnectionMethod is ConnectionMethod.OAuth2))
                 await CreateContainerIfItDoesNotExist(blobServiceClient, destination.ContainerName.ToLower(), cancellationToken);
-                
+
             var info = await HandleWrite(blobClient, source, destination, cancellationToken);
             return new Result(true, info);
         }
@@ -101,7 +101,7 @@ public class AzureBlobStorage
         }
         catch (Exception ex)
         {
-            throw new Exception($"An error occured while checking if container exists or while creating a new container. {ex}");
+            throw new Exception($"An error occurred while checking if container exists or while creating a new container.", ex);
         }
     }
 
@@ -121,7 +121,7 @@ public class AzureBlobStorage
     private static void CheckDestinationParameters(Destination destination)
     {
         if (destination.ConnectionMethod is ConnectionMethod.OAuth2 && (string.IsNullOrEmpty(destination.ApplicationID) || string.IsNullOrEmpty(destination.ClientSecret) || string.IsNullOrEmpty(destination.TenantID) || string.IsNullOrEmpty(destination.Uri)))
-            throw new Exception("Destination.StorageAccountName, Destination.ClientSecret, Destination.ApplicationID and Destination.TenantID parameters can't be empty when Destination.ConnectionMethod = OAuth.");
+            throw new Exception("Destination.Uri, Destination.ClientSecret, Destination.ApplicationID, and Destination.TenantID parameters can't be empty when Destination.ConnectionMethod = OAuth2.");
         if (destination.ConnectionMethod is ConnectionMethod.ConnectionString && string.IsNullOrEmpty(destination.ConnectionString))
             throw new Exception("Destination.ConnectionString parameter can't be empty when Destination.ConnectionMethod = ConnectionString.");
         if (destination.ConnectionMethod is ConnectionMethod.SASToken && (string.IsNullOrEmpty(destination.SASToken) || string.IsNullOrEmpty(destination.Uri)))
