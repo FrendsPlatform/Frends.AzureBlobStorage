@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.4.0] - 2025-01-27
+### Added
+- Added SAS Token authentication method.
+
 ## [2.3.0] - 2024-12-11
 ### Updated
 - Removed progress handler

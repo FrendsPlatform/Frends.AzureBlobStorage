@@ -176,7 +176,7 @@ public class AzureBlobStorage
                         };
 
                         await appendBlobClient.CreateAsync(appendBlobCreateOptions, cancellationToken);
-                        using var appendGetStream = GetStream(false, true, encoding, fi);
+                        using var appendGetStream = new MemoryStream(GetBytes(false, true, encoding, fi));
                         await appendBlobClient.AppendBlockAsync(appendGetStream, null, null, null, cancellationToken);
                     }
 
@@ -217,10 +217,7 @@ public class AzureBlobStorage
                         Tags = tags.Count > 0 ? tags : null
                     };
 
-                    using (var stream = GetStream(source.Compress, source.ContentsOnly, encoding, fi))
-                    {
-                        await blobClient.UploadAsync(stream, blobUploadOptions, cancellationToken);
-                    }
+                    await blobClient.UploadAsync(BinaryData.FromBytes(GetBytes(source.Compress, source.ContentsOnly, encoding, fi)), blobUploadOptions, cancellationToken);
 
                     //Delete temp file
                     if (File.Exists(fi.FullName) && Path.GetDirectoryName(fi.FullName) != Path.GetDirectoryName(source.SourceFile) && Path.GetDirectoryName(fi.FullName) != source.SourceDirectory)
@@ -286,7 +283,7 @@ public class AzureBlobStorage
                             await pageBlobClient.ResizeAsync(fiMinLenght + bytesMissing, cancellationToken: cancellationToken);
                     }
 
-                    using var pageGetStream = GetStream(false, true, encoding, fi);
+                    using var pageGetStream = new MemoryStream(GetBytes(false, true, encoding, fi));
 
                     if (!exists)
                         await pageBlobClient.CreateAsync(requiredSize, cancellationToken: cancellationToken);
@@ -414,22 +411,16 @@ public class AzureBlobStorage
         }
     }
 
-    private static Stream GetStream(bool compress, bool fromString, Encoding encoding, FileInfo file)
+    private static byte[] GetBytes(bool compress, bool fromString, Encoding encoding, FileInfo file)
     {
         var fileStream = File.OpenRead(file.FullName);
 
-        if (!compress && !fromString)
-            return fileStream;
-
         try
         {
-            byte[] bytes;
-
             if (!compress)
             {
                 using var reader = new StreamReader(fileStream, encoding);
-                bytes = encoding.GetBytes(reader.ReadToEnd());
-                return new MemoryStream(bytes);
+                return encoding.GetBytes(reader.ReadToEnd());
             }
 
             using var outStream = new MemoryStream();
@@ -448,8 +439,7 @@ public class AzureBlobStorage
                 }
             }
 
-            bytes = outStream.ToArray();
-            return new MemoryStream(bytes);
+            return outStream.ToArray();
         }
         finally
         {
