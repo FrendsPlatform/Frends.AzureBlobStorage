@@ -54,12 +54,12 @@ public class AzureBlobStorage
                         throw new FileNotFoundException($"Source file '{source.SourceFile}' was empty.");
                     blobName = fi.Name;
                     if (!string.IsNullOrWhiteSpace(source.BlobName) || source.Compress)
-                        blobName = RenameFile(!string.IsNullOrWhiteSpace(source.BlobName) ? source.BlobName : fi.Name, source.Compress, fi);
+                        blobName = RenameFile(!string.IsNullOrEmpty(source.BlobName) ? source.BlobName : fi.Name, source.Compress, fi);
                     results.Add(source.SourceFile, await HandleUpload(source, destination, options, fi, blobName, cancellationToken));
                     break;
                 case UploadSourceType.Directory:
-                    var dir = string.IsNullOrWhiteSpace(source.SourceDirectory) ? null : source.SourceDirectory;
-                    foreach (var file in Directory.GetFiles(dir, string.IsNullOrWhiteSpace(source.SearchPattern) ? "*.*" : source.SearchPattern, SearchOption.AllDirectories)
+                    var dir = string.IsNullOrEmpty(source.SourceDirectory) ? null : source.SourceDirectory;
+                    foreach (var file in Directory.GetFiles(dir, string.IsNullOrEmpty(source.SearchPattern) ? "*.*" : source.SearchPattern, SearchOption.AllDirectories)
                         .Select(e => new FileInfo(e)))
                     {
                         var fileName = file.Name;
@@ -67,7 +67,7 @@ public class AzureBlobStorage
                             fileName = RenameFile(fileName, source.Compress, file);
 
                         var parentDirectory = Path.GetFileName(Path.GetDirectoryName(file.ToString()));
-                        var withDir = string.IsNullOrWhiteSpace(source.BlobFolderName)
+                        var withDir = string.IsNullOrEmpty(source.BlobFolderName)
                             ? Path.Combine(parentDirectory, fileName)
                             : Path.Combine(source.BlobFolderName, fileName);
 
@@ -111,7 +111,7 @@ public class AzureBlobStorage
                     throw new Exception($@"An exception occured while uploading directory. Last handled file: {handledFile}", ex);
                 else
                 {
-                    error.Add(null, $@"An exception occured while uploading directory. Last handled file: {handledFile}. {ex}");
+                    error.Add(string.Empty, $@"An exception occured while uploading directory. Last handled file: {handledFile}. {ex}");
                     return new Result(false, error);
                 }
             }
@@ -165,7 +165,7 @@ public class AzureBlobStorage
                     }
 
                     if (exists && destination.HandleExistingFile is HandleExistingFile.Append)
-                        fi = await AppendAny(null, appendBlobClient, null, blobName, source.SourceFile, cancellationToken);
+                        fi = await AppendAny(appendBlobClient, blobName, source.SourceFile, cancellationToken);
 
                     if (fi != null)
                     {
@@ -203,19 +203,22 @@ public class AzureBlobStorage
                             throw new Exception(@$"Blob {blobName} already exists.");
                     }
 
-                    if (exists.Value && destination.HandleExistingFile is HandleExistingFile.Overwrite)
-                        await blobClient.DeleteIfExistsAsync(DeleteSnapshotsOption.None, null, cancellationToken);
-
-                    if (exists.Value && destination.HandleExistingFile is HandleExistingFile.Append)
-                        fi = await AppendAny(blobClient, null, null, blobName, source.SourceFile, cancellationToken);
-
                     var blobUploadOptions = new BlobUploadOptions
                     {
                         Conditions = overwrite ? null : new BlobRequestConditions { IfNoneMatch = new ETag("*") },
                         TransferOptions = new StorageTransferOptions { MaximumConcurrency = destination.ParallelOperations },
                         HttpHeaders = new BlobHttpHeaders { ContentType = contentType, ContentEncoding = source.Compress ? "gzip" : encoding.WebName },
-                        Tags = tags.Count > 0 ? tags : null
+                        Tags = tags.Count > 0 ? tags : null,
                     };
+
+                    if (exists.Value && destination.HandleExistingFile is HandleExistingFile.Overwrite)
+                        await blobClient.DeleteIfExistsAsync(DeleteSnapshotsOption.None, null, cancellationToken);
+
+                    if (exists.Value && destination.HandleExistingFile is HandleExistingFile.Append)
+                    {
+                        fi = await AppendAny(blobClient, blobName, source.SourceFile, cancellationToken);
+                        await blobClient.DeleteIfExistsAsync(DeleteSnapshotsOption.None, null, cancellationToken);
+                    }
 
                     await blobClient.UploadAsync(BinaryData.FromBytes(GetBytes(source.Compress, source.ContentsOnly, encoding, fi)), blobUploadOptions, cancellationToken);
 
@@ -256,7 +259,7 @@ public class AzureBlobStorage
                     if (exists && destination.HandleExistingFile is HandleExistingFile.Append)
                     {
                         origSize = pageBlobClient.PageBlobPageBytes;
-                        fi = await AppendAny(null, null, pageBlobClient, blobName, source.SourceFile, cancellationToken);
+                        fi = await AppendAny(pageBlobClient, blobName, source.SourceFile, cancellationToken);
                     }
 
                     var bytesMissing = 0;
@@ -309,9 +312,14 @@ public class AzureBlobStorage
         try
         {
             string fileName;
-            if (string.IsNullOrWhiteSpace(renameTo) && compress) fileName = fi.Name + ".gz";
-            else if (string.IsNullOrWhiteSpace(renameTo)) fileName = fi.Name;
-            else fileName = renameTo;
+
+            if (string.IsNullOrEmpty(renameTo) && compress)
+                fileName = fi.Name + ".gz";
+            else if (string.IsNullOrEmpty(renameTo))
+                fileName = fi.Name;
+            else
+                fileName = renameTo;
+
             return fileName;
         }
         catch (Exception ex)
@@ -326,7 +334,9 @@ public class AzureBlobStorage
         {
             BlobServiceClient blobServiceClient;
             if (destination.ConnectionMethod is ConnectionMethod.ConnectionString)
+            {
                 blobServiceClient = new BlobServiceClient(destination.ConnectionString);
+            }
             else if (destination.ConnectionMethod is ConnectionMethod.SASToken)
             {
                 var serviceURI = new Uri($"{destination.Uri}");
@@ -348,29 +358,21 @@ public class AzureBlobStorage
         }
     }
 
-    private static async Task<FileInfo> AppendAny(BlobClient blob, AppendBlobClient appendBlobClient, PageBlobClient pageBlobClient, string blobName, string sourceFile, CancellationToken cancellationToken)
+    private static async Task<FileInfo> AppendAny(BlobBaseClient blobClient, string blobName, string sourceFile, CancellationToken cancellationToken)
     {
         try
         {
             BlobProperties blobProperties = null;
 
-            if (blob is null && appendBlobClient is null && pageBlobClient is null)
-                throw new Exception("AppendAny exception: Client missing.");
-            if (blob != null)
-                blobProperties = await blob.GetPropertiesAsync(cancellationToken: cancellationToken);
-            if (appendBlobClient != null)
-                blobProperties = await appendBlobClient.GetPropertiesAsync(cancellationToken: cancellationToken);
-            if (pageBlobClient != null)
-                blobProperties = await pageBlobClient.GetPropertiesAsync(cancellationToken: cancellationToken);
+            blobProperties = await blobClient.GetPropertiesAsync(cancellationToken: cancellationToken);
 
-            if (blobProperties == null) throw new Exception("Blob properties couldn't be fetched.");
+            if (blobProperties == null)
+                throw new Exception("Blob properties couldn't be fetched.");
 
             //Block and Page blobs need to be downloaded and handled in temp because file size can be too large for memory stream.
             if (blobProperties.BlobType.Equals(BlobType.Append))
             {
-                if (appendBlobClient == null)
-                    throw new Exception("AppendAny exception: Client missing.");
-                var appendBlobMaxAppendBlockBytes = appendBlobClient.AppendBlobMaxAppendBlockBytes;
+                var appendBlobMaxAppendBlockBytes = ((AppendBlobClient)blobClient).AppendBlobMaxAppendBlockBytes;
 
                 using var file = File.OpenRead(sourceFile);
                 {
@@ -380,7 +382,7 @@ public class AzureBlobStorage
                     {
                         var newArray = new Span<byte>(buffer, 0, bytesRead).ToArray();
                         using Stream stream = new MemoryStream(newArray) { Position = 0 };
-                        await appendBlobClient.AppendBlockAsync(stream, cancellationToken: cancellationToken);
+                        await ((AppendBlobClient)blobClient).AppendBlockAsync(stream, cancellationToken: cancellationToken);
                     }
                 }
 
@@ -389,13 +391,7 @@ public class AzureBlobStorage
             else
             {
                 var tempFile = Path.Combine(Path.GetTempPath(), blobName);
-
-                if (blob != null)
-                    await blob.DownloadToAsync(tempFile, cancellationToken);
-                if (appendBlobClient != null)
-                    await appendBlobClient.DownloadToAsync(tempFile, cancellationToken);
-                if (pageBlobClient != null)
-                    await pageBlobClient.DownloadToAsync(tempFile, cancellationToken);
+                await blobClient.DownloadToAsync(tempFile, cancellationToken);
 
                 using var sourceData = new StreamReader(sourceFile);
                 using var destinationFile = File.AppendText(tempFile);
@@ -462,20 +458,12 @@ public class AzureBlobStorage
 
     private static void CheckParameters(Destination destination, Source source)
     {
-        if (!string.IsNullOrEmpty(source.SourceDirectory) && source.SourceType is UploadSourceType.Directory && !Directory.Exists(source.SourceDirectory))
+        if (source.SourceType is UploadSourceType.Directory && !string.IsNullOrEmpty(source.SourceDirectory) && !Directory.Exists(source.SourceDirectory))
             throw new Exception(@$"Source directory {source.SourceDirectory} doesn't exists.");
-        if (!string.IsNullOrEmpty(source.SourceDirectory) && source.SourceType is UploadSourceType.Directory && !Directory.EnumerateFileSystemEntries(source.SourceDirectory).Any())
-            throw new Exception(@$"Source directory {source.SourceDirectory} is empty.");
-        if (!string.IsNullOrEmpty(source.SourceFile) && source.SourceType is UploadSourceType.Directory)
-            throw new Exception("Source.SourceFile must be empty when Source.SourceType is Directory.");
-        if (string.IsNullOrEmpty(source.SourceDirectory) && source.SourceType is UploadSourceType.Directory)
-            throw new Exception("Source.SourceDirectory value is empty.");
-        if (!string.IsNullOrEmpty(source.SourceFile) && source.SourceType is UploadSourceType.Directory && File.Exists(source.SourceFile))
-            throw new Exception(@$"Source file {source.SourceFile} doesn't exists.");
-        if (!string.IsNullOrEmpty(source.SourceDirectory) && source.SourceType is UploadSourceType.File)
-            throw new Exception("Source.SourceDirectory must be empty when Source.SourceType is File.");
-        if (string.IsNullOrEmpty(source.SourceFile) && source.SourceType is UploadSourceType.File)
-            throw new Exception("Source.SourceFile not found.");
+        if (source.SourceType is UploadSourceType.Directory && (string.IsNullOrEmpty(source.SourceDirectory) || !Directory.EnumerateFileSystemEntries(source.SourceDirectory).Any()))
+            throw new Exception(@$"Source.SourceDirectory value is empty.");
+        if (source.SourceType is UploadSourceType.File && string.IsNullOrEmpty(source.SourceFile))
+            throw new Exception("Source.SourceFile value is empty.");
         if (source.SourceType is UploadSourceType.File && !File.Exists(source.SourceFile))
             throw new Exception("Source.SourceFile not found.");
         if (destination.ConnectionMethod is ConnectionMethod.OAuth2 && (string.IsNullOrEmpty(destination.ApplicationID) || string.IsNullOrEmpty(destination.ClientSecret) || string.IsNullOrEmpty(destination.TenantID) || string.IsNullOrEmpty(destination.Uri)))
