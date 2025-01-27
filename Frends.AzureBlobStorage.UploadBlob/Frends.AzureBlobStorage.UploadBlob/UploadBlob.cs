@@ -134,9 +134,14 @@ public class AzureBlobStorage
         BlobContainerClient containerClient = null;
 
         if (destination.ConnectionMethod is ConnectionMethod.ConnectionString)
+        {
             containerClient = new BlobContainerClient(destination.ConnectionString, destination.ContainerName.ToLower());
+        } 
         else if (destination.ConnectionMethod is ConnectionMethod.SASToken)
+        {
+            var baseUri = destination.Uri.TrimEnd('/');
             containerClient = new BlobContainerClient(new Uri($"{destination.Uri}/{destination.ContainerName}?"), new AzureSasCredential(destination.SASToken));
+        }
 
         var overwrite = destination.HandleExistingFile == HandleExistingFile.Overwrite;
 
