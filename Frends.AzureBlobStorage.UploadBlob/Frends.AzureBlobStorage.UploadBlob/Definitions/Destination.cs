@@ -33,11 +33,12 @@ public class Destination
     public string ConnectionString { get; set; }
 
     /// <summary>
-    /// Name of the Azure storage account.
+    /// The base URI for the Azure Storage container.
+    /// Required for SAS and OAuth 2 authentication methods.
     /// </summary>
-    /// <example>Storager</example>
-    [UIHint(nameof(ConnectionMethod), "", ConnectionMethod.OAuth2)]
-    public string StorageAccountName { get; set; }
+    /// <example>https://{account_name}.blob.core.windows.net</example>
+    [UIHint(nameof(ConnectionMethod), "", ConnectionMethod.OAuth2, ConnectionMethod.SASToken)]
+    public string Uri { get; set; }
 
     /// <summary>
     /// Application (Client) ID of Azure AD Application.
@@ -61,6 +62,14 @@ public class Destination
     [PasswordPropertyText]
     public string ClientSecret { get; set; }
 
+    /// <summary>
+    /// A shared access signature to use when connecting to Azure storage container. 
+    /// Grants restricted access rights to Azure Storage resources when combined with URI.
+    /// </summary>
+    /// <example>sv=2021-04-10&amp;se=2022-04-10T10%3A431Z&amp;sr=c&amp;sp=l&amp;sig=ZJg983RovE%2BZXI</example>
+    [UIHint(nameof(ConnectionMethod), "", ConnectionMethod.SASToken)]
+    [PasswordPropertyText]
+    public string SASToken { get; set; }
 
     /// <summary>
     /// Determines if the container should be created if it does not exist. 
@@ -119,7 +128,22 @@ public class Destination
     /// Defaults to UTF8 BOM.
     /// </summary>
     /// <example>utf8</example>
-    public string FileEncoding { get; set; }
+    [DefaultValue(FileEncoding.UTF8)]
+    public FileEncoding Encoding { get; set; }
+
+    /// <summary>
+    /// Enables BOM for UTF-8.
+    /// </summary>
+    [UIHint(nameof(Encoding), "", FileEncoding.UTF8)]
+    [DefaultValue(true)]
+    public bool EnableBOM { get; set; }
+
+    /// <summary>
+    /// Content encoding as string. A partial list of possible encodings: https://en.wikipedia.org/wiki/Windows_code_page#List.
+    /// </summary>
+    /// <example>windows-1252</example>
+    [UIHint(nameof(Encoding), "", FileEncoding.Other)]
+    public string FileEncodingString { get; set; }
 
     /// <summary>
     /// How the existing blob will be handled.
