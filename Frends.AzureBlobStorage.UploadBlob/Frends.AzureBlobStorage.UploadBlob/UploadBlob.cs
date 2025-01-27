@@ -136,7 +136,7 @@ public class AzureBlobStorage
         if (destination.ConnectionMethod is ConnectionMethod.ConnectionString)
         {
             containerClient = new BlobContainerClient(destination.ConnectionString, destination.ContainerName.ToLower());
-        } 
+        }
         else if (destination.ConnectionMethod is ConnectionMethod.SASToken)
         {
             var baseUri = destination.Uri.TrimEnd('/');
@@ -475,8 +475,15 @@ public class AzureBlobStorage
             throw new Exception("Destination.StorageAccountName, Destination.ClientSecret, Destination.ApplicationID and Destination.TenantID parameters can't be empty when Destination.ConnectionMethod = OAuth.");
         if (destination.ConnectionMethod is ConnectionMethod.ConnectionString && string.IsNullOrEmpty(destination.ConnectionString))
             throw new Exception("Destination.ConnectionString parameter can't be empty when Destination.ConnectionMethod = ConnectionString.");
-        if (destination.ConnectionMethod is ConnectionMethod.SASToken && (string.IsNullOrEmpty(destination.Uri) || string.IsNullOrEmpty(destination.SASToken)))
-            throw new Exception("Destination.SASToken and Destination.URI parameters can't be empty when Destination.ConnectionMethod = SASToken.");
+        if (destination.ConnectionMethod is ConnectionMethod.SASToken)
+        {
+            if (string.IsNullOrEmpty(destination.Uri) || string.IsNullOrEmpty(destination.SASToken))
+                throw new Exception("Destination.SASToken and Destination.URI parameters can't be empty when Destination.ConnectionMethod = SASToken.");
+            if (!Uri.TryCreate(destination.Uri, UriKind.Absolute, out _))
+                throw new Exception("Destination.URI must be a valid absolute URI.");
+            if (!destination.SASToken.Contains("sig="))
+                throw new Exception("Destination.SASToken appears to be invalid. It should contain a signature.");
+        }
         if (string.IsNullOrEmpty(destination.ContainerName))
             throw new Exception("Destination.ContainerName parameter can't be empty.");
     }
