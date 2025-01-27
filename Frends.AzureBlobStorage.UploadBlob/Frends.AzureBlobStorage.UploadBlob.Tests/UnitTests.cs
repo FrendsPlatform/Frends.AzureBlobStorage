@@ -55,6 +55,7 @@ public class UnitTests
             ConnectionString = _connectionString,
             CreateContainerIfItDoesNotExist = true,
             Encoding = FileEncoding.UTF8,
+            EnableBOM = false,
             HandleExistingFile = HandleExistingFile.Overwrite,
             TenantID = _tenantID,
             ApplicationID = _appID,
@@ -512,6 +513,141 @@ public class UnitTests
         }
     }
 
+    [Test]
+    public async Task UploadBlob_TestEncoding()
+    {
+        var encodings = new List<FileEncoding>()
+        {
+            FileEncoding.UTF8,
+            FileEncoding.Default,
+            FileEncoding.ASCII,
+            FileEncoding.WINDOWS1252,
+            FileEncoding.Other
+        };
+
+        var expected = File.ReadAllText(_source.SourceFile);
+
+        _destination.FileEncodingString = "windows-1251";
+
+        foreach (var encoding in encodings)
+        {
+            _destination.Encoding = encoding;
+
+            // Connection string
+            var result = await AzureBlobStorage.UploadBlob(_source, _destination, _options, default);
+            Assert.IsTrue(result.Success, $"Encoding: {encoding}");
+            Assert.IsTrue(await BlobExists(_destination.ContainerName, Path.GetFileName(_source.SourceFile), expected));
+
+            _destination.EnableBOM = true;
+
+            // OAuth
+            _source.BlobName = $"testblob_{Guid.NewGuid()}";
+            _destination.ConnectionMethod = ConnectionMethod.OAuth2;
+            result = await AzureBlobStorage.UploadBlob(_source, _destination, _options, default);
+            Assert.IsTrue(result.Success, $"Encoding: {encoding}");
+            Assert.IsTrue(await BlobExists(_destination.ContainerName, Path.GetFileName(_source.SourceFile), expected));
+        }
+    }
+
+    [Test]
+    public void UploadBlob_ErrorUploadTypeDirectoryWithSourceFileNotEmpty()
+    {
+        _source.SourceDirectory = _testFileDir;
+        _source.SourceType = UploadSourceType.Directory;
+
+        var ex = Assert.ThrowsAsync<Exception>(() => AzureBlobStorage.UploadBlob(_source, _destination, _options, default));
+        Assert.AreEqual("Source.SourceFile must be empty when Source.SourceType is Directory.", ex.InnerException.Message);
+    }
+
+    [Test]
+    public void UploadBlob_ErrorUploadTypeDirectoryNoDirectory()
+    {
+        _source.SourceFile = "";
+        _source.SourceDirectory = "";
+        _source.SourceType = UploadSourceType.Directory;
+
+        var ex = Assert.ThrowsAsync<Exception>(() => AzureBlobStorage.UploadBlob(_source, _destination, _options, default));
+        Assert.AreEqual("Source.SourceDirectory value is empty.", ex.InnerException.Message);
+    }
+
+    [Test]
+    public void UploadBlob_ErrorUploadTypeDirectoryDirectoryDoesNotExist()
+    {
+        _source.SourceFile = "";
+        _source.SourceDirectory = @"C:\\doesnt\\exist";
+        _source.SourceType = UploadSourceType.Directory;
+
+        var ex = Assert.ThrowsAsync<Exception>(() => AzureBlobStorage.UploadBlob(_source, _destination, _options, default));
+        Assert.AreEqual(@"Source directory C:\\doesnt\\exist doesn't exists.", ex.InnerException.Message);
+    }
+
+    [Test]
+    public void UploadBlob_ErrorNoSourceFile()
+    {
+        _source.SourceFile = "";
+        _source.SourceType = UploadSourceType.File;
+
+        var ex = Assert.ThrowsAsync<Exception>(() => AzureBlobStorage.UploadBlob(_source, _destination, _options, default));
+        Assert.AreEqual("Source.SourceFile not found.", ex.InnerException.Message);
+    }
+
+    [Test]
+    public void UploadBlob_ErrorSourceFileNotExist()
+    {
+        _source.SourceFile = "doesntexists.txt";
+        _source.SourceType = UploadSourceType.File;
+
+        var ex = Assert.ThrowsAsync<Exception>(() => AzureBlobStorage.UploadBlob(_source, _destination, _options, default));
+        Assert.AreEqual("Source.SourceFile not found.", ex.InnerException.Message);
+    }
+
+    [Test]
+    public void UploadBlob_ErrorOAuth2EmptyCredentials()
+    {
+        _destination.ConnectionMethod = ConnectionMethod.OAuth2;
+        _destination.ApplicationID = "";
+        _destination.ClientSecret = "";
+
+        var ex = Assert.ThrowsAsync<Exception>(() => AzureBlobStorage.UploadBlob(_source, _destination, _options, default));
+        Assert.AreEqual("Destination.StorageAccountName, Destination.ClientSecret, Destination.ApplicationID and Destination.TenantID parameters can't be empty when Destination.ConnectionMethod = OAuth.", ex.InnerException.Message);
+    }
+
+    [Test]
+    public void UploadBlob_ErrorEmptyConnectionString()
+    {
+        _destination.ConnectionMethod = ConnectionMethod.ConnectionString;
+        _destination.ConnectionString = "";
+        var ex = Assert.ThrowsAsync<Exception>(() => AzureBlobStorage.UploadBlob(_source, _destination, _options, default));
+        Assert.AreEqual("Destination.ConnectionString parameter can't be empty when Destination.ConnectionMethod = ConnectionString.", ex.InnerException.Message);
+    }
+
+    [Test]
+    public void UploadBlob_ErrorEmptyUri()
+    {
+        _destination.ConnectionMethod = ConnectionMethod.SASToken;
+        _destination.Uri = "";
+        var ex = Assert.ThrowsAsync<Exception>(() => AzureBlobStorage.UploadBlob(_source, _destination, _options, default));
+        Assert.AreEqual("Destination.SASToken and Destination.URI parameters can't be empty when Destination.ConnectionMethod = SASToken.", ex.InnerException.Message);
+    }
+
+    [Test]
+    public void UploadBlob_ErrorEmptyContainerName()
+    {
+        _destination.ConnectionMethod = ConnectionMethod.ConnectionString;
+        _destination.ContainerName = "";
+        var ex = Assert.ThrowsAsync<Exception>(() => AzureBlobStorage.UploadBlob(_source, _destination, _options, default));
+        Assert.AreEqual("Destination.ContainerName parameter can't be empty.", ex.InnerException.Message);
+    }
+
+    [Test]
+    public void UploadBlob_ErrorEmptySASToken()
+    {
+        _destination.ConnectionMethod = ConnectionMethod.SASToken;
+        _destination.SASToken = "";
+        var ex = Assert.ThrowsAsync<Exception>(() => AzureBlobStorage.UploadBlob(_source, _destination, _options, default));
+        Assert.AreEqual("Destination.SASToken and Destination.URI parameters can't be empty when Destination.ConnectionMethod = SASToken.", ex.InnerException.Message);
+    }
+
     private static BlobContainerClient GetBlobContainer(string connectionString, string containerName)
     {
         var blobServiceClient = new BlobServiceClient(connectionString);
@@ -541,5 +677,21 @@ public class UnitTests
         var blobList = blobContainer.GetBlobsAsync();
         await foreach (var item in blobList)
             await blobContainer.DeleteBlobIfExistsAsync(item.Name);
+    }
+
+    private async Task<bool> BlobExists(string containerName, string blobName, string expected)
+    {
+        var blobServiceClient = new BlobServiceClient(_connectionString);
+        var container = blobServiceClient.GetBlobContainerClient(containerName);
+        var blob = container.GetBlobClient(blobName);
+        if (!blob.Exists())
+            return false;
+
+        var blobClient = new BlobClient(_connectionString, _destination.ContainerName, blobName);
+        var blobDownload = await blobClient.DownloadAsync();
+
+        using var reader = new StreamReader(blobDownload.Value.Content);
+        var content = await reader.ReadToEndAsync();
+        return content == expected;
     }
 }

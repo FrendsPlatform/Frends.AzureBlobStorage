@@ -473,12 +473,12 @@ public class AzureBlobStorage
         if (!string.IsNullOrEmpty(source.SourceFile) && source.SourceType is UploadSourceType.Directory && File.Exists(source.SourceFile))
             throw new Exception(@$"Source file {source.SourceFile} doesn't exists.");
         if (!string.IsNullOrEmpty(source.SourceDirectory) && source.SourceType is UploadSourceType.File)
-            throw new Exception("Source.SourceDirectory must be empty when Source.SourceType is Directory.");
+            throw new Exception("Source.SourceDirectory must be empty when Source.SourceType is File.");
         if (string.IsNullOrEmpty(source.SourceFile) && source.SourceType is UploadSourceType.File)
             throw new Exception("Source.SourceFile not found.");
-        if (string.IsNullOrEmpty(source.SourceFile) && source.SourceType is UploadSourceType.File)
+        if (source.SourceType is UploadSourceType.File && !File.Exists(source.SourceFile))
             throw new Exception("Source.SourceFile not found.");
-        if (destination.ConnectionMethod is ConnectionMethod.OAuth2 && (destination.ApplicationID is null || destination.ClientSecret is null || destination.TenantID is null || destination.Uri is null))
+        if (destination.ConnectionMethod is ConnectionMethod.OAuth2 && (string.IsNullOrEmpty(destination.ApplicationID) || string.IsNullOrEmpty(destination.ClientSecret) || string.IsNullOrEmpty(destination.TenantID) || string.IsNullOrEmpty(destination.Uri)))
             throw new Exception("Destination.StorageAccountName, Destination.ClientSecret, Destination.ApplicationID and Destination.TenantID parameters can't be empty when Destination.ConnectionMethod = OAuth.");
         if (destination.ConnectionMethod is ConnectionMethod.ConnectionString && string.IsNullOrEmpty(destination.ConnectionString))
             throw new Exception("Destination.ConnectionString parameter can't be empty when Destination.ConnectionMethod = ConnectionString.");
