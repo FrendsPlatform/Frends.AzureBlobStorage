@@ -21,9 +21,15 @@ public class Result
     /// <example>{ { c:\temp\examplefile.txt, https://storage.blob.core.windows.net/container/examplefile.txt }, { c:\temp\examplefile2.txt, Blob examplefile2 already exists. } }</example>
     public BlobContentInfo Info { get; private set; }
 
-    internal Result(bool success, BlobContentInfo info)
+    /// <summary>
+    /// URI of uploaded file.
+    /// </summary>
+    public string Uri { get; private set; }
+
+    internal Result(bool success, BlobContentInfo info, string uri)
     {
         Success = success;
         Info = info;
+        Uri = uri;
     }
 }

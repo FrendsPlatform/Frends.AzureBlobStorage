@@ -58,6 +58,7 @@ public class UnitTests
             ApplicationID = _appID,
             Uri = _uri,
             ClientSecret = _clientSecret,
+            Compress = false
         };
 
         _options = new Options() { ThrowErrorOnFailure = true };
@@ -220,6 +221,15 @@ public class UnitTests
         var result = await AzureBlobStorage.WriteBlob(_source, _destination, _options, default);
         Assert.IsTrue(result.Success);
         Assert.IsTrue(await BlobExists(_destination.ContainerName, _destination.BlobName, _testContent));
+    }
+
+    [Test]
+    public async Task WriteBlob_Compress()
+    {
+        _destination.Compress = true;
+        var result = await AzureBlobStorage.WriteBlob(_source, _destination, _options, default);
+        Assert.IsTrue(result.Success);
+        Assert.AreEqual($"https://stataskdevelopment.blob.core.windows.net/{_destination.ContainerName}/{_destination.BlobName}.gz", result.Uri);
     }
 
     private async static Task CreateBlobContainer(string connectionString, string containerName)

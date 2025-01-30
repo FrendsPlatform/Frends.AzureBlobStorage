@@ -105,4 +105,10 @@ public class Destination
     /// <example>HandleExistingFile.Error</example>
     [DefaultValue(HandleExistingFile.Error)]
     public HandleExistingFile HandleExistingFile { get; set; }
+
+    /// <summary>
+    /// Should the string be compressed before sending?
+    /// </summary>
+    [DefaultValue(false)]
+    public bool Compress {  get; set; }
 }
