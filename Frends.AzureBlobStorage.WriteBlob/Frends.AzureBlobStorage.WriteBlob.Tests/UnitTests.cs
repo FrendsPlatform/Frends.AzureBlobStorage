@@ -229,7 +229,7 @@ public class UnitTests
         _destination.Compress = true;
         var result = await AzureBlobStorage.WriteBlob(_source, _destination, _options, default);
         Assert.IsTrue(result.Success);
-        Assert.AreEqual($"https://stataskdevelopment.blob.core.windows.net/{_destination.ContainerName}/{_destination.BlobName}.gz", result.Uri);
+        Assert.AreEqual($"https://stataskdevelopment.blob.core.windows.net/{_destination.ContainerName}/{_destination.BlobName}", result.Uri);
     }
 
     private async static Task CreateBlobContainer(string connectionString, string containerName)

@@ -40,23 +40,22 @@ public class AzureBlobStorage
         {
             BlobClient blobClient;
             BlobServiceClient blobServiceClient = null;
-            string blobName = destination.Compress ? destination.BlobName + ".gz" : destination.BlobName;
 
             switch (destination.ConnectionMethod)
             {
                 case ConnectionMethod.ConnectionString:
                     blobServiceClient = new BlobServiceClient(destination.ConnectionString);
-                    blobClient = new BlobClient(destination.ConnectionString, destination.ContainerName.ToLower(), blobName);
+                    blobClient = new BlobClient(destination.ConnectionString, destination.ContainerName.ToLower(), destination.BlobName);
                     break;
                 case ConnectionMethod.SASToken:
                     var blobContainerClient = new BlobContainerClient(new Uri($"{destination.Uri}/{destination.ContainerName}?"), new AzureSasCredential(destination.SASToken));
-                    blobClient = blobContainerClient.GetBlobClient(blobName);
+                    blobClient = blobContainerClient.GetBlobClient(destination.BlobName);
                     break;
                 case ConnectionMethod.OAuth2:
                     var serviceURI = new Uri($"{destination.Uri}");
                     var credentials = new ClientSecretCredential(destination.TenantID, destination.ApplicationID, destination.ClientSecret, new ClientSecretCredentialOptions());
                     blobServiceClient = new BlobServiceClient(serviceURI, credentials);
-                    var uri = new Uri($"{destination.Uri}/{destination.ContainerName.ToLower()}/{blobName}");
+                    var uri = new Uri($"{destination.Uri}/{destination.ContainerName.ToLower()}/{destination.BlobName}");
                     blobClient = new BlobClient(uri, credentials);
                     break;
                 default: throw new NotSupportedException();
