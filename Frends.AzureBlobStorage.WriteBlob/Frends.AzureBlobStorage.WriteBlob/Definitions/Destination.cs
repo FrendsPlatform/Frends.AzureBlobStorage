@@ -92,7 +92,7 @@ public class Destination
     /// See https://docs.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata for naming rules.
     /// </summary>
     /// <example>false</example>
-    [UIHint(nameof(ConnectionMethod), "", ConnectionMethod.ConnectionString)]
+    [UIHint(nameof(ConnectionMethod), "", ConnectionMethod.ConnectionString, ConnectionMethod.OAuth2)]
     [DefaultValue(false)]
     public bool CreateContainerIfItDoesNotExist { get; set; }
 
@@ -110,5 +110,5 @@ public class Destination
     /// Should the string be compressed before sending?
     /// </summary>
     [DefaultValue(false)]
-    public bool Compress {  get; set; }
+    public bool Compress { get; set; }
 }
