@@ -2,15 +2,14 @@
 using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Blobs;
 using Frends.AzureBlobStorage.DownloadBlob.Definitions;
-using System.ComponentModel;
 
 namespace Frends.AzureBlobStorage.DownloadBlob.Tests;
 
-[TestClass]
+[TestFixture]
 public class UnitTests
 {
     private readonly string _connectionString = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_ConnString");
@@ -27,7 +26,7 @@ public class UnitTests
     private readonly string _container = "const-test-container";
     private readonly string _uri = "https://stataskdevelopment.blob.core.windows.net";
 
-    [TestInitialize]
+    [SetUp]
     public async Task TestSetup()
     {
         _destinationDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
@@ -61,7 +60,7 @@ public class UnitTests
         await UploadTestFiles(_container);
     }
 
-    [TestCleanup]
+    [TearDown]
     public async Task Cleanup()
     {
         var container = GetBlobContainer(_connectionString, _containerName);
@@ -70,7 +69,7 @@ public class UnitTests
         await DeleteBlobsInContainer(_connectionString, _container, _source.BlobName);
     }
 
-    [TestMethod]
+    [Test]
     public async Task DownloadBlobAsync_WritesBlobToFile()
     {
         // Connection string.
@@ -101,16 +100,15 @@ public class UnitTests
         Assert.IsTrue(fileContent.Contains(@"<input>WhatHasBeenSeenCannotBeUnseen</input>"));
     }
 
-    [TestMethod]
-    [ExpectedException(typeof(Exception))]
+    [Test]
     public async Task DownloadBlobAsync_ThrowsExceptionIfDestinationFileExists()
     {
         await AzureBlobStorage.DownloadBlob(_source, _destination, default);
         _destination.FileExistsOperation = FileExistsAction.Error;
-        await AzureBlobStorage.DownloadBlob(_source, _destination, default);
+        Assert.ThrowsAsync<Exception>(() => AzureBlobStorage.DownloadBlob(_source, _destination, default));
     }
 
-    [TestMethod]
+    [Test]
     public async Task DownloadBlobAsync_RenamesFileIfExists()
     {
         // Connection string
@@ -141,7 +139,7 @@ public class UnitTests
         Assert.AreEqual("test-blob(1).txt", result.FileName);
     }
 
-    [TestMethod]
+    [Test]
     public async Task DownloadBlobAsync_OverwritesFileIfExists()
     {
         await AzureBlobStorage.DownloadBlob(_source, _destination, default);
@@ -163,7 +161,7 @@ public class UnitTests
         Assert.AreEqual(1, Directory.GetFiles(_destinationDirectory).Length);
     }
 
-    [TestMethod]
+    [Test]
     public async Task DownloadBlobAsync_DifferentEncoding()
     {
         var encodings = new FileEncoding[] { FileEncoding.UTF8, FileEncoding.WINDOWS1252, FileEncoding.Other, FileEncoding.ASCII, FileEncoding.Default };
