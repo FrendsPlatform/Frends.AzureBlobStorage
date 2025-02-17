@@ -109,7 +109,8 @@ public static class AzureBlobStorage
             case ConnectionMethod.OAuth2:
                 return new BlobClient(new Uri($"{source.Uri}/{source.ContainerName.ToLower()}/{source.BlobName}"), new ClientSecretCredential(source.TenantID, source.ApplicationID, source.ClientSecret, new ClientSecretCredentialOptions()));
             case ConnectionMethod.SASToken:
-                return new BlobClient(new Uri($"{source.Uri}/{source.ContainerName.ToLower()}/{source.BlobName}"), new AzureSasCredential(source.SASToken));
+                var containerClient = new BlobContainerClient(new Uri($"{source.Uri}/{source.ContainerName.ToLower()}"), new AzureSasCredential(source.SASToken));
+                return containerClient.GetBlobClient(source.BlobName);
             default: throw new NotSupportedException();
         }
     }
