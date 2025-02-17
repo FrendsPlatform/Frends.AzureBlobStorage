@@ -117,14 +117,30 @@ public static class AzureBlobStorage
 
     private static Encoding GetEncoding(FileEncoding encoding, string encodingString, bool enableBom)
     {
-        return encoding switch
+        switch (encoding)
         {
-            FileEncoding.UTF8 => enableBom ? new UTF8Encoding(true) : new UTF8Encoding(false),
-            FileEncoding.ASCII => new ASCIIEncoding(),
-            FileEncoding.Default => Encoding.Default,
-            FileEncoding.WINDOWS1252 => CodePagesEncodingProvider.Instance.GetEncoding("windows-1252"),
-            FileEncoding.Other => CodePagesEncodingProvider.Instance.GetEncoding(encodingString),
-            _ => throw new ArgumentOutOfRangeException($"Unknown Encoding type: '{encoding}'."),
+            case FileEncoding.UTF8:
+                return enableBom ? new UTF8Encoding(true) : new UTF8Encoding(false);
+            case FileEncoding.ASCII:
+                return new ASCIIEncoding();
+            case FileEncoding.Default:
+                return Encoding.Default;
+            case FileEncoding.WINDOWS1252:
+                return CodePagesEncodingProvider.Instance.GetEncoding("windows-1252");
+            case FileEncoding.Other:
+                try
+                {
+                    var encodingFromString = CodePagesEncodingProvider.Instance.GetEncoding(encodingString);
+                    if (encodingFromString == null)
+                        throw new ArgumentException($"Encoding '{encodingString}' is not supported.");
+                    return encodingFromString;
+                }
+                catch (ArgumentException ex)
+                {
+                    throw new ArgumentException($"Invalid encoding string '{encodingString}': {ex.Message}");
+                }
+            default:
+                throw new ArgumentOutOfRangeException($"Unknown Encoding type: '{encoding}'.");
         };
     }
 }
