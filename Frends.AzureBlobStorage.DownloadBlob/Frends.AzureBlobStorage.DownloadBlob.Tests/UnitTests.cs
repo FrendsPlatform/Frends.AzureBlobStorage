@@ -134,7 +134,7 @@ public class UnitTests
 
         // SAS Token
         _source.ConnectionMethod = ConnectionMethod.SASToken;
-        _source.ContainerName = _container; 
+        _source.ContainerName = _container;
         await AzureBlobStorage.DownloadBlob(_source, _destination, default);
         _destination.FileExistsOperation = FileExistsAction.Rename;
         result = await AzureBlobStorage.DownloadBlob(_source, _destination, default);

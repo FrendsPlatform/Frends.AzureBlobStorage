@@ -101,7 +101,7 @@ public static class AzureBlobStorage
     }
 
     private static BlobClient GetBlobClient(Source source)
-    {        
+    {
         switch (source.ConnectionMethod)
         {
             case ConnectionMethod.ConnectionString:
