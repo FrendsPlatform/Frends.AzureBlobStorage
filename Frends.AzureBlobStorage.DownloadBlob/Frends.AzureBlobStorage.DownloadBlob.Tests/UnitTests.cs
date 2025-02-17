@@ -72,7 +72,7 @@ public class UnitTests
     [Test]
     public async Task DownloadBlobAsync_WritesBlobToFile()
     {
-        // Connection string.
+        // Connection string
         var result = await AzureBlobStorage.DownloadBlob(_source, _destination, default);
         Assert.IsTrue(File.Exists(result.FullPath));
         var fileContent = File.ReadAllText(result.FullPath);
