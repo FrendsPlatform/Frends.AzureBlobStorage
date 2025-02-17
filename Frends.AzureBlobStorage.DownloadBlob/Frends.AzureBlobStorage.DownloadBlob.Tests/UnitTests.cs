@@ -65,7 +65,7 @@ public class UnitTests
     {
         var container = GetBlobContainer(_connectionString, _containerName);
         await container.DeleteIfExistsAsync();
-        // Empties the const container.
+        // Empties the const container
         await DeleteBlobsInContainer(_connectionString, _container, _source.BlobName);
     }
 
