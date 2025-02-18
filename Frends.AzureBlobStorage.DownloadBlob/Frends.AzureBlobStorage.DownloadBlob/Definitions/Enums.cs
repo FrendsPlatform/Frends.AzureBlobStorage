@@ -17,8 +17,35 @@ public enum FileExistsAction
 /// </summary>
 public enum ConnectionMethod
 {
-#pragma warning disable CS1591 // self explanatory
+    /// <summary>
+    /// Authenticate with connectiong string.
+    /// </summary>
     ConnectionString,
+
+    /// <summary>
+    /// Authenticate with SAS Token. Requires Storage URI.
+    /// </summary>
+    SASToken,
+
+    /// <summary>
+    /// OAuth2.
+    /// </summary>
     OAuth2
+}
+
+/// <summary>
+/// Content encoding.
+/// </summary>
+public enum FileEncoding
+{
+#pragma warning disable CS1591 // self explanatory
+    UTF8,
+    Default,
+    ASCII,
+    WINDOWS1252,
 #pragma warning restore CS1591 // self explanatory
+    /// <summary>
+    /// Other enables users to add other encoding options as string.
+    /// </summary>
+    Other,
 }

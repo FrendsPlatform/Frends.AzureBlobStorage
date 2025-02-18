@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.4.0] - 2025-02-17
+### Added
+- Added SAS Token authentication method.
+
 ## [1.3.0] - 2024-08-21
 ### Changed
 - Updated Azure.Identity to version 1.12.0.

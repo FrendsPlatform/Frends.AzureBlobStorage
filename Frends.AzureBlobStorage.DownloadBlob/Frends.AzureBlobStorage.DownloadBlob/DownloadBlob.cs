@@ -8,6 +8,7 @@ using System.ComponentModel;
 using Azure.Storage.Blobs;
 using Frends.AzureBlobStorage.DownloadBlob.Definitions;
 using Azure.Identity;
+using Azure;
 
 namespace Frends.AzureBlobStorage.DownloadBlob;
 
@@ -28,7 +29,6 @@ public static class AzureBlobStorage
     {
         try
         {
-            //var blob = new BlobClient(source.ConnectionString, source.ContainerName, source.BlobName);
             var blob = GetBlobClient(source);
             var fullDestinationPath = Path.Combine(destination.Directory, source.BlobName);
             var fileName = source.BlobName.Split('.')[0];
@@ -64,8 +64,8 @@ public static class AzureBlobStorage
                 await blob.DownloadToAsync(fullDestinationPath, cancellationToken);
             }
 
-            if (!string.IsNullOrEmpty(source.Encoding))
-                CheckAndFixFileEncoding(fullDestinationPath, destination.Directory, fileExtension, source.Encoding);
+            var encoding = GetEncoding(source.Encoding, source.FileEncodingString, source.EnableBOM);
+            CheckAndFixFileEncoding(fullDestinationPath, destination.Directory, fileExtension, encoding);
 
             return new Result(fileName, destination.Directory, fullDestinationPath);
         }
@@ -75,7 +75,7 @@ public static class AzureBlobStorage
         }
     }
 
-    private static void CheckAndFixFileEncoding(string fullPath, string directory, string fileExtension, string targetEncoding)
+    private static void CheckAndFixFileEncoding(string fullPath, string directory, string fileExtension, Encoding targetEncoding)
     {
         string encoding;
 
@@ -84,22 +84,11 @@ public static class AzureBlobStorage
             reader.Read();
             encoding = reader.CurrentEncoding.BodyName;
         }
-        if (targetEncoding.ToLower() != encoding)
+        if (targetEncoding.BodyName != encoding)
         {
-            Encoding newEncoding;
-            try
-            {
-                newEncoding = CodePagesEncodingProvider.Instance.GetEncoding(targetEncoding.ToLower()) != null
-                    ? CodePagesEncodingProvider.Instance.GetEncoding(targetEncoding.ToLower())
-                    : Encoding.GetEncoding(targetEncoding.ToLower());
-            }
-            catch (Exception)
-            {
-                throw new Exception($"Provided encoding {targetEncoding} is not supported. Please check supported encodings from Encoding-option.");
-            }
             var tempFilePath = Path.Combine(directory, "encodingTemp" + fileExtension);
             using (var sr = new StreamReader(fullPath, true))
-            using (var sw = new StreamWriter(tempFilePath, false, newEncoding))
+            using (var sw = new StreamWriter(tempFilePath, false, targetEncoding))
             {
                 var line = string.Empty;
                 while ((line = sr.ReadLine()) != null)
@@ -118,10 +107,40 @@ public static class AzureBlobStorage
             case ConnectionMethod.ConnectionString:
                 return new BlobClient(source.ConnectionString, source.ContainerName, source.BlobName);
             case ConnectionMethod.OAuth2:
-                var credentials = new ClientSecretCredential(source.TenantID, source.ApplicationID, source.ClientSecret, new ClientSecretCredentialOptions());
-                var url = new Uri($"https://{source.StorageAccountName}.blob.core.windows.net/{source.ContainerName.ToLower()}/{source.BlobName}");
-                return new BlobClient(url, credentials);
+                return new BlobClient(new Uri($"{source.Uri}/{source.ContainerName.ToLower()}/{source.BlobName}"), new ClientSecretCredential(source.TenantID, source.ApplicationID, source.ClientSecret, new ClientSecretCredentialOptions()));
+            case ConnectionMethod.SASToken:
+                var containerClient = new BlobContainerClient(new Uri($"{source.Uri}/{source.ContainerName.ToLower()}"), new AzureSasCredential(source.SASToken));
+                return containerClient.GetBlobClient(source.BlobName);
             default: throw new NotSupportedException();
         }
+    }
+
+    private static Encoding GetEncoding(FileEncoding encoding, string encodingString, bool enableBom)
+    {
+        switch (encoding)
+        {
+            case FileEncoding.UTF8:
+                return enableBom ? new UTF8Encoding(true) : new UTF8Encoding(false);
+            case FileEncoding.ASCII:
+                return new ASCIIEncoding();
+            case FileEncoding.Default:
+                return Encoding.Default;
+            case FileEncoding.WINDOWS1252:
+                return CodePagesEncodingProvider.Instance.GetEncoding("windows-1252");
+            case FileEncoding.Other:
+                try
+                {
+                    var encodingFromString = CodePagesEncodingProvider.Instance.GetEncoding(encodingString);
+                    if (encodingFromString == null)
+                        throw new ArgumentException($"Encoding '{encodingString}' is not supported.");
+                    return encodingFromString;
+                }
+                catch (ArgumentException ex)
+                {
+                    throw new ArgumentException($"Invalid encoding string '{encodingString}': {ex.Message}");
+                }
+            default:
+                throw new ArgumentOutOfRangeException($"Unknown Encoding type: '{encoding}'.");
+        };
     }
 }
