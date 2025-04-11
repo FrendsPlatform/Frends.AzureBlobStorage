@@ -4,9 +4,9 @@ using System.ComponentModel.DataAnnotations;
 namespace Frends.AzureBlobStorage.UploadBlob.Definitions;
 
 /// <summary>
-/// Source parameters.
+/// Input parameters.
 /// </summary>
-public class Source
+public class Input
 {
     /// <summary>
     /// Source type.
@@ -65,7 +65,7 @@ public class Source
     public bool ContentsOnly { get; set; }
 
     /// <summary>
-    /// Gzip compression only works when transferring stream content (see Source.ContentsOnly). 
+    /// Gzip compression only works when transferring stream content (see Source.ContentsOnly).
     /// Note that it could be a good idea to rename the blob using Destination.BlobName (e.g., renaming 'examplefile.txt' to 'examplefile.gz') so that the blob won't be named as 'examplefile.txt.gz
     /// </summary>
     /// <example>false</example>
@@ -73,6 +73,16 @@ public class Source
     [DefaultValue(false)]
     [DisplayName("Gzip compression")]
     public bool Compress { get; set; }
+
+    /// <summary>
+    /// How the existing blob will be handled.
+    /// Append: Append the blob with Source.SourceFile. Block and Page blobs will be downloaded as a temp file which will be deleted after local append and upload processes are complete. No downloading needed for Append Blob.
+    /// Overwrite: The original blob will be deleted before uploading the new one.
+    /// Error: Depending on Options.ThrowErrorOnFailure, throw an exception or Result will contain an error message instead of the blob's URL.
+    /// </summary>
+    /// <example>HandleExistingFile.Error</example>
+    [DefaultValue(HandleExistingFile.Error)]
+    public HandleExistingFile HandleExistingFile { get; set; }
 
     /// <summary>
     /// Tags for the block or append blob.
