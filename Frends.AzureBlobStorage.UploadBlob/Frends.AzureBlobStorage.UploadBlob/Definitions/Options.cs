@@ -72,7 +72,7 @@ public class Options
     /// </summary>
     [UIHint(nameof(Encoding), "", FileEncoding.UTF8)]
     [DefaultValue(true)]
-    public bool EnableBOM { get; set; }
+    public bool EnableBom { get; set; }
 
     /// <summary>
     /// Content encoding as string. A partial list of possible encodings: https://en.wikipedia.org/wiki/Windows_code_page#List.

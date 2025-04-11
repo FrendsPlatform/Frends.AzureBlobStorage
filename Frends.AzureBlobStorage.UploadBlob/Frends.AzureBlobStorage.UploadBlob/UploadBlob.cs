@@ -125,11 +125,11 @@ public class AzureBlobStorage
         blobName = string.IsNullOrEmpty(input.BlobName) ? blobName : input.BlobName;
 
         var contentType = string.IsNullOrEmpty(options.ContentType) ? MimeUtility.GetMimeMapping(fi.Name) : options.ContentType;
-        var encoding = GetEncoding(options.Encoding, options.FileEncodingString, options.EnableBOM);
+        var encoding = GetEncoding(options.Encoding, options.FileEncodingString, options.EnableBom);
 
         var tags = input.Tags != null ? input.Tags.ToDictionary(tag => tag.Name, tag => tag.Value) : new Dictionary<string, string>();
 
-        var credentials = connection.ConnectionMethod is ConnectionMethod.OAuth2 ? new ClientSecretCredential(connection.TenantID, connection.ApplicationID, connection.ClientSecret, new ClientSecretCredentialOptions()) : null;
+        var credentials = connection.ConnectionMethod is ConnectionMethod.OAuth2 ? new ClientSecretCredential(connection.TenantId, connection.ApplicationId, connection.ClientSecret, new ClientSecretCredentialOptions()) : null;
 
         BlobContainerClient containerClient = null;
 
@@ -137,10 +137,10 @@ public class AzureBlobStorage
         {
             containerClient = new BlobContainerClient(connection.ConnectionString, connection.ContainerName.ToLower());
         }
-        else if (connection.ConnectionMethod is ConnectionMethod.SASToken)
+        else if (connection.ConnectionMethod is ConnectionMethod.SasToken)
         {
             var baseUri = connection.Uri.TrimEnd('/');
-            containerClient = new BlobContainerClient(new Uri($"{connection.Uri}/{connection.ContainerName}?"), new AzureSasCredential(connection.SASToken));
+            containerClient = new BlobContainerClient(new Uri($"{connection.Uri}/{connection.ContainerName}?"), new AzureSasCredential(connection.SasToken));
         }
 
         var overwrite = input.HandleExistingFile == HandleExistingFile.Overwrite;
@@ -343,15 +343,15 @@ public class AzureBlobStorage
             {
                 blobServiceClient = new BlobServiceClient(connection.ConnectionString);
             }
-            else if (connection.ConnectionMethod is ConnectionMethod.SASToken)
+            else if (connection.ConnectionMethod is ConnectionMethod.SasToken)
             {
                 var serviceURI = new Uri($"{connection.Uri}");
-                blobServiceClient = new BlobServiceClient(serviceURI, new AzureSasCredential(connection.SASToken));
+                blobServiceClient = new BlobServiceClient(serviceURI, new AzureSasCredential(connection.SasToken));
             }
             else
             {
                 var serviceURI = new Uri($"{connection.Uri}");
-                var credentials = new ClientSecretCredential(connection.TenantID, connection.ApplicationID, connection.ClientSecret, new ClientSecretCredentialOptions());
+                var credentials = new ClientSecretCredential(connection.TenantId, connection.ApplicationId, connection.ClientSecret, new ClientSecretCredentialOptions());
                 blobServiceClient = new BlobServiceClient(serviceURI, credentials);
             }
 
@@ -456,7 +456,7 @@ public class AzureBlobStorage
             FileEncoding.UTF8 => enableBom ? new UTF8Encoding(true) : new UTF8Encoding(false),
             FileEncoding.ASCII => new ASCIIEncoding(),
             FileEncoding.Default => Encoding.Default,
-            FileEncoding.WINDOWS1252 => CodePagesEncodingProvider.Instance.GetEncoding("windows-1252"),
+            FileEncoding.Windows1252 => CodePagesEncodingProvider.Instance.GetEncoding("windows-1252"),
             FileEncoding.Other => CodePagesEncodingProvider.Instance.GetEncoding(encodingString),
             _ => throw new ArgumentOutOfRangeException($"Unknown Encoding type: '{encoding}'."),
         };
@@ -472,17 +472,17 @@ public class AzureBlobStorage
             throw new Exception("Source.SourceFile value is empty.");
         if (input.SourceType is UploadSourceType.File && !File.Exists(input.SourceFile))
             throw new Exception("Source.SourceFile not found.");
-        if (connection.ConnectionMethod is ConnectionMethod.OAuth2 && (string.IsNullOrEmpty(connection.ApplicationID) || string.IsNullOrEmpty(connection.ClientSecret) || string.IsNullOrEmpty(connection.TenantID) || string.IsNullOrEmpty(connection.Uri)))
+        if (connection.ConnectionMethod is ConnectionMethod.OAuth2 && (string.IsNullOrEmpty(connection.ApplicationId) || string.IsNullOrEmpty(connection.ClientSecret) || string.IsNullOrEmpty(connection.TenantId) || string.IsNullOrEmpty(connection.Uri)))
             throw new Exception("Destination.StorageAccountName, Destination.ClientSecret, Destination.ApplicationID and Destination.TenantID parameters can't be empty when Destination.ConnectionMethod = OAuth.");
         if (connection.ConnectionMethod is ConnectionMethod.ConnectionString && string.IsNullOrEmpty(connection.ConnectionString))
             throw new Exception("Destination.ConnectionString parameter can't be empty when Destination.ConnectionMethod = ConnectionString.");
-        if (connection.ConnectionMethod is ConnectionMethod.SASToken)
+        if (connection.ConnectionMethod is ConnectionMethod.SasToken)
         {
-            if (string.IsNullOrEmpty(connection.Uri) || string.IsNullOrEmpty(connection.SASToken))
+            if (string.IsNullOrEmpty(connection.Uri) || string.IsNullOrEmpty(connection.SasToken))
                 throw new Exception("Destination.SASToken and Destination.URI parameters can't be empty when Destination.ConnectionMethod = SASToken.");
             if (!Uri.TryCreate(connection.Uri, UriKind.Absolute, out _))
                 throw new Exception("Destination.URI must be a valid absolute URI.");
-            if (!connection.SASToken.Contains("sig="))
+            if (!connection.SasToken.Contains("sig="))
                 throw new Exception("Destination.SASToken appears to be invalid. It should contain a signature.");
         }
         if (string.IsNullOrEmpty(connection.ContainerName))

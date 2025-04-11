@@ -37,7 +37,7 @@ public class Connection
     /// Required for SAS and OAuth 2 authentication methods.
     /// </summary>
     /// <example>https://{account_name}.blob.core.windows.net</example>
-    [UIHint(nameof(ConnectionMethod), "", ConnectionMethod.OAuth2, ConnectionMethod.SASToken)]
+    [UIHint(nameof(ConnectionMethod), "", ConnectionMethod.OAuth2, ConnectionMethod.SasToken)]
     public string Uri { get; set; }
 
     /// <summary>
@@ -45,14 +45,14 @@ public class Connection
     /// </summary>
     /// <example>Y6b1hf2a-80e2-xyz2-qwer3h-3a7c3a8as4b7f</example>
     [UIHint(nameof(ConnectionMethod), "", ConnectionMethod.OAuth2)]
-    public string ApplicationID { get; set; }
+    public string ApplicationId { get; set; }
 
     /// <summary>
     /// Tenant ID of Azure Tenant.
     /// </summary>
     /// <example>Y6b1hf2a-80e2-xyz2-qwer3h-3a7c3a8as4b7f</example>
     [UIHint(nameof(ConnectionMethod), "", ConnectionMethod.OAuth2)]
-    public string TenantID { get; set; }
+    public string TenantId { get; set; }
 
     /// <summary>
     /// Client Secret of Azure AD Application.
@@ -67,9 +67,9 @@ public class Connection
     /// Grants restricted access rights to Azure Storage resources when combined with URI.
     /// </summary>
     /// <example>sv=2021-04-10&amp;se=2022-04-10T10%3A431Z&amp;sr=c&amp;sp=l&amp;sig=ZJg983RovE%2BZXI</example>
-    [UIHint(nameof(ConnectionMethod), "", ConnectionMethod.SASToken)]
+    [UIHint(nameof(ConnectionMethod), "", ConnectionMethod.SasToken)]
     [PasswordPropertyText]
-    public string SASToken { get; set; }
+    public string SasToken { get; set; }
 
     /// <summary>
     /// Determines if the container should be created if it does not exist. 
