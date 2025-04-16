@@ -33,14 +33,14 @@ public enum AzureBlobType
 }
 
 /// <summary>
-/// How to handle an existing blob.
+/// Action taken when a blob already exists.
 /// </summary>
-public enum HandleExistingFile
+public enum OnExistingFile
 {
     /// <summary>
-    /// An error.
+    /// Throw an error.
     /// </summary>
-    Error,
+    Throw,
 
     /// <summary>
     /// Overwrite with source file.
@@ -66,7 +66,7 @@ public enum ConnectionMethod
     /// <summary>
     /// Authenticate with SAS Token. Requires Storage URI.
     /// </summary>
-    SASToken,
+    SasToken,
 
     /// <summary>
     /// OAuth2.
@@ -83,7 +83,7 @@ public enum FileEncoding
     UTF8,
     Default,
     ASCII,
-    WINDOWS1252,
+    Windows1252,
 #pragma warning restore CS1591 // self explanatory
     /// <summary>
     /// Other enables users to add other encoding options as string.
