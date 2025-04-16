@@ -143,7 +143,7 @@ public class AzureBlobStorage
             containerClient = new BlobContainerClient(new Uri($"{connection.Uri}/{connection.ContainerName}?"), new AzureSasCredential(connection.SasToken));
         }
 
-        var overwrite = input.HandleExistingFile == HandleExistingFile.Overwrite;
+        var overwrite = input.ActionOnExistingFile == OnExistingFile.Overwrite;
 
         switch (options.BlobType)
         {
@@ -155,7 +155,7 @@ public class AzureBlobStorage
                     var exists = false;
                     exists = await appendBlobClient.ExistsAsync(cancellationToken);
 
-                    if (exists && input.HandleExistingFile is HandleExistingFile.Error)
+                    if (exists && input.ActionOnExistingFile is OnExistingFile.Throw)
                     {
                         if (!options.ThrowErrorOnFailure)
                             return @$"Blob {blobName} already exists.";
@@ -163,14 +163,14 @@ public class AzureBlobStorage
                             throw new Exception(@$"Blob {blobName} already exists.");
                     }
 
-                    if (exists && input.HandleExistingFile is HandleExistingFile.Overwrite)
+                    if (exists && input.ActionOnExistingFile is OnExistingFile.Overwrite)
                     {
 
                         await appendBlobClient.DeleteIfExistsAsync(DeleteSnapshotsOption.None, null, cancellationToken);
                         exists = false;
                     }
 
-                    if (exists && input.HandleExistingFile is HandleExistingFile.Append)
+                    if (exists && input.ActionOnExistingFile is OnExistingFile.Append)
                         fi = await AppendAny(appendBlobClient, blobName, input.SourceFile, cancellationToken);
 
                     if (fi != null)
@@ -201,7 +201,7 @@ public class AzureBlobStorage
 
                     var exists = await blobClient.ExistsAsync(cancellationToken);
 
-                    if (exists.Value && input.HandleExistingFile is HandleExistingFile.Error)
+                    if (exists.Value && input.ActionOnExistingFile is OnExistingFile.Throw)
                     {
                         if (!options.ThrowErrorOnFailure)
                             return @$"Blob {blobName} already exists.";
@@ -217,10 +217,10 @@ public class AzureBlobStorage
                         Tags = tags.Count > 0 ? tags : null,
                     };
 
-                    if (exists.Value && input.HandleExistingFile is HandleExistingFile.Overwrite)
+                    if (exists.Value && input.ActionOnExistingFile is OnExistingFile.Overwrite)
                         await blobClient.DeleteIfExistsAsync(DeleteSnapshotsOption.None, null, cancellationToken);
 
-                    if (exists.Value && input.HandleExistingFile is HandleExistingFile.Append)
+                    if (exists.Value && input.ActionOnExistingFile is OnExistingFile.Append)
                     {
                         fi = await AppendAny(blobClient, blobName, input.SourceFile, cancellationToken);
                         await blobClient.DeleteIfExistsAsync(DeleteSnapshotsOption.None, null, cancellationToken);
@@ -248,7 +248,7 @@ public class AzureBlobStorage
                     var exists = false;
                     exists = await pageBlobClient.ExistsAsync(cancellationToken);
 
-                    if (exists && input.HandleExistingFile is HandleExistingFile.Error)
+                    if (exists && input.ActionOnExistingFile is OnExistingFile.Throw)
                     {
                         if (options.ThrowErrorOnFailure)
                             throw new Exception(@$"Blob {blobName} already exists.");
@@ -256,13 +256,13 @@ public class AzureBlobStorage
                             return @$"Blob {blobName} already exists.";
                     }
 
-                    if (exists && input.HandleExistingFile is HandleExistingFile.Overwrite)
+                    if (exists && input.ActionOnExistingFile is OnExistingFile.Overwrite)
                     {
                         await pageBlobClient.DeleteIfExistsAsync(DeleteSnapshotsOption.None, null, cancellationToken);
                         exists = false;
                     }
 
-                    if (exists && input.HandleExistingFile is HandleExistingFile.Append)
+                    if (exists && input.ActionOnExistingFile is OnExistingFile.Append)
                     {
                         origSize = pageBlobClient.PageBlobPageBytes;
                         fi = await AppendAny(pageBlobClient, blobName, input.SourceFile, cancellationToken);

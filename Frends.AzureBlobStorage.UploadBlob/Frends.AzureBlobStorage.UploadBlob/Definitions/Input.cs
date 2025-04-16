@@ -78,11 +78,11 @@ public class Input
     /// How the existing blob will be handled.
     /// Append: Append the blob with Source.SourceFile. Block and Page blobs will be downloaded as a temp file which will be deleted after local append and upload processes are complete. No downloading needed for Append Blob.
     /// Overwrite: The original blob will be deleted before uploading the new one.
-    /// Error: Depending on Options.ThrowErrorOnFailure, throw an exception or Result will contain an error message instead of the blob's URL.
+    /// Throw: Depending on Options.ThrowErrorOnFailure, throw an exception or Result will contain an error message instead of the blob's URL.
     /// </summary>
-    /// <example>HandleExistingFile.Error</example>
-    [DefaultValue(HandleExistingFile.Error)]
-    public HandleExistingFile HandleExistingFile { get; set; }
+    /// <example>HandleExistingFile.Throw</example>
+    [DefaultValue(OnExistingFile.Throw)]
+    public OnExistingFile ActionOnExistingFile { get; set; }
 
     /// <summary>
     /// Tags for the block or append blob.

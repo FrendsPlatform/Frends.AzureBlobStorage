@@ -45,7 +45,7 @@ public class UnitTests
             ContentsOnly = default,
             SearchPattern = default,
             SourceDirectory = default,
-            HandleExistingFile = HandleExistingFile.Overwrite
+            ActionOnExistingFile = OnExistingFile.Overwrite
         };
 
         _connection = new Connection
@@ -336,7 +336,7 @@ public class UnitTests
     [Test]
     public async Task UploadFile_HandleExistingFile()
     {
-        var errorHandlers = new List<HandleExistingFile>() { HandleExistingFile.Append, HandleExistingFile.Overwrite, HandleExistingFile.Error };
+        var errorHandlers = new List<OnExistingFile>() { OnExistingFile.Append, OnExistingFile.Overwrite, OnExistingFile.Throw };
         var _source2 = _input;
         _source2.BlobName = "testfile.txt";
         _source2.SourceFile = _testfile2;
@@ -351,7 +351,7 @@ public class UnitTests
             foreach (var handler in errorHandlers)
             {
                 // Connection string
-                _input.HandleExistingFile = handler;
+                _input.ActionOnExistingFile = handler;
                 var container = GetBlobContainer(_connectionString, _connection.ContainerName);
                 _connection.ConnectionMethod = ConnectionMethod.ConnectionString;
                 var result = await AzureBlobStorage.UploadBlob(_input, _connection, _options, default);
@@ -359,14 +359,14 @@ public class UnitTests
                 Assert.IsTrue(result.Data.ContainsValue($"{container.Uri}/testfile.txt"));
                 Assert.IsTrue(await container.GetBlobClient("testfile.txt").ExistsAsync(), "Uploaded testfile.txt blob should exist");
 
-                if (handler is HandleExistingFile.Append)
+                if (handler is OnExistingFile.Append)
                 {
                     result = await AzureBlobStorage.UploadBlob(_source2, _connection, _options, default);
                     Assert.IsTrue(result.Success);
                     Assert.IsTrue(result.Data.ContainsValue($"{container.Uri}/testfile.txt"));
                     Assert.IsTrue(await container.GetBlobClient("testfile.txt").ExistsAsync(), "Uploaded testfile.txt blob should exist");
                 }
-                else if (handler is HandleExistingFile.Overwrite)
+                else if (handler is OnExistingFile.Overwrite)
                 {
                     result = await AzureBlobStorage.UploadBlob(_input, _connection, _options, default);
                     Assert.IsTrue(result.Success);
@@ -385,21 +385,21 @@ public class UnitTests
                 // OAuth
                 container = GetBlobContainer(_connectionString, _connection.ContainerName);
                 _connection.ConnectionMethod = ConnectionMethod.OAuth2;
-                _input.HandleExistingFile = handler;
+                _input.ActionOnExistingFile = handler;
 
                 result = await AzureBlobStorage.UploadBlob(_input, _connection, _options, default);
                 Assert.IsTrue(result.Success);
                 Assert.IsTrue(result.Data.ContainsValue($"{container.Uri}/testfile.txt"));
                 Assert.IsTrue(await container.GetBlobClient("testfile.txt").ExistsAsync(), "Uploaded testfile.txt blob should exist");
 
-                if (handler is HandleExistingFile.Append)
+                if (handler is OnExistingFile.Append)
                 {
                     result = await AzureBlobStorage.UploadBlob(_source2, _connection, _options, default);
                     Assert.IsTrue(result.Success);
                     Assert.IsTrue(result.Data.ContainsValue($"{container.Uri}/testfile.txt"));
                     Assert.IsTrue(await container.GetBlobClient("testfile.txt").ExistsAsync(), "Uploaded testfile.txt blob should exist");
                 }
-                else if (handler is HandleExistingFile.Overwrite)
+                else if (handler is OnExistingFile.Overwrite)
                 {
                     result = await AzureBlobStorage.UploadBlob(_input, _connection, _options, default);
                     Assert.IsTrue(result.Success);
@@ -408,7 +408,7 @@ public class UnitTests
                 }
                 else
                 {
-                    var test = _input.HandleExistingFile;
+                    var test = _input.ActionOnExistingFile;
                     var ex = Assert.ThrowsAsync<Exception>(() => AzureBlobStorage.UploadBlob(_input, _connection, _options, default));
                     Assert.IsTrue(ex.InnerException.InnerException.Message.Contains("already exists"));
                 }
@@ -418,7 +418,7 @@ public class UnitTests
 
                 // SAS Token
                 _connection.ConnectionMethod = ConnectionMethod.SasToken;
-                _input.HandleExistingFile = handler;
+                _input.ActionOnExistingFile = handler;
                 _connection.ContainerName = _container;
                 container = GetBlobContainer(_connectionString, _connection.ContainerName);
 
@@ -427,14 +427,14 @@ public class UnitTests
                 Assert.IsTrue(result.Data.ContainsValue($"{container.Uri}/testfile.txt"));
                 Assert.IsTrue(await container.GetBlobClient("testfile.txt").ExistsAsync(), "Uploaded testfile.txt blob should exist");
 
-                if (handler is HandleExistingFile.Append)
+                if (handler is OnExistingFile.Append)
                 {
                     result = await AzureBlobStorage.UploadBlob(_source2, _connection, _options, default);
                     Assert.IsTrue(result.Success);
                     Assert.IsTrue(result.Data.ContainsValue($"{container.Uri}/testfile.txt"));
                     Assert.IsTrue(await container.GetBlobClient("testfile.txt").ExistsAsync(), "Uploaded testfile.txt blob should exist");
                 }
-                else if (handler is HandleExistingFile.Overwrite)
+                else if (handler is OnExistingFile.Overwrite)
                 {
                     result = await AzureBlobStorage.UploadBlob(_input, _connection, _options, default);
                     Assert.IsTrue(result.Success);
@@ -443,7 +443,7 @@ public class UnitTests
                 }
                 else
                 {
-                    var test = _input.HandleExistingFile;
+                    var test = _input.ActionOnExistingFile;
                     var ex = Assert.ThrowsAsync<Exception>(() => AzureBlobStorage.UploadBlob(_input, _connection, _options, default));
                     Assert.IsTrue(ex.InnerException.InnerException.Message.Contains("already exists"));
                 }

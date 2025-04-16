@@ -33,14 +33,14 @@ public enum AzureBlobType
 }
 
 /// <summary>
-/// How to handle an existing blob.
+/// Action taken when a blob already exists.
 /// </summary>
-public enum HandleExistingFile
+public enum OnExistingFile
 {
     /// <summary>
-    /// An error.
+    /// Throw an error.
     /// </summary>
-    Error,
+    Throw,
 
     /// <summary>
     /// Overwrite with source file.
