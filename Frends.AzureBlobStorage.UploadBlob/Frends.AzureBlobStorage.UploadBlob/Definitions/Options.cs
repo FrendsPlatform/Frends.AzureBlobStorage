@@ -46,7 +46,7 @@ public class Options
 
     /// <summary>
     /// Specifies the starting offset for the content to be written as a Page.
-    /// If set to -1 and Destination.HandleExistingFile = Append, offset will be calculated from original blob's size (before append process).
+    /// If set to -1 and Input.ActionOnExistingFile = Append, offset will be calculated from original blob's size (before append process).
     /// </summary>
     /// <example>0</example>
     [UIHint(nameof(BlobType), "", AzureBlobType.Page)]

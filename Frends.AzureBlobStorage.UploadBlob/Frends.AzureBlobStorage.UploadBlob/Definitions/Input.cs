@@ -65,7 +65,7 @@ public class Input
     public bool ContentsOnly { get; set; }
 
     /// <summary>
-    /// Gzip compression only works when transferring stream content (see Source.ContentsOnly).
+    /// Gzip compression only works when transferring stream content (see Input.ContentsOnly).
     /// Note that it could be a good idea to rename the blob using Destination.BlobName (e.g., renaming 'examplefile.txt' to 'examplefile.gz') so that the blob won't be named as 'examplefile.txt.gz
     /// </summary>
     /// <example>false</example>
@@ -76,11 +76,11 @@ public class Input
 
     /// <summary>
     /// How the existing blob will be handled.
-    /// Append: Append the blob with Source.SourceFile. Block and Page blobs will be downloaded as a temp file which will be deleted after local append and upload processes are complete. No downloading needed for Append Blob.
+    /// Append: Append the blob with Input.SourceFile. Block and Page blobs will be downloaded as a temp file which will be deleted after local append and upload processes are complete. No downloading needed for Append Blob.
     /// Overwrite: The original blob will be deleted before uploading the new one.
     /// Throw: Depending on Options.ThrowErrorOnFailure, throw an exception or Result will contain an error message instead of the blob's URL.
     /// </summary>
-    /// <example>HandleExistingFile.Throw</example>
+    /// <example>OnExistingFile.Throw</example>
     [DefaultValue(OnExistingFile.Throw)]
     public OnExistingFile ActionOnExistingFile { get; set; }
 

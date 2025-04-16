@@ -44,10 +44,10 @@
 - Azure.Storage.Blobs to version 12.19.1
 
 ## [2.0.0] - 2023-04-06
-### Added:
+### Added
 Option to choose whether to upload a directory or just a single blob.
 New parameters: Destination.ResizeFile, Source.SourceType, Source.SourceDirectory, Source.SearchPattern, Source.BlobName, Source.BlobFolderName.
-### Changed:
+### Changed
 Destination.BlobName and Destination.RenameTo parameters have been replaced by Source.BlobName or Source.BlobFolderName depending on Source.SourceType.
 Result.SourceFile and Result.Uri have been replaced by Result.Data.
 
