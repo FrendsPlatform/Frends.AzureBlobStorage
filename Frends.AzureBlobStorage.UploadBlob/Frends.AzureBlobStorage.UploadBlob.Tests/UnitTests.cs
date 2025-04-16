@@ -628,7 +628,7 @@ public class UnitTests
         _input.SourceType = UploadSourceType.Directory;
 
         var ex = Assert.ThrowsAsync<Exception>(() => AzureBlobStorage.UploadBlob(_input, _connection, _options, default));
-        Assert.AreEqual("Source.SourceDirectory value is empty.", ex.InnerException.Message);
+        Assert.AreEqual("Input.SourceDirectory value is empty.", ex.InnerException.Message);
     }
 
     [Test]
@@ -649,7 +649,7 @@ public class UnitTests
         _input.SourceType = UploadSourceType.File;
 
         var ex = Assert.ThrowsAsync<Exception>(() => AzureBlobStorage.UploadBlob(_input, _connection, _options, default));
-        Assert.AreEqual("Source.SourceFile value is empty.", ex.InnerException.Message);
+        Assert.AreEqual("Input.SourceFile value is empty.", ex.InnerException.Message);
     }
 
     [Test]
@@ -659,7 +659,7 @@ public class UnitTests
         _input.SourceType = UploadSourceType.File;
 
         var ex = Assert.ThrowsAsync<Exception>(() => AzureBlobStorage.UploadBlob(_input, _connection, _options, default));
-        Assert.AreEqual("Source.SourceFile not found.", ex.InnerException.Message);
+        Assert.AreEqual("Input.SourceFile not found.", ex.InnerException.Message);
     }
 
     [Test]
@@ -670,7 +670,7 @@ public class UnitTests
         _connection.ClientSecret = "";
 
         var ex = Assert.ThrowsAsync<Exception>(() => AzureBlobStorage.UploadBlob(_input, _connection, _options, default));
-        Assert.AreEqual("Destination.StorageAccountName, Destination.ClientSecret, Destination.ApplicationID and Destination.TenantID parameters can't be empty when Destination.ConnectionMethod = OAuth.", ex.InnerException.Message);
+        Assert.AreEqual("Connection.Uri, Connection.ClientSecret, Connection.ApplicationId and Connection.TenantId parameters can't be empty when Connection.ConnectionMethod = OAuth2.", ex.InnerException.Message);
     }
 
     [Test]
@@ -679,7 +679,7 @@ public class UnitTests
         _connection.ConnectionMethod = ConnectionMethod.ConnectionString;
         _connection.ConnectionString = "";
         var ex = Assert.ThrowsAsync<Exception>(() => AzureBlobStorage.UploadBlob(_input, _connection, _options, default));
-        Assert.AreEqual("Destination.ConnectionString parameter can't be empty when Destination.ConnectionMethod = ConnectionString.", ex.InnerException.Message);
+        Assert.AreEqual("Connection.ConnectionString parameter can't be empty when Connection.ConnectionMethod = ConnectionString.", ex.InnerException.Message);
     }
 
     [Test]
@@ -688,7 +688,7 @@ public class UnitTests
         _connection.ConnectionMethod = ConnectionMethod.SasToken;
         _connection.Uri = "";
         var ex = Assert.ThrowsAsync<Exception>(() => AzureBlobStorage.UploadBlob(_input, _connection, _options, default));
-        Assert.AreEqual("Destination.SASToken and Destination.URI parameters can't be empty when Destination.ConnectionMethod = SASToken.", ex.InnerException.Message);
+        Assert.AreEqual("Connection.SasToken and Connection.Uri parameters can't be empty when Connection.ConnectionMethod = SasToken.", ex.InnerException.Message);
     }
 
     [Test]
@@ -697,16 +697,16 @@ public class UnitTests
         _connection.ConnectionMethod = ConnectionMethod.ConnectionString;
         _connection.ContainerName = "";
         var ex = Assert.ThrowsAsync<Exception>(() => AzureBlobStorage.UploadBlob(_input, _connection, _options, default));
-        Assert.AreEqual("Destination.ContainerName parameter can't be empty.", ex.InnerException.Message);
+        Assert.AreEqual("Connection.ContainerName parameter can't be empty.", ex.InnerException.Message);
     }
 
     [Test]
-    public void UploadBlob_ErrorEmptySASToken()
+    public void UploadBlob_ErrorEmptySasToken()
     {
         _connection.ConnectionMethod = ConnectionMethod.SasToken;
         _connection.SasToken = "";
         var ex = Assert.ThrowsAsync<Exception>(() => AzureBlobStorage.UploadBlob(_input, _connection, _options, default));
-        Assert.AreEqual("Destination.SASToken and Destination.URI parameters can't be empty when Destination.ConnectionMethod = SASToken.", ex.InnerException.Message);
+        Assert.AreEqual("Connection.SasToken and Connection.Uri parameters can't be empty when Connection.ConnectionMethod = SasToken.", ex.InnerException.Message);
     }
 
     [Test]

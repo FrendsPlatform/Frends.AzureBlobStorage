@@ -465,27 +465,27 @@ public class AzureBlobStorage
     private static void CheckParameters(Input input, Connection connection)
     {
         if (input.SourceType is UploadSourceType.Directory && !string.IsNullOrEmpty(input.SourceDirectory) && !Directory.Exists(input.SourceDirectory))
-            throw new Exception(@$"Source directory {input.SourceDirectory} doesn't exists.");
+            throw new Exception($"Source directory {input.SourceDirectory} doesn't exists.");
         if (input.SourceType is UploadSourceType.Directory && (string.IsNullOrEmpty(input.SourceDirectory) || !Directory.EnumerateFileSystemEntries(input.SourceDirectory).Any()))
-            throw new Exception(@$"Source.SourceDirectory value is empty.");
+            throw new Exception("Input.SourceDirectory value is empty.");
         if (input.SourceType is UploadSourceType.File && string.IsNullOrEmpty(input.SourceFile))
-            throw new Exception("Source.SourceFile value is empty.");
+            throw new Exception("Input.SourceFile value is empty.");
         if (input.SourceType is UploadSourceType.File && !File.Exists(input.SourceFile))
-            throw new Exception("Source.SourceFile not found.");
+            throw new Exception("Input.SourceFile not found.");
         if (connection.ConnectionMethod is ConnectionMethod.OAuth2 && (string.IsNullOrEmpty(connection.ApplicationId) || string.IsNullOrEmpty(connection.ClientSecret) || string.IsNullOrEmpty(connection.TenantId) || string.IsNullOrEmpty(connection.Uri)))
-            throw new Exception("Destination.StorageAccountName, Destination.ClientSecret, Destination.ApplicationID and Destination.TenantID parameters can't be empty when Destination.ConnectionMethod = OAuth.");
+            throw new Exception("Connection.Uri, Connection.ClientSecret, Connection.ApplicationId and Connection.TenantId parameters can't be empty when Connection.ConnectionMethod = OAuth2.");
         if (connection.ConnectionMethod is ConnectionMethod.ConnectionString && string.IsNullOrEmpty(connection.ConnectionString))
-            throw new Exception("Destination.ConnectionString parameter can't be empty when Destination.ConnectionMethod = ConnectionString.");
+            throw new Exception("Connection.ConnectionString parameter can't be empty when Connection.ConnectionMethod = ConnectionString.");
         if (connection.ConnectionMethod is ConnectionMethod.SasToken)
         {
             if (string.IsNullOrEmpty(connection.Uri) || string.IsNullOrEmpty(connection.SasToken))
-                throw new Exception("Destination.SASToken and Destination.URI parameters can't be empty when Destination.ConnectionMethod = SASToken.");
+                throw new Exception("Connection.SasToken and Connection.Uri parameters can't be empty when Connection.ConnectionMethod = SasToken.");
             if (!Uri.TryCreate(connection.Uri, UriKind.Absolute, out _))
-                throw new Exception("Destination.URI must be a valid absolute URI.");
+                throw new Exception("Connection.Uri must be a valid absolute URI.");
             if (!connection.SasToken.Contains("sig="))
-                throw new Exception("Destination.SASToken appears to be invalid. It should contain a signature.");
+                throw new Exception("Connection.SasToken appears to be invalid. It should contain a signature.");
         }
         if (string.IsNullOrEmpty(connection.ContainerName))
-            throw new Exception("Destination.ContainerName parameter can't be empty.");
+            throw new Exception("Connection.ContainerName parameter can't be empty.");
     }
 }
