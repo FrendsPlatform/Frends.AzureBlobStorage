@@ -182,8 +182,10 @@ public class AzureBlobStorage
                         };
 
                         await appendBlobClient.CreateAsync(appendBlobCreateOptions, cancellationToken);
-                        using var appendGetStream = GetStream(false, true, encoding, fi);
-                        await appendBlobClient.AppendBlockAsync(appendGetStream, null, null, null, cancellationToken);
+                        using (var appendGetStream = GetStream(false, true, encoding, fi))
+                        {
+                            await appendBlobClient.AppendBlockAsync(appendGetStream, null, null, null, cancellationToken);
+                        }
                     }
 
                     return appendBlobClient.Uri.ToString();
@@ -226,8 +228,10 @@ public class AzureBlobStorage
                         await blobClient.DeleteIfExistsAsync(DeleteSnapshotsOption.None, null, cancellationToken);
                     }
 
-                    using var stream = GetStream(input.Compress, input.ContentsOnly, encoding, fi);
-                    await blobClient.UploadAsync(stream, blobUploadOptions, cancellationToken);
+                    using (var stream = GetStream(input.Compress, input.ContentsOnly, encoding, fi))
+                    {
+                        await blobClient.UploadAsync(stream, blobUploadOptions, cancellationToken);
+                    }
 
                     //Delete temp file
                     if (File.Exists(fi.FullName) && Path.GetDirectoryName(fi.FullName) != Path.GetDirectoryName(input.SourceFile) && Path.GetDirectoryName(fi.FullName) != input.SourceDirectory)
