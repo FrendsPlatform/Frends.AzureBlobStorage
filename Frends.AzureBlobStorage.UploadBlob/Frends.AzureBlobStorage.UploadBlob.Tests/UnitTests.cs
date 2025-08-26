@@ -41,7 +41,9 @@ public class UnitTests
     [OneTimeTearDown]
     public void OneTimeTearDown()
     {
-        DeleteFiles();
+        DeleteFiles(_testfile, 3, 100);
+        DeleteFiles(_testfile2, 3, 100);
+        CleanupTempFiles();
     }
 
     [SetUp]
@@ -96,6 +98,36 @@ public class UnitTests
         await container.DeleteIfExistsAsync();
         // Empties the const container.
         await DeleteBlobsInContainer(_connectionString, _container, _input.BlobName);
+    }
+
+    private void CleanupTempFiles()
+    {
+        try
+        {
+            var tempFiles = Directory.GetFiles(Path.GetTempPath(), "*testfile*");
+            foreach (var file in tempFiles)
+            {
+                try
+                {
+                    if (File.Exists(file))
+                    {
+                        File.Delete(file);
+                    }
+                }
+                catch (IOException)
+                {
+                    Thread.Sleep(100);
+                    if (File.Exists(file))
+                    {
+                        File.Delete(file);
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            TestContext.WriteLine($"Warning during temp file cleanup: {ex.Message}");
+        }
     }
 
     [Test]
@@ -349,6 +381,9 @@ public class UnitTests
     public async Task UploadFile_HandleExistingFile()
     {
         var errorHandlers = new List<OnExistingFile>() { OnExistingFile.Append, OnExistingFile.Overwrite, OnExistingFile.Throw };
+        var _source2 = _input;
+        _source2.BlobName = "testfile.txt";
+        _source2.SourceFile = _testfile2;
 
         foreach (var blobtype in _blobtypes)
         {
@@ -359,19 +394,6 @@ public class UnitTests
 
             foreach (var handler in errorHandlers)
             {
-                var _source2 = new Input
-                {
-                    SourceType = UploadSourceType.File,
-                    SourceFile = _testfile2,
-                    BlobName = "testfile.txt",
-                    Tags = _input.Tags,
-                    Compress = _input.Compress,
-                    ContentsOnly = _input.ContentsOnly,
-                    SearchPattern = _input.SearchPattern,
-                    SourceDirectory = _input.SourceDirectory,
-                    ActionOnExistingFile = handler
-                };
-
                 // Connection string
                 _input.ActionOnExistingFile = handler;
                 var container = GetBlobContainer(_connectionString, _connection.ContainerName);
@@ -898,10 +920,23 @@ public class UnitTests
         File.WriteAllText(_testfile2, "More texts.");
     }
 
-    private void DeleteFiles()
+    private static void DeleteFiles(string filePath, int maxRetries = 3, int delayMs = 100)
     {
-        if (Directory.Exists(_testFileDir))
-            Directory.Delete(_testFileDir, true);
+        for (int i = 0; i < maxRetries; i++)
+        {
+            try
+            {
+                if (File.Exists(filePath))
+                {
+                    File.Delete(filePath);
+                    break;
+                }
+            }
+            catch (IOException) when (i < maxRetries - 1)
+            {
+                Thread.Sleep(delayMs);
+            }
+        }
     }
 
     private async Task DeleteBlobsInContainer(string connectionString, string containerName, string blobName)
