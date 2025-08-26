@@ -182,7 +182,7 @@ public class AzureBlobStorage
                         };
 
                         await appendBlobClient.CreateAsync(appendBlobCreateOptions, cancellationToken);
-                        using var appendGetStream = new MemoryStream(GetBytes(false, true, encoding, fi));
+                        using var appendGetStream = GetStream(false, true, encoding, fi);
                         await appendBlobClient.AppendBlockAsync(appendGetStream, null, null, null, cancellationToken);
                     }
 
@@ -226,7 +226,8 @@ public class AzureBlobStorage
                         await blobClient.DeleteIfExistsAsync(DeleteSnapshotsOption.None, null, cancellationToken);
                     }
 
-                    await blobClient.UploadAsync(BinaryData.FromBytes(GetBytes(input.Compress, input.ContentsOnly, encoding, fi)), blobUploadOptions, cancellationToken);
+                    using var stream = GetStream(input.Compress, input.ContentsOnly, encoding, fi);
+                    await blobClient.UploadAsync(stream, blobUploadOptions, cancellationToken);
 
                     //Delete temp file
                     if (File.Exists(fi.FullName) && Path.GetDirectoryName(fi.FullName) != Path.GetDirectoryName(input.SourceFile) && Path.GetDirectoryName(fi.FullName) != input.SourceDirectory)
@@ -292,7 +293,7 @@ public class AzureBlobStorage
                             await pageBlobClient.ResizeAsync(fiMinLenght + bytesMissing, cancellationToken: cancellationToken);
                     }
 
-                    using var pageGetStream = new MemoryStream(GetBytes(false, true, encoding, fi));
+                    using var pageGetStream = GetStream(false, true, encoding, fi);
 
                     if (!exists)
                         await pageBlobClient.CreateAsync(requiredSize, cancellationToken: cancellationToken);
@@ -412,41 +413,39 @@ public class AzureBlobStorage
             throw new Exception($"AppendAny: An error occured while appending file. {ex}");
         }
     }
-
-    private static byte[] GetBytes(bool compress, bool fromString, Encoding encoding, FileInfo file)
+    private static Stream GetStream(bool compress, bool fromString, Encoding encoding, FileInfo file)
     {
-        var fileStream = File.OpenRead(file.FullName);
+        System.Diagnostics.Debug.WriteLine($"GetStream: compress={compress}, fromString={fromString}, file={file.Name}");
 
-        try
+        var fileStream = new FileStream(file.FullName, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 81920, useAsync: true);
+
+        if (!compress && !fromString)
+            return fileStream;
+
+        if (!compress && fromString)
         {
-            if (!compress)
+            using var reader = new StreamReader(fileStream, encoding);
+            var bytes = encoding.GetBytes(reader.ReadToEnd());
+            return new MemoryStream(bytes);
+        }
+
+        var outStream = new MemoryStream();
+        using (var gzip = new GZipStream(outStream, CompressionMode.Compress, true))
+        {
+            if (!fromString)
+            {
+                fileStream.CopyTo(gzip);
+            }
+            else
             {
                 using var reader = new StreamReader(fileStream, encoding);
-                return encoding.GetBytes(reader.ReadToEnd());
+                using var encodedMemory = new MemoryStream(encoding.GetBytes(reader.ReadToEnd()));
+                encodedMemory.CopyTo(gzip);
             }
-
-            using var outStream = new MemoryStream();
-            using (var gzip = new GZipStream(outStream, CompressionMode.Compress, true))
-            {
-                if (!fromString)
-                {
-                    fileStream.CopyTo(gzip);
-                }
-                else
-                {
-                    using var reader = new StreamReader(fileStream, encoding);
-                    var content = reader.ReadToEnd();
-                    using var encodedMemory = new MemoryStream(encoding.GetBytes(content));
-                    encodedMemory.CopyTo(gzip);
-                }
-            }
-
-            return outStream.ToArray();
         }
-        finally
-        {
-            fileStream.Dispose();
-        }
+
+        outStream.Position = 0;
+        return outStream;
     }
 
     private static Encoding GetEncoding(FileEncoding encoding, string encodingString, bool enableBom)

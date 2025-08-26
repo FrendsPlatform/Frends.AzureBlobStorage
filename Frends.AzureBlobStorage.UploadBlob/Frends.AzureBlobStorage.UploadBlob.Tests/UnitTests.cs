@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.IO.Compression;
+using System.Security.Cryptography;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Frends.AzureBlobStorage.UploadBlob.Tests;
@@ -721,6 +723,142 @@ public class UnitTests
         _input.SourceType = UploadSourceType.Directory;
         result = await AzureBlobStorage.UploadBlob(_input, _connection, _options, default);
         Assert.IsFalse(result.Success);
+    }
+
+    [Test]
+    [TestCase(10 * 1024, "small_no_compress.dat")]
+    [TestCase(200L * 1024 * 1024, "large_no_compress.dat")]
+    public async Task UploadDownload_NoCompression_VerifyIntegrity(long fileSize, string fileName)
+    {
+        var tempDir = Path.GetTempPath();
+        var originalFile = Path.Combine(tempDir, "original_" + fileName);
+        var downloadedFile = Path.Combine(tempDir, "downloaded_" + fileName);
+
+        await GenerateRandomFile(originalFile, fileSize);
+        var originalHash = await CalculateSHA256(originalFile);
+        var originalSize = new FileInfo(originalFile).Length;
+
+        var input = new Input
+        {
+            SourceType = UploadSourceType.File,
+            SourceFile = originalFile,
+            BlobName = fileName,
+            Compress = false,
+            ContentsOnly = false,
+            ActionOnExistingFile = OnExistingFile.Overwrite
+        };
+
+        var options = new Options
+        {
+            ThrowErrorOnFailure = true,
+            BlobType = AzureBlobType.Block,
+            ResizeFile = default,
+            PageMaxSize = default,
+            PageOffset = default,
+            ContentType = null,
+            Encoding = FileEncoding.UTF8,
+            EnableBom = false,
+            ParallelOperations = default
+        };
+
+        var uploadResult = await AzureBlobStorage.UploadBlob(input, _connection, options, default);
+        Assert.That(uploadResult.Success, Is.True, "Upload failed");
+
+        await DownloadBlobSimple(_connection.ConnectionString, _containerName, fileName, downloadedFile);
+        var downloadedSize = new FileInfo(downloadedFile).Length;
+        var downloadedHash = await CalculateSHA256(downloadedFile);
+
+        Assert.That(downloadedSize, Is.EqualTo(originalSize),
+            $"File size changed: {originalSize} -> {downloadedSize}");
+        Assert.That(BitConverter.ToString(downloadedHash),
+            Is.EqualTo(BitConverter.ToString(originalHash)),
+            "File content corrupted");
+    }
+
+    [Test]
+    [TestCase(10 * 1024, "small_with_compress.dat")]
+    [TestCase(200L * 1024 * 1024, "large_with_compress.dat")]
+    public async Task UploadDownload_WithCompression_VerifyIntegrity(long fileSize, string fileName)
+    {
+        var tempDir = Path.GetTempPath();
+        var originalFile = Path.Combine(tempDir, "original_" + fileName);
+        var downloadedFile = Path.Combine(tempDir, "downloaded_" + fileName);
+
+        await GenerateRandomFile(originalFile, fileSize);
+        var originalHash = await CalculateSHA256(originalFile);
+
+        var input = new Input
+        {
+            SourceType = UploadSourceType.File,
+            SourceFile = originalFile,
+            BlobName = fileName,
+            Compress = true,
+            ContentsOnly = false,
+            ActionOnExistingFile = OnExistingFile.Overwrite
+        };
+
+        var options = new Options
+        {
+            ThrowErrorOnFailure = true,
+            BlobType = AzureBlobType.Block,
+            ResizeFile = default,
+            PageMaxSize = default,
+            PageOffset = default,
+            ContentType = null,
+            Encoding = FileEncoding.UTF8,
+            EnableBom = false,
+            ParallelOperations = default
+        };
+
+        var uploadResult = await AzureBlobStorage.UploadBlob(input, _connection, options, default);
+        Assert.That(uploadResult.Success, Is.True, "Upload failed");
+
+        await DownloadBlobSimple(_connection.ConnectionString, _containerName, fileName, downloadedFile);
+        using (var inputStream = File.OpenRead(downloadedFile))
+        using (var gzip = new GZipStream(inputStream, CompressionMode.Decompress))
+        using (var outFile = File.Create(downloadedFile + ".decompressed"))
+        {
+            await gzip.CopyToAsync(outFile);
+        }
+
+        var downloadedHash = await CalculateSHA256(downloadedFile + ".decompressed");
+
+        bool hashesMatch = BitConverter.ToString(downloadedHash) == BitConverter.ToString(originalHash);
+        Assert.That(BitConverter.ToString(downloadedHash),
+            Is.EqualTo(BitConverter.ToString(originalHash)),
+            "Downloaded content doesn't match original");
+    }
+
+    private async Task GenerateRandomFile(string filePath, long fileSize)
+    {
+        var rnd = new Random();
+        using var fs = new FileStream(filePath, FileMode.Create, FileAccess.Write);
+        var buffer = new byte[81920];
+        long written = 0;
+
+        while (written < fileSize)
+        {
+            rnd.NextBytes(buffer);
+            int toWrite = (int)Math.Min(buffer.Length, fileSize - written);
+            await fs.WriteAsync(buffer, 0, toWrite);
+            written += toWrite;
+        }
+    }
+
+    private Task<byte[]> CalculateSHA256(string filePath)
+    {
+        return Task.Run(() =>
+        {
+            using var stream = File.OpenRead(filePath);
+            using var sha = SHA256.Create();
+            return sha.ComputeHash(stream);
+        });
+    }
+
+    public static async Task DownloadBlobSimple(string connectionString, string containerName, string blobName, string destinationPath, CancellationToken cancellationToken = default)
+    {
+        var blobClient = new BlobContainerClient(connectionString, containerName).GetBlobClient(blobName);
+        await blobClient.DownloadToAsync(destinationPath, cancellationToken);
     }
 
     private static BlobContainerClient GetBlobContainer(string connectionString, string containerName)

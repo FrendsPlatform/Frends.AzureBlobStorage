@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.1.0] - 2025-08-26
+### Changed
+- Updated the UploadBlob task to use a streaming approach (GetStream) instead of reading the entire file into memory (GetBytes), fixing corruption issues with large files; added unit tests to verify integrity for small and 200?MB files.
+
 ## [3.0.0] - 2025-04-16
 ### Changed
 - [Breaking] Reorganized and renamed parameters for clarity and consistency

@@ -65,7 +65,9 @@ public class Input
     public bool ContentsOnly { get; set; }
 
     /// <summary>
-    /// Gzip compression only works when transferring stream content (see Input.ContentsOnly).
+    /// If true, the file content will be uploaded using Gzip compression. 
+    /// When ContentsOnly is false, the raw file bytes are compressed. 
+    /// When ContentsOnly is true, the file is read as text using the given encoding before compression.
     /// Note that it could be a good idea to rename the blob using Destination.BlobName (e.g., renaming 'examplefile.txt' to 'examplefile.gz') so that the blob won't be named as 'examplefile.txt.gz
     /// </summary>
     /// <example>false</example>
