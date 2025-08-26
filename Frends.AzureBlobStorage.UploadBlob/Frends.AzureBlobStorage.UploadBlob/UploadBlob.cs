@@ -415,17 +415,18 @@ public class AzureBlobStorage
     }
     private static Stream GetStream(bool compress, bool fromString, Encoding encoding, FileInfo file)
     {
-        System.Diagnostics.Debug.WriteLine($"GetStream: compress={compress}, fromString={fromString}, file={file.Name}");
-
-        var fileStream = new FileStream(file.FullName, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 81920, useAsync: true);
-
         if (!compress && !fromString)
-            return fileStream;
+        {
+            return new FileStream(file.FullName, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 81920, useAsync: true);
+        }
+
+        using var fileStream = new FileStream(file.FullName, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 81920, useAsync: true);
 
         if (!compress && fromString)
         {
             using var reader = new StreamReader(fileStream, encoding);
-            var bytes = encoding.GetBytes(reader.ReadToEnd());
+            var content = reader.ReadToEnd();
+            var bytes = encoding.GetBytes(content);
             return new MemoryStream(bytes);
         }
 
@@ -439,11 +440,11 @@ public class AzureBlobStorage
             else
             {
                 using var reader = new StreamReader(fileStream, encoding);
-                using var encodedMemory = new MemoryStream(encoding.GetBytes(reader.ReadToEnd()));
+                var content = reader.ReadToEnd();
+                using var encodedMemory = new MemoryStream(encoding.GetBytes(content));
                 encodedMemory.CopyTo(gzip);
             }
         }
-
         outStream.Position = 0;
         return outStream;
     }

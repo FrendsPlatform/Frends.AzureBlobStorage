@@ -373,6 +373,7 @@ public class UnitTests
 
                 if (handler is OnExistingFile.Append)
                 {
+                    await Task.Delay(200);
                     result = await AzureBlobStorage.UploadBlob(_source2, _connection, _options, default);
                     Assert.IsTrue(result.Success);
                     Assert.IsTrue(result.Data.ContainsValue($"{container.Uri}/testfile.txt"));
