@@ -879,8 +879,28 @@ public class UnitTests
 
     private void DeleteFiles()
     {
-        if (Directory.Exists(_testFileDir))
-            Directory.Delete(_testFileDir, true);
+        if (!Directory.Exists(_testFileDir))
+            return;
+
+        for (int attempt = 0; attempt < 3; attempt++)
+        {
+            try
+            {
+                Directory.Delete(_testFileDir, true);
+                return;
+            }
+            catch (IOException) when (attempt < 2)
+            {
+                Thread.Sleep(300);
+            }
+            catch (UnauthorizedAccessException) when (attempt < 2)
+            {
+                Thread.Sleep(300);
+            }
+        }
+
+        // If all retries failed, just log warning
+        Console.WriteLine($"Warning: Could not delete test directory {_testFileDir}");
     }
 
     private async Task DeleteBlobsInContainer(string connectionString, string containerName, string blobName)
