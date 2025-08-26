@@ -32,10 +32,21 @@ public class UnitTests
     private Connection _connection;
     private Options _options;
 
+    [OneTimeSetUp]
+    public void OneTimeSetup()
+    {
+        CreateFiles();
+    }
+
+    [OneTimeTearDown]
+    public void OneTimeTearDown()
+    {
+        DeleteFiles();
+    }
+
     [SetUp]
     public void TestSetup()
     {
-        CreateFiles();
         _containerName = $"test-container{DateTime.Now.ToString("mmssffffff", CultureInfo.InvariantCulture)}";
 
         _input = new Input
@@ -85,7 +96,6 @@ public class UnitTests
         await container.DeleteIfExistsAsync();
         // Empties the const container.
         await DeleteBlobsInContainer(_connectionString, _container, _input.BlobName);
-        DeleteFiles();
     }
 
     [Test]
@@ -879,28 +889,8 @@ public class UnitTests
 
     private void DeleteFiles()
     {
-        if (!Directory.Exists(_testFileDir))
-            return;
-
-        for (int attempt = 0; attempt < 3; attempt++)
-        {
-            try
-            {
-                Directory.Delete(_testFileDir, true);
-                return;
-            }
-            catch (IOException) when (attempt < 2)
-            {
-                Thread.Sleep(300);
-            }
-            catch (UnauthorizedAccessException) when (attempt < 2)
-            {
-                Thread.Sleep(300);
-            }
-        }
-
-        // If all retries failed, just log warning
-        Console.WriteLine($"Warning: Could not delete test directory {_testFileDir}");
+        if (Directory.Exists(_testFileDir))
+            Directory.Delete(_testFileDir, true);
     }
 
     private async Task DeleteBlobsInContainer(string connectionString, string containerName, string blobName)
