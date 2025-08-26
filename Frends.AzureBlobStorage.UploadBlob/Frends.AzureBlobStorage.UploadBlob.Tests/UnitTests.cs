@@ -400,6 +400,7 @@ public class UnitTests
                 _connection.ConnectionMethod = ConnectionMethod.ConnectionString;
                 var result = await AzureBlobStorage.UploadBlob(_input, _connection, _options, default);
                 Assert.IsTrue(result.Success);
+                await Task.Delay(100);
                 Assert.IsTrue(result.Data.ContainsValue($"{container.Uri}/testfile.txt"));
                 Assert.IsTrue(await container.GetBlobClient("testfile.txt").ExistsAsync(), "Uploaded testfile.txt blob should exist");
 
@@ -408,6 +409,7 @@ public class UnitTests
                     await Task.Delay(200);
                     result = await AzureBlobStorage.UploadBlob(_source2, _connection, _options, default);
                     Assert.IsTrue(result.Success);
+                    await Task.Delay(100);
                     Assert.IsTrue(result.Data.ContainsValue($"{container.Uri}/testfile.txt"));
                     Assert.IsTrue(await container.GetBlobClient("testfile.txt").ExistsAsync(), "Uploaded testfile.txt blob should exist");
                 }
@@ -415,6 +417,7 @@ public class UnitTests
                 {
                     result = await AzureBlobStorage.UploadBlob(_input, _connection, _options, default);
                     Assert.IsTrue(result.Success);
+                    await Task.Delay(100);
                     Assert.IsTrue(result.Data.ContainsValue($"{container.Uri}/testfile.txt"));
                     Assert.IsTrue(await container.GetBlobClient("testfile.txt").ExistsAsync(), "Uploaded testfile.txt blob should exist");
                 }
@@ -434,6 +437,7 @@ public class UnitTests
 
                 result = await AzureBlobStorage.UploadBlob(_input, _connection, _options, default);
                 Assert.IsTrue(result.Success);
+                await Task.Delay(100);
                 Assert.IsTrue(result.Data.ContainsValue($"{container.Uri}/testfile.txt"));
                 Assert.IsTrue(await container.GetBlobClient("testfile.txt").ExistsAsync(), "Uploaded testfile.txt blob should exist");
 
@@ -441,6 +445,7 @@ public class UnitTests
                 {
                     result = await AzureBlobStorage.UploadBlob(_source2, _connection, _options, default);
                     Assert.IsTrue(result.Success);
+                    await Task.Delay(100);
                     Assert.IsTrue(result.Data.ContainsValue($"{container.Uri}/testfile.txt"));
                     Assert.IsTrue(await container.GetBlobClient("testfile.txt").ExistsAsync(), "Uploaded testfile.txt blob should exist");
                 }
@@ -448,6 +453,7 @@ public class UnitTests
                 {
                     result = await AzureBlobStorage.UploadBlob(_input, _connection, _options, default);
                     Assert.IsTrue(result.Success);
+                    await Task.Delay(100);
                     Assert.IsTrue(result.Data.ContainsValue($"{container.Uri}/testfile.txt"));
                     Assert.IsTrue(await container.GetBlobClient("testfile.txt").ExistsAsync(), "Uploaded testfile.txt blob should exist");
                 }
@@ -469,6 +475,7 @@ public class UnitTests
 
                 result = await AzureBlobStorage.UploadBlob(_input, _connection, _options, default);
                 Assert.IsTrue(result.Success);
+                await Task.Delay(100);
                 Assert.IsTrue(result.Data.ContainsValue($"{container.Uri}/testfile.txt"));
                 Assert.IsTrue(await container.GetBlobClient("testfile.txt").ExistsAsync(), "Uploaded testfile.txt blob should exist");
 
@@ -476,6 +483,7 @@ public class UnitTests
                 {
                     result = await AzureBlobStorage.UploadBlob(_source2, _connection, _options, default);
                     Assert.IsTrue(result.Success);
+                    await Task.Delay(100);
                     Assert.IsTrue(result.Data.ContainsValue($"{container.Uri}/testfile.txt"));
                     Assert.IsTrue(await container.GetBlobClient("testfile.txt").ExistsAsync(), "Uploaded testfile.txt blob should exist");
                 }
@@ -483,6 +491,7 @@ public class UnitTests
                 {
                     result = await AzureBlobStorage.UploadBlob(_input, _connection, _options, default);
                     Assert.IsTrue(result.Success);
+                    await Task.Delay(100);
                     Assert.IsTrue(result.Data.ContainsValue($"{container.Uri}/testfile.txt"));
                     Assert.IsTrue(await container.GetBlobClient("testfile.txt").ExistsAsync(), "Uploaded testfile.txt blob should exist");
                 }

@@ -297,7 +297,7 @@ public class AzureBlobStorage
                             await pageBlobClient.ResizeAsync(fiMinLenght + bytesMissing, cancellationToken: cancellationToken);
                     }
 
-                    using var pageGetStream = GetStream(false, true, encoding, fi, isPageBlob: true);
+                    using var pageGetStream = GetStream(false, true, encoding, fi);
 
                     if (!exists)
                         await pageBlobClient.CreateAsync(requiredSize, cancellationToken: cancellationToken);
@@ -417,9 +417,9 @@ public class AzureBlobStorage
             throw new Exception($"AppendAny: An error occured while appending file. {ex}");
         }
     }
-    private static Stream GetStream(bool compress, bool fromString, Encoding encoding, FileInfo file, bool isPageBlob = false)
+    private static Stream GetStream(bool compress, bool fromString, Encoding encoding, FileInfo file)
     {
-        if (!compress && !fromString && !isPageBlob)
+        if (!compress && !fromString)
         {
             return new FileStream(file.FullName, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 81920, useAsync: true);
         }
@@ -451,20 +451,6 @@ public class AzureBlobStorage
             }
             outStream.Position = 0;
             resultStream = outStream;
-        }
-
-        if (isPageBlob)
-        {
-            long remainder = resultStream.Length % 512;
-            if (remainder != 0)
-            {
-                var paddedStream = new MemoryStream();
-                resultStream.CopyTo(paddedStream);
-                paddedStream.Write(new byte[512 - remainder], 0, (int)(512 - remainder));
-                paddedStream.Position = 0;
-                resultStream.Dispose();
-                resultStream = paddedStream;
-            }
         }
 
         return resultStream;
