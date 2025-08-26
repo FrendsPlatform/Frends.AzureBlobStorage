@@ -349,9 +349,6 @@ public class UnitTests
     public async Task UploadFile_HandleExistingFile()
     {
         var errorHandlers = new List<OnExistingFile>() { OnExistingFile.Append, OnExistingFile.Overwrite, OnExistingFile.Throw };
-        var _source2 = _input;
-        _source2.BlobName = "testfile.txt";
-        _source2.SourceFile = _testfile2;
 
         foreach (var blobtype in _blobtypes)
         {
@@ -362,6 +359,19 @@ public class UnitTests
 
             foreach (var handler in errorHandlers)
             {
+                var _source2 = new Input
+                {
+                    SourceType = UploadSourceType.File,
+                    SourceFile = _testfile2,
+                    BlobName = "testfile.txt",
+                    Tags = _input.Tags,
+                    Compress = _input.Compress,
+                    ContentsOnly = _input.ContentsOnly,
+                    SearchPattern = _input.SearchPattern,
+                    SourceDirectory = _input.SourceDirectory,
+                    ActionOnExistingFile = handler
+                };
+
                 // Connection string
                 _input.ActionOnExistingFile = handler;
                 var container = GetBlobContainer(_connectionString, _connection.ContainerName);
