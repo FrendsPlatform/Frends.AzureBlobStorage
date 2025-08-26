@@ -297,7 +297,7 @@ public class AzureBlobStorage
                             await pageBlobClient.ResizeAsync(fiMinLenght + bytesMissing, cancellationToken: cancellationToken);
                     }
 
-                    using var pageGetStream = GetStream(false, true, encoding, fi);
+                    using var pageGetStream = GetStream(false, true, encoding, fi, isPageBlob: true);
 
                     if (!exists)
                         await pageBlobClient.CreateAsync(requiredSize, cancellationToken: cancellationToken);
@@ -417,41 +417,59 @@ public class AzureBlobStorage
             throw new Exception($"AppendAny: An error occured while appending file. {ex}");
         }
     }
-    private static Stream GetStream(bool compress, bool fromString, Encoding encoding, FileInfo file)
+    private static Stream GetStream(bool compress, bool fromString, Encoding encoding, FileInfo file, bool isPageBlob = false)
     {
-        if (!compress && !fromString)
+        if (!compress && !fromString && !isPageBlob)
         {
             return new FileStream(file.FullName, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 81920, useAsync: true);
         }
 
         using var fileStream = new FileStream(file.FullName, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 81920, useAsync: true);
 
+        Stream resultStream;
+
         if (!compress && fromString)
         {
             using var reader = new StreamReader(fileStream, encoding);
             var content = reader.ReadToEnd();
-            var bytes = encoding.GetBytes(content);
-            return new MemoryStream(bytes);
+            resultStream = new MemoryStream(encoding.GetBytes(content));
+        }
+        else
+        {
+            var outStream = new MemoryStream();
+            using (var gzip = new GZipStream(outStream, CompressionMode.Compress, true))
+            {
+                if (!fromString)
+                    fileStream.CopyTo(gzip);
+                else
+                {
+                    using var reader = new StreamReader(fileStream, encoding);
+                    var content = reader.ReadToEnd();
+                    using var encodedMemory = new MemoryStream(encoding.GetBytes(content));
+                    encodedMemory.CopyTo(gzip);
+                }
+            }
+            outStream.Position = 0;
+            resultStream = outStream;
         }
 
-        var outStream = new MemoryStream();
-        using (var gzip = new GZipStream(outStream, CompressionMode.Compress, true))
+        if (isPageBlob)
         {
-            if (!fromString)
+            long remainder = resultStream.Length % 512;
+            if (remainder != 0)
             {
-                fileStream.CopyTo(gzip);
-            }
-            else
-            {
-                using var reader = new StreamReader(fileStream, encoding);
-                var content = reader.ReadToEnd();
-                using var encodedMemory = new MemoryStream(encoding.GetBytes(content));
-                encodedMemory.CopyTo(gzip);
+                var paddedStream = new MemoryStream();
+                resultStream.CopyTo(paddedStream);
+                paddedStream.Write(new byte[512 - remainder], 0, (int)(512 - remainder));
+                paddedStream.Position = 0;
+                resultStream.Dispose();
+                resultStream = paddedStream;
             }
         }
-        outStream.Position = 0;
-        return outStream;
+
+        return resultStream;
     }
+
 
     private static Encoding GetEncoding(FileEncoding encoding, string encodingString, bool enableBom)
     {
