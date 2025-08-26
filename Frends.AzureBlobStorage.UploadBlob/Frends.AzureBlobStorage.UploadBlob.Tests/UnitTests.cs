@@ -381,9 +381,18 @@ public class UnitTests
     public async Task UploadFile_HandleExistingFile()
     {
         var errorHandlers = new List<OnExistingFile>() { OnExistingFile.Append, OnExistingFile.Overwrite, OnExistingFile.Throw };
-        var _source2 = _input;
-        _source2.BlobName = "testfile.txt";
-        _source2.SourceFile = _testfile2;
+        var _source2 = new Input
+        {
+            SourceType = _input.SourceType,
+            SourceFile = _testfile2,
+            BlobName = "testfile.txt",
+            Tags = _input.Tags,
+            Compress = _input.Compress,
+            ContentsOnly = _input.ContentsOnly,
+            SearchPattern = _input.SearchPattern,
+            SourceDirectory = _input.SourceDirectory,
+            ActionOnExistingFile = _input.ActionOnExistingFile
+        };
 
         foreach (var blobtype in _blobtypes)
         {
@@ -398,18 +407,23 @@ public class UnitTests
                 _input.ActionOnExistingFile = handler;
                 var container = GetBlobContainer(_connectionString, _connection.ContainerName);
                 _connection.ConnectionMethod = ConnectionMethod.ConnectionString;
+                _options = new Options
+                {
+                    ThrowErrorOnFailure = true,
+                    BlobType = blobtype,
+                    ResizeFile = blobtype == AzureBlobType.Page,
+                    Encoding = FileEncoding.UTF8,
+                    EnableBom = false
+                };
                 var result = await AzureBlobStorage.UploadBlob(_input, _connection, _options, default);
                 Assert.IsTrue(result.Success);
-                await Task.Delay(100);
                 Assert.IsTrue(result.Data.ContainsValue($"{container.Uri}/testfile.txt"));
                 Assert.IsTrue(await container.GetBlobClient("testfile.txt").ExistsAsync(), "Uploaded testfile.txt blob should exist");
 
                 if (handler is OnExistingFile.Append)
                 {
-                    await Task.Delay(200);
                     result = await AzureBlobStorage.UploadBlob(_source2, _connection, _options, default);
                     Assert.IsTrue(result.Success);
-                    await Task.Delay(100);
                     Assert.IsTrue(result.Data.ContainsValue($"{container.Uri}/testfile.txt"));
                     Assert.IsTrue(await container.GetBlobClient("testfile.txt").ExistsAsync(), "Uploaded testfile.txt blob should exist");
                 }
@@ -417,14 +431,21 @@ public class UnitTests
                 {
                     result = await AzureBlobStorage.UploadBlob(_input, _connection, _options, default);
                     Assert.IsTrue(result.Success);
-                    await Task.Delay(100);
                     Assert.IsTrue(result.Data.ContainsValue($"{container.Uri}/testfile.txt"));
                     Assert.IsTrue(await container.GetBlobClient("testfile.txt").ExistsAsync(), "Uploaded testfile.txt blob should exist");
                 }
                 else
                 {
-                    var ex = Assert.ThrowsAsync<Exception>(() => AzureBlobStorage.UploadBlob(_input, _connection, _options, default));
-                    Assert.IsTrue(ex.InnerException.InnerException.Message.Contains("already exists"));
+                    var ex = Assert.ThrowsAsync<Exception>(async () =>
+                        await AzureBlobStorage.UploadBlob(_input, _connection, _options, default));
+
+                    var actualEx = ex;
+                    while (actualEx.InnerException != null)
+                    {
+                        actualEx = actualEx.InnerException;
+                    }
+
+                    Assert.That(actualEx.Message, Does.Contain("already exists"));
                 }
 
                 await CleanUp();
@@ -437,7 +458,6 @@ public class UnitTests
 
                 result = await AzureBlobStorage.UploadBlob(_input, _connection, _options, default);
                 Assert.IsTrue(result.Success);
-                await Task.Delay(100);
                 Assert.IsTrue(result.Data.ContainsValue($"{container.Uri}/testfile.txt"));
                 Assert.IsTrue(await container.GetBlobClient("testfile.txt").ExistsAsync(), "Uploaded testfile.txt blob should exist");
 
@@ -445,7 +465,6 @@ public class UnitTests
                 {
                     result = await AzureBlobStorage.UploadBlob(_source2, _connection, _options, default);
                     Assert.IsTrue(result.Success);
-                    await Task.Delay(100);
                     Assert.IsTrue(result.Data.ContainsValue($"{container.Uri}/testfile.txt"));
                     Assert.IsTrue(await container.GetBlobClient("testfile.txt").ExistsAsync(), "Uploaded testfile.txt blob should exist");
                 }
@@ -453,15 +472,22 @@ public class UnitTests
                 {
                     result = await AzureBlobStorage.UploadBlob(_input, _connection, _options, default);
                     Assert.IsTrue(result.Success);
-                    await Task.Delay(100);
                     Assert.IsTrue(result.Data.ContainsValue($"{container.Uri}/testfile.txt"));
                     Assert.IsTrue(await container.GetBlobClient("testfile.txt").ExistsAsync(), "Uploaded testfile.txt blob should exist");
                 }
                 else
                 {
                     var test = _input.ActionOnExistingFile;
-                    var ex = Assert.ThrowsAsync<Exception>(() => AzureBlobStorage.UploadBlob(_input, _connection, _options, default));
-                    Assert.IsTrue(ex.InnerException.InnerException.Message.Contains("already exists"));
+                    var ex = Assert.ThrowsAsync<Exception>(async () =>
+                        await AzureBlobStorage.UploadBlob(_input, _connection, _options, default));
+
+                    var actualEx = ex;
+                    while (actualEx.InnerException != null)
+                    {
+                        actualEx = actualEx.InnerException;
+                    }
+
+                    Assert.That(actualEx.Message, Does.Contain("already exists"));
                 }
 
                 await CleanUp();
@@ -472,10 +498,8 @@ public class UnitTests
                 _input.ActionOnExistingFile = handler;
                 _connection.ContainerName = _container;
                 container = GetBlobContainer(_connectionString, _connection.ContainerName);
-
                 result = await AzureBlobStorage.UploadBlob(_input, _connection, _options, default);
                 Assert.IsTrue(result.Success);
-                await Task.Delay(100);
                 Assert.IsTrue(result.Data.ContainsValue($"{container.Uri}/testfile.txt"));
                 Assert.IsTrue(await container.GetBlobClient("testfile.txt").ExistsAsync(), "Uploaded testfile.txt blob should exist");
 
@@ -483,23 +507,37 @@ public class UnitTests
                 {
                     result = await AzureBlobStorage.UploadBlob(_source2, _connection, _options, default);
                     Assert.IsTrue(result.Success);
-                    await Task.Delay(100);
                     Assert.IsTrue(result.Data.ContainsValue($"{container.Uri}/testfile.txt"));
                     Assert.IsTrue(await container.GetBlobClient("testfile.txt").ExistsAsync(), "Uploaded testfile.txt blob should exist");
                 }
                 else if (handler is OnExistingFile.Overwrite)
                 {
+                    _options = new Options
+                    {
+                        ThrowErrorOnFailure = true,
+                        BlobType = blobtype,
+                        ResizeFile = blobtype == AzureBlobType.Page,
+                        Encoding = FileEncoding.UTF8,
+                        EnableBom = false
+                    };
                     result = await AzureBlobStorage.UploadBlob(_input, _connection, _options, default);
                     Assert.IsTrue(result.Success);
-                    await Task.Delay(100);
                     Assert.IsTrue(result.Data.ContainsValue($"{container.Uri}/testfile.txt"));
                     Assert.IsTrue(await container.GetBlobClient("testfile.txt").ExistsAsync(), "Uploaded testfile.txt blob should exist");
                 }
                 else
                 {
                     var test = _input.ActionOnExistingFile;
-                    var ex = Assert.ThrowsAsync<Exception>(() => AzureBlobStorage.UploadBlob(_input, _connection, _options, default));
-                    Assert.IsTrue(ex.InnerException.InnerException.Message.Contains("already exists"));
+                    var ex = Assert.ThrowsAsync<Exception>(async () =>
+                        await AzureBlobStorage.UploadBlob(_input, _connection, _options, default));
+
+                    var actualEx = ex;
+                    while (actualEx.InnerException != null)
+                    {
+                        actualEx = actualEx.InnerException;
+                    }
+
+                    Assert.That(actualEx.Message, Does.Contain("already exists"));
                 }
 
                 await CleanUp();
