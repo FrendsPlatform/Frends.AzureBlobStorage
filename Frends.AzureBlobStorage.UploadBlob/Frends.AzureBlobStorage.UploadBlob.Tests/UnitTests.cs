@@ -1,4 +1,5 @@
 ﻿using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
 using Frends.AzureBlobStorage.UploadBlob.Definitions;
 using NUnit.Framework;
 using System;
@@ -6,6 +7,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
@@ -917,6 +919,115 @@ public class UnitTests
         Assert.That(BitConverter.ToString(downloadedHash),
             Is.EqualTo(BitConverter.ToString(originalHash)),
             "Downloaded content doesn't match original");
+    }
+
+    [Test]
+    public async Task UploadBlob_CreateContainerIfNotExists()
+    {
+        var nonExistentContainer = "test-new-container-" + Guid.NewGuid().ToString("N");
+
+        foreach (var blobtype in _blobtypes)
+        {
+            _options.BlobType = blobtype;
+
+            // Test with Connection String
+            _connection.ConnectionMethod = ConnectionMethod.ConnectionString;
+            _connection.CreateContainerIfItDoesNotExist = true;
+            _connection.ContainerName = nonExistentContainer;
+
+            var result = await AzureBlobStorage.UploadBlob(_input, _connection, _options, default);
+            Assert.IsTrue(result.Success);
+
+            // Verify container was created
+            var blobServiceClient = new BlobServiceClient(_connectionString);
+            var containerExists = await blobServiceClient.GetBlobContainerClient(nonExistentContainer).ExistsAsync();
+            Assert.IsTrue(containerExists.Value);
+
+            await CleanUp();
+            TestSetup();
+        }
+    }
+
+    [Test]
+    public async Task UploadBlob_CreateContainerIfNotExists_OAuth()
+    {
+        var nonExistentContainer = "test-new-container-" + Guid.NewGuid().ToString("N");
+
+        foreach (var blobtype in _blobtypes)
+        {
+            _options.BlobType = blobtype;
+
+            // Test with OAuth
+            _connection.ConnectionMethod = ConnectionMethod.OAuth2;
+            _connection.CreateContainerIfItDoesNotExist = true;
+            _connection.ContainerName = nonExistentContainer;
+
+            var result = await AzureBlobStorage.UploadBlob(_input, _connection, _options, default);
+            Assert.IsTrue(result.Success);
+
+            await CleanUp();
+            TestSetup();
+        }
+    }
+
+    [Test]
+    public async Task UploadBlob_PageBlob_ResizeAndOffset()
+    {
+        _options.BlobType = AzureBlobType.Page;
+        _options.ResizeFile = true;
+        _options.PageOffset = 1024; // Start writing at offset 1024
+        _options.PageMaxSize = 2048; // Set max size
+
+        var container = GetBlobContainer(_connectionString, _containerName);
+
+        var result = await AzureBlobStorage.UploadBlob(_input, _connection, _options, default);
+        Assert.IsTrue(result.Success);
+
+        var blobClient = container.GetBlobClient("testfile.txt");
+        Assert.IsTrue(await blobClient.ExistsAsync());
+
+        // Verify it's a page blob
+        var properties = await blobClient.GetPropertiesAsync();
+        Assert.AreEqual(BlobType.Page, properties.Value.BlobType);
+    }
+
+    [Test]
+    public void UploadBlob_InvalidUri()
+    {
+        _connection.ConnectionMethod = ConnectionMethod.SasToken;
+        _connection.Uri = "invalid-uri";
+
+        var ex = Assert.ThrowsAsync<Exception>(() =>
+            AzureBlobStorage.UploadBlob(_input, _connection, _options, default));
+
+        Assert.That(ex.InnerException?.Message, Does.Contain("valid absolute URI"));
+    }
+
+    [Test]
+    public void UploadBlob_InvalidSasToken()
+    {
+        _connection.ConnectionMethod = ConnectionMethod.SasToken;
+        _connection.SasToken = "invalid-sas-token";
+
+        var ex = Assert.ThrowsAsync<Exception>(() =>
+            AzureBlobStorage.UploadBlob(_input, _connection, _options, default));
+
+        Assert.That(ex.InnerException?.Message, Does.Contain("invalid")
+            .Or.Contain("signature").Or.Contain("SasToken"));
+    }
+
+    [Test]
+    public async Task UploadBlob_NoFilesInDirectory_WithThrowErrorFalse()
+    {
+        _input.SourceType = UploadSourceType.Directory;
+        _input.SourceDirectory = Path.GetTempPath();
+        _input.SearchPattern = "non-existent-pattern-*.txt";
+        _options.ThrowErrorOnFailure = false;
+
+        var result = await AzureBlobStorage.UploadBlob(_input, _connection, _options, default);
+
+        Assert.IsFalse(result.Success);
+        Assert.That(result.Data.Values.First(), Does.Contain("Value cannot be null"));
     }
 
     private async Task GenerateRandomFile(string filePath, long fileSize)
