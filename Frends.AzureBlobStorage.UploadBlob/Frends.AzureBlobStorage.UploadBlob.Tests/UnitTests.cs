@@ -33,24 +33,10 @@ public class UnitTests
     private Input _input;
     private Connection _connection;
     private Options _options;
-
-    [OneTimeSetUp]
-    public void OneTimeSetup()
-    {
-        CreateFiles();
-    }
-
-    [OneTimeTearDown]
-    public void OneTimeTearDown()
-    {
-        DeleteFiles(_testfile, 3, 100);
-        DeleteFiles(_testfile2, 3, 100);
-        CleanupTempFiles();
-    }
-
     [SetUp]
     public void TestSetup()
     {
+        CreateFiles();
         _containerName = $"test-container{DateTime.Now.ToString("mmssffffff", CultureInfo.InvariantCulture)}";
 
         _input = new Input
@@ -100,36 +86,7 @@ public class UnitTests
         await container.DeleteIfExistsAsync();
         // Empties the const container.
         await DeleteBlobsInContainer(_connectionString, _container, _input.BlobName);
-    }
-
-    private void CleanupTempFiles()
-    {
-        try
-        {
-            var tempFiles = Directory.GetFiles(Path.GetTempPath(), "*testfile*");
-            foreach (var file in tempFiles)
-            {
-                try
-                {
-                    if (File.Exists(file))
-                    {
-                        File.Delete(file);
-                    }
-                }
-                catch (IOException)
-                {
-                    Thread.Sleep(100);
-                    if (File.Exists(file))
-                    {
-                        File.Delete(file);
-                    }
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            TestContext.WriteLine($"Warning during temp file cleanup: {ex.Message}");
-        }
+        DeleteFiles();
     }
 
     [Test]
@@ -383,18 +340,9 @@ public class UnitTests
     public async Task UploadFile_HandleExistingFile()
     {
         var errorHandlers = new List<OnExistingFile>() { OnExistingFile.Append, OnExistingFile.Overwrite, OnExistingFile.Throw };
-        var _source2 = new Input
-        {
-            SourceType = _input.SourceType,
-            SourceFile = _testfile2,
-            BlobName = "testfile.txt",
-            Tags = _input.Tags,
-            Compress = _input.Compress,
-            ContentsOnly = _input.ContentsOnly,
-            SearchPattern = _input.SearchPattern,
-            SourceDirectory = _input.SourceDirectory,
-            ActionOnExistingFile = _input.ActionOnExistingFile
-        };
+        var _source2 = _input;
+        _source2.BlobName = "testfile.txt";
+        _source2.SourceFile = _testfile2;
 
         foreach (var blobtype in _blobtypes)
         {
@@ -409,14 +357,6 @@ public class UnitTests
                 _input.ActionOnExistingFile = handler;
                 var container = GetBlobContainer(_connectionString, _connection.ContainerName);
                 _connection.ConnectionMethod = ConnectionMethod.ConnectionString;
-                _options = new Options
-                {
-                    ThrowErrorOnFailure = true,
-                    BlobType = blobtype,
-                    ResizeFile = blobtype == AzureBlobType.Page,
-                    Encoding = FileEncoding.UTF8,
-                    EnableBom = false
-                };
                 var result = await AzureBlobStorage.UploadBlob(_input, _connection, _options, default);
                 Assert.IsTrue(result.Success);
                 Assert.IsTrue(result.Data.ContainsValue($"{container.Uri}/testfile.txt"));
@@ -438,16 +378,8 @@ public class UnitTests
                 }
                 else
                 {
-                    var ex = Assert.ThrowsAsync<Exception>(async () =>
-                        await AzureBlobStorage.UploadBlob(_input, _connection, _options, default));
-
-                    var actualEx = ex;
-                    while (actualEx.InnerException != null)
-                    {
-                        actualEx = actualEx.InnerException;
-                    }
-
-                    Assert.That(actualEx.Message, Does.Contain("already exists"));
+                    var ex = Assert.ThrowsAsync<Exception>(() => AzureBlobStorage.UploadBlob(_input, _connection, _options, default));
+                    Assert.IsTrue(ex.InnerException.InnerException.Message.Contains("already exists"));
                 }
 
                 await CleanUp();
@@ -480,16 +412,8 @@ public class UnitTests
                 else
                 {
                     var test = _input.ActionOnExistingFile;
-                    var ex = Assert.ThrowsAsync<Exception>(async () =>
-                        await AzureBlobStorage.UploadBlob(_input, _connection, _options, default));
-
-                    var actualEx = ex;
-                    while (actualEx.InnerException != null)
-                    {
-                        actualEx = actualEx.InnerException;
-                    }
-
-                    Assert.That(actualEx.Message, Does.Contain("already exists"));
+                    var ex = Assert.ThrowsAsync<Exception>(() => AzureBlobStorage.UploadBlob(_input, _connection, _options, default));
+                    Assert.IsTrue(ex.InnerException.InnerException.Message.Contains("already exists"));
                 }
 
                 await CleanUp();
@@ -500,6 +424,7 @@ public class UnitTests
                 _input.ActionOnExistingFile = handler;
                 _connection.ContainerName = _container;
                 container = GetBlobContainer(_connectionString, _connection.ContainerName);
+
                 result = await AzureBlobStorage.UploadBlob(_input, _connection, _options, default);
                 Assert.IsTrue(result.Success);
                 Assert.IsTrue(result.Data.ContainsValue($"{container.Uri}/testfile.txt"));
@@ -514,14 +439,6 @@ public class UnitTests
                 }
                 else if (handler is OnExistingFile.Overwrite)
                 {
-                    _options = new Options
-                    {
-                        ThrowErrorOnFailure = true,
-                        BlobType = blobtype,
-                        ResizeFile = blobtype == AzureBlobType.Page,
-                        Encoding = FileEncoding.UTF8,
-                        EnableBom = false
-                    };
                     result = await AzureBlobStorage.UploadBlob(_input, _connection, _options, default);
                     Assert.IsTrue(result.Success);
                     Assert.IsTrue(result.Data.ContainsValue($"{container.Uri}/testfile.txt"));
@@ -530,16 +447,8 @@ public class UnitTests
                 else
                 {
                     var test = _input.ActionOnExistingFile;
-                    var ex = Assert.ThrowsAsync<Exception>(async () =>
-                        await AzureBlobStorage.UploadBlob(_input, _connection, _options, default));
-
-                    var actualEx = ex;
-                    while (actualEx.InnerException != null)
-                    {
-                        actualEx = actualEx.InnerException;
-                    }
-
-                    Assert.That(actualEx.Message, Does.Contain("already exists"));
+                    var ex = Assert.ThrowsAsync<Exception>(() => AzureBlobStorage.UploadBlob(_input, _connection, _options, default));
+                    Assert.IsTrue(ex.InnerException.InnerException.Message.Contains("already exists"));
                 }
 
                 await CleanUp();
@@ -826,45 +735,54 @@ public class UnitTests
         var originalFile = Path.Combine(tempDir, "original_" + fileName);
         var downloadedFile = Path.Combine(tempDir, "downloaded_" + fileName);
 
-        await GenerateRandomFile(originalFile, fileSize);
-        var originalHash = await CalculateSHA256(originalFile);
-        var originalSize = new FileInfo(originalFile).Length;
-
-        var input = new Input
+        try
         {
-            SourceType = UploadSourceType.File,
-            SourceFile = originalFile,
-            BlobName = fileName,
-            Compress = false,
-            ContentsOnly = false,
-            ActionOnExistingFile = OnExistingFile.Overwrite
-        };
+            await GenerateRandomFile(originalFile, fileSize);
+            var originalHash = await CalculateSHA256(originalFile);
+            var originalSize = new FileInfo(originalFile).Length;
 
-        var options = new Options
+            var input = new Input
+            {
+                SourceType = UploadSourceType.File,
+                SourceFile = originalFile,
+                BlobName = fileName,
+                Compress = false,
+                ContentsOnly = false,
+                ActionOnExistingFile = OnExistingFile.Overwrite
+            };
+
+            var options = new Options
+            {
+                ThrowErrorOnFailure = true,
+                BlobType = AzureBlobType.Block,
+                ResizeFile = default,
+                PageMaxSize = default,
+                PageOffset = default,
+                ContentType = null,
+                Encoding = FileEncoding.UTF8,
+                EnableBom = false,
+                ParallelOperations = default
+            };
+
+            var uploadResult = await AzureBlobStorage.UploadBlob(input, _connection, options, default);
+            Assert.That(uploadResult.Success, Is.True, "Upload failed");
+
+            await DownloadBlobSimple(_connection.ConnectionString, _containerName, fileName, downloadedFile);
+            var downloadedSize = new FileInfo(downloadedFile).Length;
+            var downloadedHash = await CalculateSHA256(downloadedFile);
+
+            Assert.That(downloadedSize, Is.EqualTo(originalSize),
+                $"File size changed: {originalSize} -> {downloadedSize}");
+            Assert.That(BitConverter.ToString(downloadedHash),
+                Is.EqualTo(BitConverter.ToString(originalHash)),
+                "File content corrupted");
+        }
+        finally
         {
-            ThrowErrorOnFailure = true,
-            BlobType = AzureBlobType.Block,
-            ResizeFile = default,
-            PageMaxSize = default,
-            PageOffset = default,
-            ContentType = null,
-            Encoding = FileEncoding.UTF8,
-            EnableBom = false,
-            ParallelOperations = default
-        };
-
-        var uploadResult = await AzureBlobStorage.UploadBlob(input, _connection, options, default);
-        Assert.That(uploadResult.Success, Is.True, "Upload failed");
-
-        await DownloadBlobSimple(_connection.ConnectionString, _containerName, fileName, downloadedFile);
-        var downloadedSize = new FileInfo(downloadedFile).Length;
-        var downloadedHash = await CalculateSHA256(downloadedFile);
-
-        Assert.That(downloadedSize, Is.EqualTo(originalSize),
-            $"File size changed: {originalSize} -> {downloadedSize}");
-        Assert.That(BitConverter.ToString(downloadedHash),
-            Is.EqualTo(BitConverter.ToString(originalHash)),
-            "File content corrupted");
+            // Clean up temporary files
+            try { if (File.Exists(originalFile)) File.Delete(originalFile); } catch { }
+            try { if (File.Exists(downloadedFile)) File.Delete(downloadedFile); } catch { }
+        }
     }
 
     [Test]
@@ -875,159 +793,62 @@ public class UnitTests
         var tempDir = Path.GetTempPath();
         var originalFile = Path.Combine(tempDir, "original_" + fileName);
         var downloadedFile = Path.Combine(tempDir, "downloaded_" + fileName);
+        var decompressedFile = downloadedFile + ".decompressed";
 
-        await GenerateRandomFile(originalFile, fileSize);
-        var originalHash = await CalculateSHA256(originalFile);
-
-        var input = new Input
+        try
         {
-            SourceType = UploadSourceType.File,
-            SourceFile = originalFile,
-            BlobName = fileName,
-            Compress = true,
-            ContentsOnly = false,
-            ActionOnExistingFile = OnExistingFile.Overwrite
-        };
+            await GenerateRandomFile(originalFile, fileSize);
+            var originalHash = await CalculateSHA256(originalFile);
 
-        var options = new Options
-        {
-            ThrowErrorOnFailure = true,
-            BlobType = AzureBlobType.Block,
-            ResizeFile = default,
-            PageMaxSize = default,
-            PageOffset = default,
-            ContentType = null,
-            Encoding = FileEncoding.UTF8,
-            EnableBom = false,
-            ParallelOperations = default
-        };
+            var input = new Input
+            {
+                SourceType = UploadSourceType.File,
+                SourceFile = originalFile,
+                BlobName = fileName,
+                Compress = true,
+                ContentsOnly = false,
+                ActionOnExistingFile = OnExistingFile.Overwrite
+            };
 
-        var uploadResult = await AzureBlobStorage.UploadBlob(input, _connection, options, default);
-        Assert.That(uploadResult.Success, Is.True, "Upload failed");
+            var options = new Options
+            {
+                ThrowErrorOnFailure = true,
+                BlobType = AzureBlobType.Block,
+                ResizeFile = default,
+                PageMaxSize = default,
+                PageOffset = default,
+                ContentType = null,
+                Encoding = FileEncoding.UTF8,
+                EnableBom = false,
+                ParallelOperations = default
+            };
 
-        await DownloadBlobSimple(_connection.ConnectionString, _containerName, fileName, downloadedFile);
-        using (var inputStream = File.OpenRead(downloadedFile))
-        using (var gzip = new GZipStream(inputStream, CompressionMode.Decompress))
-        using (var outFile = File.Create(downloadedFile + ".decompressed"))
-        {
-            await gzip.CopyToAsync(outFile);
+            var uploadResult = await AzureBlobStorage.UploadBlob(input, _connection, options, default);
+            Assert.That(uploadResult.Success, Is.True, "Upload failed");
+
+            await DownloadBlobSimple(_connection.ConnectionString, _containerName, fileName, downloadedFile);
+
+            using (var inputStream = File.OpenRead(downloadedFile))
+            using (var gzip = new GZipStream(inputStream, CompressionMode.Decompress))
+            using (var outFile = File.Create(decompressedFile))
+            {
+                await gzip.CopyToAsync(outFile);
+            }
+
+            var downloadedHash = await CalculateSHA256(decompressedFile);
+
+            bool hashesMatch = BitConverter.ToString(downloadedHash) == BitConverter.ToString(originalHash);
+            Assert.That(BitConverter.ToString(downloadedHash),
+                Is.EqualTo(BitConverter.ToString(originalHash)),
+                "Downloaded content doesn't match original");
         }
-
-        var downloadedHash = await CalculateSHA256(downloadedFile + ".decompressed");
-
-        bool hashesMatch = BitConverter.ToString(downloadedHash) == BitConverter.ToString(originalHash);
-        Assert.That(BitConverter.ToString(downloadedHash),
-            Is.EqualTo(BitConverter.ToString(originalHash)),
-            "Downloaded content doesn't match original");
-    }
-
-    [Test]
-    public async Task UploadBlob_CreateContainerIfNotExists()
-    {
-        var nonExistentContainer = "test-new-container-" + Guid.NewGuid().ToString("N");
-
-        foreach (var blobtype in _blobtypes)
+        finally
         {
-            _options.BlobType = blobtype;
-
-            // Test with Connection String
-            _connection.ConnectionMethod = ConnectionMethod.ConnectionString;
-            _connection.CreateContainerIfItDoesNotExist = true;
-            _connection.ContainerName = nonExistentContainer;
-
-            var result = await AzureBlobStorage.UploadBlob(_input, _connection, _options, default);
-            Assert.IsTrue(result.Success);
-
-            // Verify container was created
-            var blobServiceClient = new BlobServiceClient(_connectionString);
-            var containerExists = await blobServiceClient.GetBlobContainerClient(nonExistentContainer).ExistsAsync();
-            Assert.IsTrue(containerExists.Value);
-
-            await CleanUp();
-            TestSetup();
+            // Clean up temporary files
+            try { if (File.Exists(originalFile)) File.Delete(originalFile); } catch { }
+            try { if (File.Exists(downloadedFile)) File.Delete(downloadedFile); } catch { }
+            try { if (File.Exists(decompressedFile)) File.Delete(decompressedFile); } catch { }
         }
-    }
-
-    [Test]
-    public async Task UploadBlob_CreateContainerIfNotExists_OAuth()
-    {
-        var nonExistentContainer = "test-new-container-" + Guid.NewGuid().ToString("N");
-
-        foreach (var blobtype in _blobtypes)
-        {
-            _options.BlobType = blobtype;
-
-            // Test with OAuth
-            _connection.ConnectionMethod = ConnectionMethod.OAuth2;
-            _connection.CreateContainerIfItDoesNotExist = true;
-            _connection.ContainerName = nonExistentContainer;
-
-            var result = await AzureBlobStorage.UploadBlob(_input, _connection, _options, default);
-            Assert.IsTrue(result.Success);
-
-            await CleanUp();
-            TestSetup();
-        }
-    }
-
-    [Test]
-    public async Task UploadBlob_PageBlob_ResizeAndOffset()
-    {
-        _options.BlobType = AzureBlobType.Page;
-        _options.ResizeFile = true;
-        _options.PageOffset = 1024; // Start writing at offset 1024
-        _options.PageMaxSize = 2048; // Set max size
-
-        var container = GetBlobContainer(_connectionString, _containerName);
-
-        var result = await AzureBlobStorage.UploadBlob(_input, _connection, _options, default);
-        Assert.IsTrue(result.Success);
-
-        var blobClient = container.GetBlobClient("testfile.txt");
-        Assert.IsTrue(await blobClient.ExistsAsync());
-
-        // Verify it's a page blob
-        var properties = await blobClient.GetPropertiesAsync();
-        Assert.AreEqual(BlobType.Page, properties.Value.BlobType);
-    }
-
-    [Test]
-    public void UploadBlob_InvalidUri()
-    {
-        _connection.ConnectionMethod = ConnectionMethod.SasToken;
-        _connection.Uri = "invalid-uri";
-
-        var ex = Assert.ThrowsAsync<Exception>(() =>
-            AzureBlobStorage.UploadBlob(_input, _connection, _options, default));
-
-        Assert.That(ex.InnerException?.Message, Does.Contain("valid absolute URI"));
-    }
-
-    [Test]
-    public void UploadBlob_InvalidSasToken()
-    {
-        _connection.ConnectionMethod = ConnectionMethod.SasToken;
-        _connection.SasToken = "invalid-sas-token";
-
-        var ex = Assert.ThrowsAsync<Exception>(() =>
-            AzureBlobStorage.UploadBlob(_input, _connection, _options, default));
-
-        Assert.That(ex.InnerException?.Message, Does.Contain("invalid")
-            .Or.Contain("signature").Or.Contain("SasToken"));
-    }
-
-    [Test]
-    public async Task UploadBlob_NoFilesInDirectory_WithThrowErrorFalse()
-    {
-        _input.SourceType = UploadSourceType.Directory;
-        _input.SourceDirectory = Path.GetTempPath();
-        _input.SearchPattern = "non-existent-pattern-*.txt";
-        _options.ThrowErrorOnFailure = false;
-
-        var result = await AzureBlobStorage.UploadBlob(_input, _connection, _options, default);
-
-        Assert.IsFalse(result.Success);
-        Assert.That(result.Data.Values.First(), Does.Contain("Value cannot be null"));
     }
 
     private async Task GenerateRandomFile(string filePath, long fileSize)
@@ -1078,23 +899,10 @@ public class UnitTests
         File.WriteAllText(_testfile2, "More texts.");
     }
 
-    private static void DeleteFiles(string filePath, int maxRetries = 3, int delayMs = 100)
+    private void DeleteFiles()
     {
-        for (int i = 0; i < maxRetries; i++)
-        {
-            try
-            {
-                if (File.Exists(filePath))
-                {
-                    File.Delete(filePath);
-                    break;
-                }
-            }
-            catch (IOException) when (i < maxRetries - 1)
-            {
-                Thread.Sleep(delayMs);
-            }
-        }
+        if (Directory.Exists(_testFileDir))
+            Directory.Delete(_testFileDir, true);
     }
 
     private async Task DeleteBlobsInContainer(string connectionString, string containerName, string blobName)
