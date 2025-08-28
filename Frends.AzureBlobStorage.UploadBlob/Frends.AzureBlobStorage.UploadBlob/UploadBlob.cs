@@ -11,7 +11,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.IO.Compression;
+using System.IO.Pipes;
 using System.Linq;
+using System.Reflection.Metadata;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -297,8 +299,6 @@ public class AzureBlobStorage
                             await pageBlobClient.ResizeAsync(fiMinLenght + bytesMissing, cancellationToken: cancellationToken);
                     }
 
-                    using var pageGetStream = GetStream(false, true, encoding, fi);
-
                     if (!exists)
                         await pageBlobClient.CreateAsync(requiredSize, cancellationToken: cancellationToken);
 
@@ -430,17 +430,16 @@ public class AzureBlobStorage
 
         try
         {
-            byte[] bytes;
-
             if (!compress)
             {
                 using var reader = new StreamReader(fileStream, encoding);
-                bytes = encoding.GetBytes(reader.ReadToEnd());
+                var bytes = encoding.GetBytes(reader.ReadToEnd());
                 return new MemoryStream(bytes);
             }
 
-            using var outStream = new MemoryStream();
-            using (var gzip = new GZipStream(outStream, CompressionMode.Compress, true))
+            var tempFile = Path.GetTempFileName();
+            using (var outFile = File.Create(tempFile))
+            using (var gzip = new GZipStream(outFile, CompressionMode.Compress))
             {
                 if (!fromString)
                 {
@@ -455,8 +454,7 @@ public class AzureBlobStorage
                 }
             }
 
-            bytes = outStream.ToArray();
-            return new MemoryStream(bytes);
+            return new FileStream(tempFile, FileMode.Open, FileAccess.Read, FileShare.Read, 81920, useAsync: true);
         }
         finally
         {

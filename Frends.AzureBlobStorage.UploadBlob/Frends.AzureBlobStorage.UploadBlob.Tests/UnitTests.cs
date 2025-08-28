@@ -788,6 +788,7 @@ public class UnitTests
     [Test]
     [TestCase(10 * 1024, "small_with_compress.dat")]
     [TestCase(200L * 1024 * 1024, "large_with_compress.dat")]
+    [TestCase(3L * 1024 * 1024 * 1024, "very_large_3gb_file.dat")]
     public async Task UploadDownload_WithCompression_VerifyIntegrity(long fileSize, string fileName)
     {
         var tempDir = Path.GetTempPath();
