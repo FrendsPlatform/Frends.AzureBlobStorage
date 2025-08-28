@@ -454,7 +454,7 @@ public class AzureBlobStorage
                 }
             }
 
-            return new FileStream(tempFile, FileMode.Open, FileAccess.Read, FileShare.Read, 81920, useAsync: true);
+            return new FileStream(tempFile, FileMode.Open, FileAccess.Read, FileShare.Read, 81920, FileOptions.Asynchronous | FileOptions.DeleteOnClose);
         }
         finally
         {
