@@ -11,7 +11,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.IO.Compression;
+using System.IO.Pipes;
 using System.Linq;
+using System.Reflection.Metadata;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -182,8 +184,10 @@ public class AzureBlobStorage
                         };
 
                         await appendBlobClient.CreateAsync(appendBlobCreateOptions, cancellationToken);
-                        using var appendGetStream = new MemoryStream(GetBytes(false, true, encoding, fi));
-                        await appendBlobClient.AppendBlockAsync(appendGetStream, null, null, null, cancellationToken);
+                        using (var appendGetStream = GetStream(false, true, encoding, fi))
+                        {
+                            await appendBlobClient.AppendBlockAsync(appendGetStream, null, null, null, cancellationToken);
+                        }
                     }
 
                     return appendBlobClient.Uri.ToString();
@@ -226,7 +230,10 @@ public class AzureBlobStorage
                         await blobClient.DeleteIfExistsAsync(DeleteSnapshotsOption.None, null, cancellationToken);
                     }
 
-                    await blobClient.UploadAsync(BinaryData.FromBytes(GetBytes(input.Compress, input.ContentsOnly, encoding, fi)), blobUploadOptions, cancellationToken);
+                    using (var stream = GetStream(input.Compress, input.ContentsOnly, encoding, fi))
+                    {
+                        await blobClient.UploadAsync(stream, blobUploadOptions, cancellationToken);
+                    }
 
                     //Delete temp file
                     if (File.Exists(fi.FullName) && Path.GetDirectoryName(fi.FullName) != Path.GetDirectoryName(input.SourceFile) && Path.GetDirectoryName(fi.FullName) != input.SourceDirectory)
@@ -292,12 +299,13 @@ public class AzureBlobStorage
                             await pageBlobClient.ResizeAsync(fiMinLenght + bytesMissing, cancellationToken: cancellationToken);
                     }
 
-                    using var pageGetStream = new MemoryStream(GetBytes(false, true, encoding, fi));
-
                     if (!exists)
                         await pageBlobClient.CreateAsync(requiredSize, cancellationToken: cancellationToken);
 
-                    await pageBlobClient.UploadPagesAsync(pageGetStream, offset: options.PageOffset == -1 ? origSize : options.PageOffset, cancellationToken: cancellationToken);
+                    using (var pageUploadStream = GetStream(false, true, encoding, fi))
+                    {
+                        await pageBlobClient.UploadPagesAsync(pageUploadStream, offset: options.PageOffset == -1 ? origSize : options.PageOffset, cancellationToken: cancellationToken);
+                    }
 
                     if (Path.GetDirectoryName(fi.FullName) != Path.GetDirectoryName(input.SourceFile) && Path.GetDirectoryName(fi.FullName) != input.SourceDirectory)
                         fi.Delete();
@@ -413,20 +421,25 @@ public class AzureBlobStorage
         }
     }
 
-    private static byte[] GetBytes(bool compress, bool fromString, Encoding encoding, FileInfo file)
+    private static Stream GetStream(bool compress, bool fromString, Encoding encoding, FileInfo file)
     {
         var fileStream = File.OpenRead(file.FullName);
+
+        if (!compress && !fromString)
+            return fileStream;
 
         try
         {
             if (!compress)
             {
                 using var reader = new StreamReader(fileStream, encoding);
-                return encoding.GetBytes(reader.ReadToEnd());
+                var bytes = encoding.GetBytes(reader.ReadToEnd());
+                return new MemoryStream(bytes);
             }
 
-            using var outStream = new MemoryStream();
-            using (var gzip = new GZipStream(outStream, CompressionMode.Compress, true))
+            var tempFile = Path.GetTempFileName();
+            using (var outFile = File.Create(tempFile))
+            using (var gzip = new GZipStream(outFile, CompressionMode.Compress))
             {
                 if (!fromString)
                 {
@@ -441,13 +454,14 @@ public class AzureBlobStorage
                 }
             }
 
-            return outStream.ToArray();
+            return new FileStream(tempFile, FileMode.Open, FileAccess.Read, FileShare.Read, 81920, FileOptions.Asynchronous | FileOptions.DeleteOnClose);
         }
         finally
         {
             fileStream.Dispose();
         }
     }
+
 
     private static Encoding GetEncoding(FileEncoding encoding, string encodingString, bool enableBom)
     {
