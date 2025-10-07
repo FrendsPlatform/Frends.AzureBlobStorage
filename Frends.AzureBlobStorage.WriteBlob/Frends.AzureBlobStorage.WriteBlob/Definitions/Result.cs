@@ -1,6 +1,4 @@
-﻿using Azure.Storage.Blobs.Models;
-
-namespace Frends.AzureBlobStorage.WriteBlob.Definitions;
+﻿namespace Frends.AzureBlobStorage.WriteBlob.Definitions;
 
 /// <summary>
 /// Task's result.
@@ -19,14 +17,14 @@ public class Result
     /// If an ignorable error occurs, such as when a blob already exists and Options.ThrowErrorOnFailure is set to false, the URL will be replaced with the corresponding error message.age.
     /// </summary>
     /// <example>{ { c:\temp\examplefile.txt, https://storage.blob.core.windows.net/container/examplefile.txt }, { c:\temp\examplefile2.txt, Blob examplefile2 already exists. } }</example>
-    public BlobContentInfo Info { get; private set; }
+    public string Info { get; private set; }
 
     /// <summary>
     /// URI of uploaded file.
     /// </summary>
     public string Uri { get; private set; }
 
-    internal Result(bool success, BlobContentInfo info, string uri)
+    internal Result(bool success, string info, string uri)
     {
         Success = success;
         Info = info;
