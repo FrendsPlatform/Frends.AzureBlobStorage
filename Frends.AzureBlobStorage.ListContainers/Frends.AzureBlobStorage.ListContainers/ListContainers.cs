@@ -57,8 +57,8 @@ public static class AzureBlobStorage
                     PublicAccess = container.Properties.PublicAccess?.ToString() ?? "Private",
                     LastModified = container.Properties.LastModified.DateTime,
                     ETag = container.Properties.ETag.ToString(),
-                    LeaseState = container.Properties.LeaseState?.ToString() ?? string.Empty;
-                    LeaseStatus = container.Properties.LeaseStatus?.ToString() ?? string.Empty;
+                    LeaseState = container.Properties.LeaseState?.ToString() ?? string.Empty,
+                    LeaseStatus = container.Properties.LeaseStatus?.ToString() ?? string.Empty,
                 });
             }
 
