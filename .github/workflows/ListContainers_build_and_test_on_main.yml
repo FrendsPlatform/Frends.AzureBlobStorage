@@ -1,0 +1,18 @@
+name: ListContainers_build_main
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'Frends.AzureBlobStorage.ListContainers/**'
+  workflow_dispatch:
+
+jobs:
+  build:
+    uses: FrendsPlatform/FrendsTasks/.github/workflows/linux_build_main.yml@main
+    with:
+      workdir: Frends.AzureBlobStorage.ListContainers
+      dotnet_version: 8.0.x
+    secrets:
+      badge_service_api_key: ${{ secrets.BADGE_SERVICE_API_KEY }}
