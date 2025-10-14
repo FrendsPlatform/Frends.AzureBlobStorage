@@ -11,7 +11,7 @@ public class Options
     /// <summary>
     /// Whether to throw an error on failure.
     /// </summary>
-    /// <example>false</example>
+    /// <example>true</example>
     [DefaultValue(true)]
     public bool ThrowErrorOnFailure { get; set; }
 
@@ -21,5 +21,5 @@ public class Options
     /// <example>Custom error message</example>
     [DisplayFormat(DataFormatString = "Text")]
     [DefaultValue("")]
-    public string ErrorMessageOnFailure { get; set; }
+    public string ErrorMessageOnFailure { get; set; } = string.Empty;
 }

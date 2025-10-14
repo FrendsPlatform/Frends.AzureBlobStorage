@@ -4,14 +4,14 @@ using Frends.AzureBlobStorage.ListContainers.Definitions;
 namespace Frends.AzureBlobStorage.ListContainers.Helpers;
 
 /// <summary>
-/// Provides centralized error handling functionality for Avro deserialization operations.
+/// Provides centralized error handling functionality for Azure Blob Storage operations.
 /// </summary>
 public static class ErrorHandler
 {
     /// <summary>
     /// Handles exceptions.
     /// </summary>
-    /// <param name="ex">The exception that occurred during deserialization.</param>
+    /// <param name="ex">The exception that occurred during task execution.</param>
     /// <param name="options">Configuration options that determine how errors should be handled.</param>
     /// <returns>A Result object containing error information when ThrowErrorOnFailure is false.</returns>
     public static Result Handle(Exception ex, Options options)

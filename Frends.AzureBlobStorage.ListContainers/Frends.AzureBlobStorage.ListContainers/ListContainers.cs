@@ -17,7 +17,7 @@ namespace Frends.AzureBlobStorage.ListContainers;
 public static class AzureBlobStorage
 {
     /// <summary>
-    /// Frends Task to lists all containers in the specified Azure Blob Storage account.
+    /// Frends Task to list all containers in the specified Azure Blob Storage account.
     /// [Documentation](https://tasks.frends.com/tasks/frends-tasks/Frends-AzureBlobStorage-ListContainers)
     /// </summary>
     /// <param name="connection">Connection parameters.</param>
@@ -54,11 +54,11 @@ public static class AzureBlobStorage
                 containers.Add(new ContainerInfo
                 {
                     Name = container.Name,
-                    PublicAccess = container.Properties.PublicAccess.ToString() ?? "Private",
+                    PublicAccess = container.Properties.PublicAccess?.ToString() ?? "Private",
                     LastModified = container.Properties.LastModified.DateTime,
                     ETag = container.Properties.ETag.ToString(),
-                    LeaseState = container.Properties.LeaseState?.ToString(),
-                    LeaseStatus = container.Properties.LeaseStatus?.ToString(),
+                    LeaseState = container.Properties.LeaseState?.ToString() ?? string.Empty;
+                    LeaseStatus = container.Properties.LeaseStatus?.ToString() ?? string.Empty;
                 });
             }
 

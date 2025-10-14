@@ -1,6 +1,6 @@
 # Frends.AzureBlobStorage.ListContainers
 
-Frends Task to lists all containers in the specified Azure Blob Storage account.
+Frends Task to list all containers in the specified Azure Blob Storage account.
 
 [![ListContainers_build](https://github.com/FrendsPlatform/Frends.AzureBlobStorage/actions/workflows/ListContainers_build_and_test_on_main.yml/badge.svg)](https://github.com/FrendsPlatform/Frends.AzureBlobStorage/actions/workflows/ListContainers_build_and_test_on_main.yml)
 ![Coverage](https://app-github-custom-badges.azurewebsites.net/Badge?key=FrendsPlatform/Frends.AzureBlobStorage/Frends.AzureBlobStorage.ListContainers|main)

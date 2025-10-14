@@ -6,7 +6,7 @@
 public enum ConnectionMethod
 {
     /// <summary>
-    /// Authenticate with connectiong string.
+    /// Authenticate with connection string.
     /// </summary>
     ConnectionString,
 

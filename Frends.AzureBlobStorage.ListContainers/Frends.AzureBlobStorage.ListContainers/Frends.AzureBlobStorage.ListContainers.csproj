@@ -11,7 +11,7 @@
         <PackageTags>Frends</PackageTags>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
-        <Description>Frends Task to lists all containers in the specified Azure Blob Storage account</Description>
+        <Description>Frends Task to list all containers in the specified Azure Blob Storage account</Description>
         <PackageProjectUrl>https://frends.com/</PackageProjectUrl>
         <RepositoryUrl>https://github.com/FrendsPlatform/Frends.AzureBlobStorage/tree/main/Frends.AzureBlobStorage.ListContainers</RepositoryUrl>
     </PropertyGroup>
