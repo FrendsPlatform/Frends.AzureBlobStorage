@@ -13,6 +13,9 @@ public class Result
     /// <example>true</example>
     public bool Success { get; set; }
 
+    /// <summary>
+    /// List of containers returned by the operation.
+    /// </summary>
     public List<ContainerInfo> Containers { get; set; }
 
     /// <summary>

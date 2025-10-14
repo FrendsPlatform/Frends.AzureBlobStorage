@@ -1,3 +1,5 @@
+using System;
+
 namespace Frends.AzureBlobStorage.ListContainers.Definitions;
 
 /// <summary>
@@ -8,13 +10,12 @@ public class Error
     /// <summary>
     /// Summary of the error.
     /// </summary>
-    /// <example>Unable to join strings.</example>
+    /// <example>Failed to list containers.</example>
     public string Message { get; set; }
 
     /// <summary>
     /// Additional information about the error.
     /// </summary>
-    /// <example>object { Exception Exception }</example>
-    // TODO: Add task specific additional information. Strong typing is recommended when reasonable.
-    public dynamic AdditionalInfo { get; set; }
+    /// <example>object { Exception = new ArgumentException("Settings must be of the form 'name=value'.") }}</example>
+    public Exception AdditionalInfo { get; set; }
 }

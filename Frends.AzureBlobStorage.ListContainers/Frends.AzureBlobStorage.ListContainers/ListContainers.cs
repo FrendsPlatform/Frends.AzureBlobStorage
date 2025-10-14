@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.Identity;
@@ -13,18 +12,18 @@ using Frends.AzureBlobStorage.ListContainers.Helpers;
 namespace Frends.AzureBlobStorage.ListContainers;
 
 /// <summary>
-/// Task class.
+/// Azure Blob Storage Task.
 /// </summary>
 public static class AzureBlobStorage
 {
     /// <summary>
-    /// AzureBlobStoragees the input string the specified number of times.
+    /// Frends Task to lists all containers in the specified Azure Blob Storage account.
     /// [Documentation](https://tasks.frends.com/tasks/frends-tasks/Frends-AzureBlobStorage-ListContainers)
     /// </summary>
     /// <param name="connection">Connection parameters.</param>
     /// <param name="options">Additional parameters.</param>
     /// <param name="cancellationToken">A cancellation token provided by Frends Platform.</param>
-    /// <returns>object { bool Success, string Output, object Error { string Message, dynamic AdditionalInfo } }</returns>
+    /// <returns>object { bool Success, List&lt;ContainerInfo&gt; Containers, Error { string Message, Exception AdditionalInfo } }</returns>
     public static async Task<Result> ListContainers(
         [PropertyTab] Connection connection,
         [PropertyTab] Options options,
@@ -33,7 +32,7 @@ public static class AzureBlobStorage
         var containers = new List<ContainerInfo>();
 
         try
-        { 
+        {
             CheckParameters(connection);
 
             BlobServiceClient serviceClient = connection.ConnectionMethod switch

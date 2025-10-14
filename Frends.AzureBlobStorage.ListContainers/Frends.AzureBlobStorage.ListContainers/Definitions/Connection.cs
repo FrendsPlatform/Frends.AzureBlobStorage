@@ -3,8 +3,6 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Frends.AzureBlobStorage.ListContainers.Definitions;
 
-// TODO: Remove this class if the task does not make connections
-
 /// <summary>
 /// Connection parameters.
 /// </summary>
