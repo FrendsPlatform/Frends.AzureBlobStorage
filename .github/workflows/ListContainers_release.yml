@@ -8,6 +8,7 @@ jobs:
     uses: FrendsPlatform/FrendsTasks/.github/workflows/release.yml@main
     with:
       workdir: Frends.AzureBlobStorage.ListContainers
+      strict_analyzers: true
       dotnet_version: 8.0.x
     secrets:
       feed_api_key: ${{ secrets.TASKS_FEED_API_KEY }}

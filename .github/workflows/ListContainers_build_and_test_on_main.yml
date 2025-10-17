@@ -13,6 +13,7 @@ jobs:
     uses: FrendsPlatform/FrendsTasks/.github/workflows/linux_build_main.yml@main
     with:
       workdir: Frends.AzureBlobStorage.ListContainers
+      strict_analyzers: true
       env_var_name_1: Frends_AzureBlobStorage_ConnString
       env_var_name_2: Frends_AzureBlobStorage_AppID
       env_var_name_3: Frends_AzureBlobStorage_ClientSecret
