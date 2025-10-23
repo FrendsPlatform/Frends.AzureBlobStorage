@@ -12,6 +12,7 @@ namespace Frends.AzureBlobStorage.CreateContainer.Tests;
 public class UnitTests
 {
     Input input;
+    Connection connection;
 
     private readonly string _connectionString = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_ConnString");
     private readonly string _appID = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_AppID");
@@ -39,7 +40,9 @@ public class UnitTests
     [TestMethod]
     public async Task TestCreateContainer()
     {
-        var result = await AzureBlobStorage.CreateContainer(new Input { ConnectionString = _connectionString, ContainerName = _containerName }, new CancellationToken());
+        var input = new Input { ContainerName = _containerName };
+        var connection = new Connection { AuthenticationMethod = ConnectionMethod.ConnectionString, ConnectionString = _connectionString };
+        var result = await AzureBlobStorage.CreateContainer(input, connection, new CancellationToken());
         Assert.IsNotNull(result);
         Assert.AreEqual(new BlobClient(_connectionString, _containerName, "").Uri.ToString(), result.Uri);
     }
@@ -48,15 +51,20 @@ public class UnitTests
     [ExpectedException(typeof(Exception))]
     public async Task TestCreateContainer_throws_ParameterNotValid()
     {
-        await AzureBlobStorage.CreateContainer(new Input { ConnectionString = "Not valid parameter", ContainerName = "Valid name" }, new CancellationToken());
-        await AzureBlobStorage.CreateContainer(new Input { ConnectionString = "name=value", ContainerName = "Valid name" }, new CancellationToken());
+        var input = new Input { ContainerName = "Valid name" };
+        var connection1 = new Connection { AuthenticationMethod = ConnectionMethod.ConnectionString, ConnectionString = "Not valid parameter" };
+        var connection2 = new Connection { AuthenticationMethod = ConnectionMethod.ConnectionString, ConnectionString = "name=value" };
+        await AzureBlobStorage.CreateContainer(input, connection1, new CancellationToken());
+        await AzureBlobStorage.CreateContainer(input, connection2, new CancellationToken());
     }
 
     [TestMethod]
     [ExpectedException(typeof(Exception))]
     public async Task TestCreateContainer_throws_ClientNotFound()
     {
-        await AzureBlobStorage.CreateContainer(new Input { ConnectionString = "DefaultEndpointsProtocol=https;AccountName=unitTestStorage;AccountKey=abcdefghijklmnopqrstuyxz123456789;EndpointSuffix=core.windows.net", ContainerName = _containerName }, new CancellationToken());
+        var input = new Input { ContainerName = _containerName };
+        var connection = new Connection { AuthenticationMethod = ConnectionMethod.ConnectionString, ConnectionString = "DefaultEndpointsProtocol=https;AccountName=unitTestStorage;AccountKey=abcdefghijklmnopqrstuyxz123456789;EndpointSuffix=core.windows.net" };
+        await AzureBlobStorage.CreateContainer(input, connection, new CancellationToken());
     }
 
     [TestMethod]
@@ -66,15 +74,19 @@ public class UnitTests
 
         input = new Input
         {
-            ConnectionMethod = ConnectionMethod.OAuth2,
-            ContainerName = containerName,
+            ContainerName = containerName
+        };
+
+        connection = new Connection
+        {
+            AuthenticationMethod = ConnectionMethod.OAuth2,
             StorageAccountName = _storageAccount,
-            ApplicationID = _appID,
-            TenantID = _tenantID,
+            ApplicationId = _appID,
+            TenantId = _tenantID,
             ClientSecret = _clientSecret
         };
 
-        var result = await AzureBlobStorage.CreateContainer(input, default);
+        var result = await AzureBlobStorage.CreateContainer(input, connection, default);
         Assert.IsTrue(result.Success);
     }
 }
