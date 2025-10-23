@@ -97,6 +97,11 @@ public class UnitTests
         Assert.IsTrue(result.Success);
         Assert.IsNull(result.Error);
         Assert.AreEqual(string.Empty, result.ErrorMessage);
+
+        // Cleanup the container created for this test
+        var blobServiceClient = new BlobServiceClient(_connectionString);
+        var container = blobServiceClient.GetBlobContainerClient(containerName);
+        await container.DeleteIfExistsAsync();
     }
 
     [TestMethod]
