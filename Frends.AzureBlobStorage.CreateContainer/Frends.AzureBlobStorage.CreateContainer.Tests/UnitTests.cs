@@ -46,6 +46,9 @@ public class UnitTests
         var result = await AzureBlobStorage.CreateContainer(input, connection, options, new CancellationToken());
         Assert.IsNotNull(result);
         Assert.AreEqual(new BlobClient(_connectionString, _containerName, "").Uri.ToString(), result.Uri);
+        Assert.IsTrue(result.Success);
+        Assert.IsNull(result.Error);
+        Assert.AreEqual(string.Empty, result.ErrorMessage);
     }
 
     [TestMethod]
@@ -92,6 +95,8 @@ public class UnitTests
         var options = new Options();
         var result = await AzureBlobStorage.CreateContainer(input, connection, options, default);
         Assert.IsTrue(result.Success);
+        Assert.IsNull(result.Error);
+        Assert.AreEqual(string.Empty, result.ErrorMessage);
     }
 
     [TestMethod]
@@ -106,6 +111,9 @@ public class UnitTests
         Assert.IsFalse(result.Success);
         Assert.AreEqual("Custom error message", result.ErrorMessage);
         Assert.AreEqual(string.Empty, result.Uri);
+        Assert.IsNotNull(result.Error);
+        Assert.AreEqual("Custom error message", result.Error.Message);
+        Assert.IsNotNull(result.Error.AdditionalInfo);
     }
 
     [TestMethod]

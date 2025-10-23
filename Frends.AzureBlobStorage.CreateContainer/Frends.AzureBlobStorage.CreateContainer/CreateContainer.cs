@@ -39,7 +39,7 @@ public static class AzureBlobStorage
             }
             else
             {
-                return new Result(false, string.Empty, options.ErrorMessageOnFailure);
+                return new Result(false, string.Empty, options.ErrorMessageOnFailure, ex);
             }
         }
     }
