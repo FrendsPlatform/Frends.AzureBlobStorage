@@ -1,4 +1,4 @@
-﻿using Azure.Storage.Blobs;
+using Azure.Storage.Blobs;
 using Frends.AzureBlobStorage.CreateContainer.Definitions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
@@ -110,9 +110,9 @@ public class UnitTests
         var input = new Input { ContainerName = "Valid name" };
         var connection = new Connection { AuthenticationMethod = ConnectionMethod.ConnectionString, ConnectionString = "Not valid parameter" };
         var options = new Options { ThrowErrorOnFailure = false, ErrorMessageOnFailure = "Custom error message" };
-        
+
         var result = await AzureBlobStorage.CreateContainer(input, connection, options, new CancellationToken());
-        
+
         Assert.IsFalse(result.Success);
         Assert.AreEqual("Custom error message", result.ErrorMessage);
         Assert.AreEqual(string.Empty, result.Uri);
@@ -128,7 +128,7 @@ public class UnitTests
         var input = new Input { ContainerName = "Valid name" };
         var connection = new Connection { AuthenticationMethod = ConnectionMethod.ConnectionString, ConnectionString = "Not valid parameter" };
         var options = new Options { ThrowErrorOnFailure = true, ErrorMessageOnFailure = "Custom error message" };
-        
+
         await AzureBlobStorage.CreateContainer(input, connection, options, new CancellationToken());
     }
 }

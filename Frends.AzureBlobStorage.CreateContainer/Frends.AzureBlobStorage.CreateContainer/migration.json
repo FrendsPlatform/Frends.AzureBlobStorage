@@ -1,0 +1,53 @@
+﻿[
+  {
+    "Task": "Frends.AzureBlobStorage.CreateContainer",
+    "Migrations": [
+      {
+        "Version": "2.0.0",
+        "Description": "Refactored task to introduce Connection and Options tabs, moved parameters, added error handling structure.",
+        "Migration": [
+          {
+            "Type": "Copy",
+            "Source": "Input.ConnectionString",
+            "Target": "Connection.ConnectionString"
+          },
+          {
+            "Type": "Copy",
+            "Source": "Input.StorageAccountName",
+            "Target": "Connection.StorageAccountName"
+          },
+          {
+            "Type": "Copy",
+            "Source": "Input.ClientSecret",
+            "Target": "Connection.ClientSecret"
+          },
+          {
+            "Type": "Copy",
+            "Source": "Input.ApplicationID",
+            "Target": "Connection.ApplicationId"
+          },
+          {
+            "Type": "Copy",
+            "Source": "Input.TenantID",
+            "Target": "Connection.TenantId"
+          },
+          {
+            "Type": "Copy",
+            "Source": "Input.ConnectionMethod",
+            "Target": "Connection.AuthenticationMethod"
+          },
+          {
+            "Type": "Set",
+            "Target": "Options.ThrowErrorOnFailure",
+            "Value": "True"
+          },
+          {
+            "Type": "Set",
+            "Target": "Options.ErrorMessageOnFailure",
+            "Value": "\"CreateContainer failed\""
+          }
+        ]
+      }
+    ]
+  }
+]
