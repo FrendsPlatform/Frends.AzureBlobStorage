@@ -42,7 +42,7 @@ public class UnitTests
     {
         var input = new Input { ContainerName = _containerName };
         var connection = new Connection { AuthenticationMethod = ConnectionMethod.ConnectionString, ConnectionString = _connectionString };
-        var options = new Options();
+        var options = new Options { ThrowErrorOnFailure = true };
         var result = await AzureBlobStorage.CreateContainer(input, connection, options, new CancellationToken());
         Assert.IsNotNull(result);
         Assert.AreEqual(new BlobClient(_connectionString, _containerName, "").Uri.ToString(), result.Uri);
@@ -58,7 +58,7 @@ public class UnitTests
         var input = new Input { ContainerName = "Valid name" };
         var connection1 = new Connection { AuthenticationMethod = ConnectionMethod.ConnectionString, ConnectionString = "Not valid parameter" };
         var connection2 = new Connection { AuthenticationMethod = ConnectionMethod.ConnectionString, ConnectionString = "name=value" };
-        var options = new Options();
+        var options = new Options { ThrowErrorOnFailure = true };
         await AzureBlobStorage.CreateContainer(input, connection1, options, new CancellationToken());
         await AzureBlobStorage.CreateContainer(input, connection2, options, new CancellationToken());
     }
@@ -69,7 +69,7 @@ public class UnitTests
     {
         var input = new Input { ContainerName = _containerName };
         var connection = new Connection { AuthenticationMethod = ConnectionMethod.ConnectionString, ConnectionString = "DefaultEndpointsProtocol=https;AccountName=unitTestStorage;AccountKey=abcdefghijklmnopqrstuyxz123456789;EndpointSuffix=core.windows.net" };
-        var options = new Options();
+        var options = new Options { ThrowErrorOnFailure = true };
         await AzureBlobStorage.CreateContainer(input, connection, options, new CancellationToken());
     }
 
@@ -92,7 +92,7 @@ public class UnitTests
             ClientSecret = _clientSecret
         };
 
-        var options = new Options();
+        var options = new Options { ThrowErrorOnFailure = true };
         var result = await AzureBlobStorage.CreateContainer(input, connection, options, default);
         Assert.IsTrue(result.Success);
         Assert.IsNull(result.Error);
