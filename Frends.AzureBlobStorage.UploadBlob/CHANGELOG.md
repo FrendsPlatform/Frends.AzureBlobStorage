@@ -2,7 +2,7 @@
 
 ## [3.2.0] - 2025-10-15
 ### Changed
-- Update documentation
+- Added note about OAuth2 requiring Storage Blob Data Owner role for Tags property
 
 ## [3.1.0] - 2025-08-26
 ### Changed

@@ -86,7 +86,7 @@ public class Input
 
     /// <summary>
     /// Tags for the block or append blob.
-    /// NOTE: Minimum access rights to work with OAuth2 is 'Storage Blob Data Owner'
+    /// NOTE: Minimum access right to work with OAuth2 is 'Storage Blob Data Owner'
     /// </summary>
     /// <example>{name, value}</example>
     public Tag[] Tags { get; set; }
