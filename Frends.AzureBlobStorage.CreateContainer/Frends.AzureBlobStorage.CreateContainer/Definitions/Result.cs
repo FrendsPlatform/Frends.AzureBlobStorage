@@ -16,7 +16,7 @@ public class Result
     /// </summary>
     /// <example>https://test.blob.core.windows.net/test8f237ae0-ad33-b4b3-48d9-23b20a14c909</example>
     public string Uri { get; set; }
-    
+
 
     /// <summary>
     /// Error information if operation failed.

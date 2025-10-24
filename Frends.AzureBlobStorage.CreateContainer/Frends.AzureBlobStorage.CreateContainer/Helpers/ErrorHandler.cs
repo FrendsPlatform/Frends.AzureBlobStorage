@@ -5,10 +5,7 @@ namespace Frends.AzureBlobStorage.CreateContainer.Helpers;
 
 internal static class ErrorHandler
 {
-    internal static Result Handle(
-        Exception exception,
-        bool throwOnFailure,
-        string errorMessageOnFailure)
+    internal static Result Handle(Exception exception, bool throwOnFailure, string errorMessageOnFailure)
     {
         if (throwOnFailure)
         {
