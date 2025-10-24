@@ -44,7 +44,7 @@
           {
             "Type": "Set",
             "Target": "Options.ErrorMessageOnFailure",
-            "Value": "\"CreateContainer failed\""
+            "Value": "\"\""
           }
         ]
       }

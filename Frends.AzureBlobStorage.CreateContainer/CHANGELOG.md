@@ -13,7 +13,6 @@
   - `Input.ConnectionMethod` → `Connection.AuthenticationMethod`
   - `Input.ApplicationID` → `Connection.ApplicationId`
   - `Input.TenantID` → `Connection.TenantId`
-- Updated task logic and unit tests to align with new tab structure and error handling.
 
 ### Breaking changes
 - Parameter moves and renames make this a **breaking change**.

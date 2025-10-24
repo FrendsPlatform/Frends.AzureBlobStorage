@@ -1,4 +1,4 @@
-name: CreateContainer_build_main
+name: CreateContainer_main
 
 on:
   push:

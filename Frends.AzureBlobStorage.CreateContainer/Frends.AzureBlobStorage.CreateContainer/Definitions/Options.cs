@@ -18,6 +18,6 @@ public class Options
     /// Error message on failure.
     /// </summary>
     /// <example>CreateContainer failed</example>
-    [DefaultValue("CreateContainer failed")]
-    public string ErrorMessageOnFailure { get; set; } = "CreateContainer failed";
+    [DefaultValue("")]
+    public string ErrorMessageOnFailure { get; set; } = string.Empty;
 }
