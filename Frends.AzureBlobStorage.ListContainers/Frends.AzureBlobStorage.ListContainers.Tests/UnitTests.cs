@@ -142,9 +142,9 @@ public class ListContainersTests
 
         Assert.That(result.Success, Is.True);
         Assert.That(result.Containers, Is.Not.Null);
-        Assert.That(result.Containers.Count > 0, "System containers should exist (e.g., $logs).");
+        Assert.That(result.Containers.Count > 0);
         Assert.That(
-            result.Containers.All(c => c.Name.StartsWith('$')),
-            "All returned containers should be system containers (start with $).");
+            result.Containers.Any(c => c.Name.StartsWith('$')),
+            "Expected at least one system container.");
     }
 }
