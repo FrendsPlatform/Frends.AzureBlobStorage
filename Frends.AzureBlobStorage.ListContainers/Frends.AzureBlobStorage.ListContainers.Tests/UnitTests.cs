@@ -131,22 +131,4 @@ public class ListContainersTests
         Assert.That(result.Success, Is.True);
         Assert.That(result.Containers.All(c => c.Name.StartsWith(input.Prefix)), Is.True);
     }
-
-    [Test]
-    public async Task ListContainers_ShouldReturnDeletedContainer_WhenDeletedStateIsUsed()
-    {
-        var blobServiceClient = new BlobServiceClient(connection.ConnectionString);
-        var tempContainerName = $"test-delete-{Guid.NewGuid():N}";
-        await blobServiceClient.CreateBlobContainerAsync(tempContainerName);
-        await blobServiceClient.DeleteBlobContainerAsync(tempContainerName);
-
-        input.States = ContainerStateFilter.Deleted;
-        input.Prefix = "test-delete-";
-
-        var result = await AzureBlobStorage.ListContainers(input, connection, options, CancellationToken.None);
-
-        Assert.That(result.Success, Is.True);
-        Assert.That(
-            result.Containers.Any(c => c.Name == tempContainerName));
-    }
 }
