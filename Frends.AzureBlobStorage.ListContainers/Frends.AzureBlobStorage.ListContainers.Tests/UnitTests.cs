@@ -124,7 +124,7 @@ public class ListContainersTests
     [Test]
     public async Task ListContainers_ShouldFilterByPrefix()
     {
-        input.Prefix = testContainerName.Substring(0, 6);
+        input.Prefix = testContainerName[..6];
 
         var result = await AzureBlobStorage.ListContainers(input, connection, options, CancellationToken.None);
 
@@ -144,7 +144,7 @@ public class ListContainersTests
         Assert.That(result.Containers, Is.Not.Null);
         Assert.That(result.Containers.Count > 0, "System containers should exist (e.g., $logs).");
         Assert.That(
-            result.Containers.All(c => c.Name.StartsWith("$")),
+            result.Containers.All(c => c.Name.StartsWith('$')),
             "All returned containers should be system containers (start with $).");
     }
 }

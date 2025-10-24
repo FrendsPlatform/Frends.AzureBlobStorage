@@ -78,9 +78,6 @@ public static class AzureBlobStorage
 
     private static void CheckParameters(Connection connection)
     {
-        if (connection == null)
-            throw new ArgumentNullException(nameof(connection));
-
         switch (connection.ConnectionMethod)
         {
             case ConnectionMethod.ConnectionString:
