@@ -20,7 +20,7 @@ public class UnitTests
     private readonly string _appId = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_AppID");
     private readonly string _tenantId = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_TenantID");
     private readonly string _clientSecret = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_ClientSecret");
-    private const string StorageAccount = "frendstaskstestcontainer";
+    private const string StorageAccount = "stataskdevelopment";
     private string _containerName;
 
     [TestInitialize]
