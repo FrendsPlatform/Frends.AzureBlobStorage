@@ -131,4 +131,22 @@ public class ListContainersTests
         Assert.That(result.Success, Is.True);
         Assert.That(result.Containers.All(c => c.Name.StartsWith(input.Prefix)), Is.True);
     }
+
+    [Test]
+    [TestCase(ContainerStateFilter.System)]
+    [TestCase(ContainerStateFilter.Deleted)]
+    public async Task ListContainers_ShouldWork_ForDifferentStates(ContainerStateFilter state)
+    {
+        var input = new Input
+        {
+            States = state,
+            Prefix = null,
+        };
+
+        var result = await AzureBlobStorage.ListContainers(input, connection, options, CancellationToken.None);
+
+        Assert.That(result.Success, Is.True);
+        Assert.That(result.Containers, Is.Not.Null);
+        Assert.That(result.Containers.Count, Is.GreaterThan(0));
+    }
 }
