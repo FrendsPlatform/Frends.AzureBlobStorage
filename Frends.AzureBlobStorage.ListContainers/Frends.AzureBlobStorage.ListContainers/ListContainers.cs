@@ -53,7 +53,7 @@ public static class AzureBlobStorage
 
             await foreach (BlobContainerItem container in serviceClient.GetBlobContainersAsync(
                 traits: BlobContainerTraits.None,
-                states: input.States,
+                states: (BlobContainerStates)input.States,
                 prefix: input.Prefix,
                 cancellationToken: cancellationToken))
             {

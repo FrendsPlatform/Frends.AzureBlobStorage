@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel;
-using Azure.Storage.Blobs.Models;
 
 namespace Frends.AzureBlobStorage.ListContainers.Definitions
 {
@@ -12,8 +11,8 @@ namespace Frends.AzureBlobStorage.ListContainers.Definitions
         /// Flags indicating which container states to include when listing (e.g. deleted or system containers).
         /// </summary>
         /// <example>BlobContainerStates.Deleted</example>
-        [DefaultValue(BlobContainerStates.None)]
-        public BlobContainerStates States { get; set; }
+        [DefaultValue(ContainerStateFilter.None)]
+        public ContainerStateFilter States { get; set; }
 
         /// <summary>
         /// Filter by container name prefix. Only containers starting with this value will be returned.
