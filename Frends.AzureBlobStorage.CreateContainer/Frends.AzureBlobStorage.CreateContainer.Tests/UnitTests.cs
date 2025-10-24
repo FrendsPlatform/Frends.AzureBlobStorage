@@ -44,7 +44,10 @@ public class UnitTests
     {
         var input = new Input { ContainerName = _containerName };
         var connection = new Connection
-            { AuthenticationMethod = ConnectionMethod.ConnectionString, ConnectionString = _connectionString };
+        {
+            AuthenticationMethod = ConnectionMethod.ConnectionString,
+            ConnectionString = _connectionString
+        };
         var options = new Options { ThrowErrorOnFailure = true };
         var result = await AzureBlobStorage.CreateContainer(input, connection, options, CancellationToken.None);
         Assert.IsNotNull(result);
@@ -59,9 +62,15 @@ public class UnitTests
     {
         var input = new Input { ContainerName = "Valid name" };
         var connection1 = new Connection
-            { AuthenticationMethod = ConnectionMethod.ConnectionString, ConnectionString = "Not valid parameter" };
+        {
+            AuthenticationMethod = ConnectionMethod.ConnectionString,
+            ConnectionString = "Not valid parameter"
+        };
         var connection2 = new Connection
-            { AuthenticationMethod = ConnectionMethod.ConnectionString, ConnectionString = "name=value" };
+        {
+            AuthenticationMethod = ConnectionMethod.ConnectionString,
+            ConnectionString = "name=value"
+        };
         var options = new Options { ThrowErrorOnFailure = true };
         await AzureBlobStorage.CreateContainer(input, connection1, options, CancellationToken.None);
         await AzureBlobStorage.CreateContainer(input, connection2, options, CancellationToken.None);
@@ -117,7 +126,10 @@ public class UnitTests
     {
         var input = new Input { ContainerName = "Valid name" };
         var connection = new Connection
-            { AuthenticationMethod = ConnectionMethod.ConnectionString, ConnectionString = "Not valid parameter" };
+        {
+            AuthenticationMethod = ConnectionMethod.ConnectionString,
+            ConnectionString = "Not valid parameter"
+        };
         var options = new Options { ThrowErrorOnFailure = false, ErrorMessageOnFailure = "Custom error message" };
 
         var result = await AzureBlobStorage.CreateContainer(input, connection, options, CancellationToken.None);
@@ -135,7 +147,10 @@ public class UnitTests
     {
         var input = new Input { ContainerName = "Valid name" };
         var connection = new Connection
-            { AuthenticationMethod = ConnectionMethod.ConnectionString, ConnectionString = "Not valid parameter" };
+        {
+            AuthenticationMethod = ConnectionMethod.ConnectionString,
+            ConnectionString = "Not valid parameter"
+        };
         var options = new Options { ThrowErrorOnFailure = true, ErrorMessageOnFailure = "Custom error message" };
 
         await AzureBlobStorage.CreateContainer(input, connection, options, CancellationToken.None);
