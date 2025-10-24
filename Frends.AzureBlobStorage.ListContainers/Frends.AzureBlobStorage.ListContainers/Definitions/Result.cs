@@ -16,6 +16,18 @@ public class Result
     /// <summary>
     /// List of containers returned by the operation.
     /// </summary>
+    /// <example>
+    /// [
+    ///   {
+    ///     "Name": "test-container",
+    ///     "PublicAccess": "Private",
+    ///     "LastModified": "2025-01-15T10:23:45Z",
+    ///     "ETag": "0x8D12345ABCDEFF",
+    ///     "LeaseStatus": "Unlocked",
+    ///     "LeaseState": "Available"
+    ///   }
+    /// ]
+    /// </example>
     public List<ContainerInfo> Containers { get; set; }
 
     /// <summary>

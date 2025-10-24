@@ -1,8 +1,10 @@
 using System;
 using System.Globalization;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
 using Frends.AzureBlobStorage.ListContainers.Definitions;
 using NUnit.Framework;
 
@@ -20,6 +22,7 @@ public class ListContainersTests
 
     private Connection connection;
     private Options options;
+    private Input input;
     private string testContainerName;
 
     [SetUp]
@@ -43,6 +46,12 @@ public class ListContainersTests
             ThrowErrorOnFailure = true,
         };
 
+        input = new Input
+        {
+            Prefix = null,
+            States = BlobContainerStates.None,
+        };
+
         var blobServiceClient = new BlobServiceClient(connectionString);
         await blobServiceClient.CreateBlobContainerAsync(testContainerName);
     }
@@ -57,7 +66,7 @@ public class ListContainersTests
     [Test]
     public async Task ListContainers_ShouldReturnContainers_WhenUsingConnectionString()
     {
-        var result = await AzureBlobStorage.ListContainers(connection, options, CancellationToken.None);
+        var result = await AzureBlobStorage.ListContainers(input, connection, options, CancellationToken.None);
 
         Assert.That(result.Success, Is.True);
         Assert.That(result.Containers, Is.Not.Null);
@@ -71,19 +80,19 @@ public class ListContainersTests
     {
         // Connection String
         connection.ConnectionMethod = ConnectionMethod.ConnectionString;
-        var result = await AzureBlobStorage.ListContainers(connection, options, CancellationToken.None);
+        var result = await AzureBlobStorage.ListContainers(input, connection, options, CancellationToken.None);
         Assert.That(result.Success, Is.True);
         Assert.That(result.Containers.Count > 0, Is.True);
 
         // SAS Token
         connection.ConnectionMethod = ConnectionMethod.SasToken;
-        result = await AzureBlobStorage.ListContainers(connection, options, CancellationToken.None);
+        result = await AzureBlobStorage.ListContainers(input, connection, options, CancellationToken.None);
         Assert.That(result.Success, Is.True);
         Assert.That(result.Containers.Count > 0, Is.True);
 
         // OAuth2
         connection.ConnectionMethod = ConnectionMethod.OAuth2;
-        result = await AzureBlobStorage.ListContainers(connection, options, CancellationToken.None);
+        result = await AzureBlobStorage.ListContainers(input, connection, options, CancellationToken.None);
         Assert.That(result.Success, Is.True);
         Assert.That(result.Containers.Count > 0, Is.True);
     }
@@ -95,7 +104,7 @@ public class ListContainersTests
         connection.ConnectionString = "InvalidConnectionString";
 
         options.ThrowErrorOnFailure = false;
-        var result = await AzureBlobStorage.ListContainers(connection, options, CancellationToken.None);
+        var result = await AzureBlobStorage.ListContainers(input, connection, options, CancellationToken.None);
 
         Assert.That(result.Success, Is.False);
         Assert.That(result.Error, Is.Not.Null);
@@ -109,7 +118,34 @@ public class ListContainersTests
 
         Assert.ThrowsAsync<Exception>(
             async () =>
-        await AzureBlobStorage.ListContainers(connection, options, CancellationToken.None),
+        await AzureBlobStorage.ListContainers(input, connection, options, CancellationToken.None),
             "Expected an exception when SAS token is missing.");
+    }
+
+    [Test]
+    public async Task ListContainers_ShouldFilterByPrefix()
+    {
+        input.Prefix = testContainerName.Substring(0, 6);
+
+        var result = await AzureBlobStorage.ListContainers(input, connection, options, CancellationToken.None);
+
+        Assert.That(result.Success, Is.True);
+        Assert.That(result.Containers.All(c => c.Name.StartsWith(input.Prefix)), Is.True);
+    }
+
+    [Test]
+    public async Task ListContainers_ShouldReturnOnlySystemContainers_WhenSystemStateIsUsed()
+    {
+        input.Prefix = null;
+        input.States = BlobContainerStates.System;
+
+        var result = await AzureBlobStorage.ListContainers(input, connection, options, CancellationToken.None);
+
+        Assert.That(result.Success, Is.True);
+        Assert.That(result.Containers, Is.Not.Null);
+        Assert.That(result.Containers.Count > 0, "System containers should exist (e.g., $logs).");
+        Assert.That(
+            result.Containers.All(c => c.Name.StartsWith("$")),
+            "All returned containers should be system containers (start with $).");
     }
 }

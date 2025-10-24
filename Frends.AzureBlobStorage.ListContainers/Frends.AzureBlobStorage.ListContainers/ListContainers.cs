@@ -20,11 +20,13 @@ public static class AzureBlobStorage
     /// Frends Task to list all containers in the specified Azure Blob Storage account.
     /// [Documentation](https://tasks.frends.com/tasks/frends-tasks/Frends-AzureBlobStorage-ListContainers)
     /// </summary>
+    /// <param name="input">Parameters for container state and prefix filtering.</param>
     /// <param name="connection">Connection parameters.</param>
     /// <param name="options">Additional parameters.</param>
     /// <param name="cancellationToken">A cancellation token provided by Frends Platform.</param>
     /// <returns>object { bool Success, List&lt;ContainerInfo&gt; Containers, Error { string Message, Exception AdditionalInfo } }</returns>
     public static async Task<Result> ListContainers(
+        [PropertyTab] Input input,
         [PropertyTab] Connection connection,
         [PropertyTab] Options options,
         CancellationToken cancellationToken)
@@ -49,7 +51,11 @@ public static class AzureBlobStorage
                 _ => throw new Exception("Invalid or unsupported connection method.")
             };
 
-            await foreach (BlobContainerItem container in serviceClient.GetBlobContainersAsync(cancellationToken: cancellationToken))
+            await foreach (BlobContainerItem container in serviceClient.GetBlobContainersAsync(
+                traits: BlobContainerTraits.None,
+                states: input.States,
+                prefix: input.Prefix,
+                cancellationToken: cancellationToken))
             {
                 containers.Add(new ContainerInfo
                 {
