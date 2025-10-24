@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.Storage.Blobs;
-using Azure.Storage.Blobs.Models;
 using Frends.AzureBlobStorage.ListContainers.Definitions;
 using NUnit.Framework;
 
@@ -49,7 +48,7 @@ public class ListContainersTests
         input = new Input
         {
             Prefix = null,
-            States = BlobContainerStates.None,
+            States = ContainerStateFilter.None,
         };
 
         var blobServiceClient = new BlobServiceClient(connectionString);
@@ -137,7 +136,7 @@ public class ListContainersTests
     public async Task ListContainers_ShouldReturnOnlySystemContainers_WhenSystemStateIsUsed()
     {
         input.Prefix = null;
-        input.States = BlobContainerStates.System;
+        input.States = ContainerStateFilter.System;
 
         var result = await AzureBlobStorage.ListContainers(input, connection, options, CancellationToken.None);
 
