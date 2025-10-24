@@ -14,10 +14,11 @@ namespace Frends.AzureBlobStorage.ListContainers.Definitions
         [DefaultValue(ContainerStateFilter.None)]
         public ContainerStateFilter States { get; set; }
 
+#nullable enable
         /// <summary>
         /// Filter by container name prefix. Only containers starting with this value will be returned.
         /// </summary>
         /// <example>"test-"</example>
-        public string Prefix { get; set; }
+        public string? Prefix { get; set; }
     }
 }
