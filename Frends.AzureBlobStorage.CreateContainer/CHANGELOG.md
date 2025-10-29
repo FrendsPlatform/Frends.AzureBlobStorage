@@ -18,8 +18,6 @@
 - Parameter moves and renames make this a **breaking change**.
 - To upgrade:
   - Move all connection fields to the **Connection** tab.
-  - Add **Options.ThrowErrorOnFailure** and **Options.ErrorMessageOnFailure** to the task configuration.
-
 
 ## [1.3.0] - 2024-08-21
 ### Updated

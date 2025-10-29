@@ -56,24 +56,20 @@ public class UnitTests
         Assert.IsNull(result.Error);
     }
 
-    [TestMethod]
+    [DataTestMethod]
+    [DataRow("Not valid parameter")]
+    [DataRow("name=value")]
     [ExpectedException(typeof(Exception))]
-    public async Task TestCreateContainer_throws_ParameterNotValid()
+    public async Task TestCreateContainer_throws_ParameterNotValid(string conString)
     {
         var input = new Input { ContainerName = "Valid name" };
-        var connection1 = new Connection
+        var connection = new Connection
         {
             AuthenticationMethod = ConnectionMethod.ConnectionString,
-            ConnectionString = "Not valid parameter"
-        };
-        var connection2 = new Connection
-        {
-            AuthenticationMethod = ConnectionMethod.ConnectionString,
-            ConnectionString = "name=value"
+            ConnectionString = conString
         };
         var options = new Options { ThrowErrorOnFailure = true };
-        await AzureBlobStorage.CreateContainer(input, connection1, options, CancellationToken.None);
-        await AzureBlobStorage.CreateContainer(input, connection2, options, CancellationToken.None);
+        await AzureBlobStorage.CreateContainer(input, connection, options, CancellationToken.None);
     }
 
     [TestMethod]

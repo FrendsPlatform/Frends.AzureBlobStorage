@@ -1,4 +1,6 @@
-﻿namespace Frends.AzureBlobStorage.CreateContainer.Definitions;
+﻿using System;
+
+namespace Frends.AzureBlobStorage.CreateContainer.Definitions;
 
 /// <summary>
 /// Error information.
@@ -14,6 +16,6 @@ public class Error
     /// <summary>
     /// Additional error information.
     /// </summary>
-    /// <example>null</example>
-    public object AdditionalInfo { get; set; }
+    /// <example>object { Exception AdditionalInfo }</example>
+    public Exception AdditionalInfo { get; set; }
 }
