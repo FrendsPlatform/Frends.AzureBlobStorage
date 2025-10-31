@@ -1,4 +1,23 @@
-# Changelog
+﻿# Changelog
+
+## [2.0.0] - 2025-10-23
+
+### Added
+- Created new **Connection** tab to organize authentication and connection details.
+- Created new **Options** tab with `ThrowErrorOnFailure` and `ErrorMessageOnFailure` fields.
+- Added structured **Error** object (`Message`, `AdditionalInfo`) to task result.
+
+### Changed
+- Moved connection-related parameters from **Input** to **Connection** tab.
+- Renamed:
+  - `Input.ConnectionMethod` → `Connection.AuthenticationMethod`
+  - `Input.ApplicationID` → `Connection.ApplicationId`
+  - `Input.TenantID` → `Connection.TenantId`
+
+### Breaking changes
+- Parameter moves and renames make this a **breaking change**.
+- To upgrade:
+  - Move all connection fields to the **Connection** tab.
 
 ## [1.3.0] - 2024-08-21
 ### Updated
