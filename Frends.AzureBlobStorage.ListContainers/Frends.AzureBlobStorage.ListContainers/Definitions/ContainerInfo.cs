@@ -10,13 +10,13 @@ public class ContainerInfo
     /// <summary>
     /// Container name.
     /// </summary>
-    /// <example>"mycontainer01"</example>
+    /// <example>mycontainer01</example>
     public string Name { get; set; }
 
     /// <summary>
     /// Public access level.
     /// </summary>
-    /// <example>"Blob"</example>
+    /// <example>Blob</example>
     public string PublicAccess { get; set; }
 
     /// <summary>
@@ -28,18 +28,18 @@ public class ContainerInfo
     /// <summary>
     /// ETag value.
     /// </summary>
-    /// <example>"0x8D12345ABCDEFF"</example>
+    /// <example>0x8D12345ABCDEFF</example>
     public string ETag { get; set; }
 
     /// <summary>
     /// Lease status.
     /// </summary>
-    /// <example>"Unlocked"</example>
+    /// <example>Unlocked</example>
     public string LeaseStatus { get; set; }
 
     /// <summary>
     /// Lease state.
     /// </summary>
-    /// <example>"Available"</example>
+    /// <example>Available</example>
     public string LeaseState { get; set; }
 }

@@ -16,7 +16,7 @@ public class ListContainersTests
     private readonly string appID = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_AppID");
     private readonly string clientSecret = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_ClientSecret");
     private readonly string tenantID = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_TenantID");
-    private readonly string uri = "https://stataskdevelopment.blob.core.windows.net";
+    private readonly string uri = Environment.GetEnvironmentVariable("Hiq_AzureBlobStorage_Uri");
     private readonly string sasToken = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_SASToken");
 
     private Connection connection;

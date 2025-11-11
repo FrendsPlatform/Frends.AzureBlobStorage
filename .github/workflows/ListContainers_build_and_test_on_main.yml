@@ -19,6 +19,7 @@ jobs:
       env_var_name_3: Frends_AzureBlobStorage_ClientSecret
       env_var_name_4: Frends_AzureBlobStorage_TenantID
       env_var_name_5: Frends_AzureBlobStorage_SASToken
+      env_var_name_6: Hiq_AzureBlobStorage_Uri
       dotnet_version: 8.0.x
     secrets:
       badge_service_api_key: ${{ secrets.BADGE_SERVICE_API_KEY }}
@@ -27,3 +28,4 @@ jobs:
       env_var_value_3: ${{ secrets.Frends_AZUREBLOBSTORAGE_CLIENTSECRET }}
       env_var_value_4: ${{ secrets.Frends_AZUREBLOBSTORAGE_TENANTID }}
       env_var_value_5: ${{ secrets.Frends_AZUREBLOBSTORAGE_SASTOKEN }}
+      env_var_value_6: ${{ secrets.HIQ_AZUREBLOBSTORAGE_URI }}
