@@ -400,13 +400,17 @@ public class AzureBlobStorage
             }
             else
             {
-                var tempFile = Path.Combine(Path.GetTempPath(), blobName);
+                var tempFile = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+
+                // Download original blob
                 await blobClient.DownloadToAsync(tempFile, cancellationToken);
 
-                using var sourceData = new StreamReader(sourceFile);
-                using var destinationFile = File.AppendText(tempFile);
-                var line = await sourceData.ReadLineAsync();
-                await destinationFile.WriteAsync(line);
+                // Append entire source file in binary mode
+                using (var source = new FileStream(sourceFile, FileMode.Open, FileAccess.Read, FileShare.Read))
+                using (var dest = new FileStream(tempFile, FileMode.Append, FileAccess.Write, FileShare.Read))
+                {
+                    await source.CopyToAsync(dest, cancellationToken);
+                }
 
                 return new FileInfo(tempFile);
             }
