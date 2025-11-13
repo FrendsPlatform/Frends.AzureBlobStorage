@@ -435,7 +435,7 @@ public class AzureBlobStorage
         string tempFile = Path.GetTempFileName();
         try
         {
-            using var destination = new FileStream(tempFile, FileMode.Create, FileAccess.Write, FileShare.None);
+            using var destination = new FileStream(tempFile, FileMode.Create, FileAccess.Write, FileShare.ReadWrite);
             using var gzip = new GZipStream(destination, CompressionMode.Compress);
 
             try
