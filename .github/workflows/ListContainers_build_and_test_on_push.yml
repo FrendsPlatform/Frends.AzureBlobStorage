@@ -1,0 +1,32 @@
+name: ListContainers_build_test
+
+on:
+  push:
+    branches-ignore:
+      - main
+    paths:
+      - 'Frends.AzureBlobStorage.ListContainers/**'
+  workflow_dispatch:
+
+jobs:
+  build:
+    uses: FrendsPlatform/FrendsTasks/.github/workflows/linux_build_test.yml@main
+    with:
+      workdir: Frends.AzureBlobStorage.ListContainers
+      strict_analyzers: true
+      env_var_name_1: Frends_AzureBlobStorage_ConnString
+      env_var_name_2: Frends_AzureBlobStorage_AppID
+      env_var_name_3: Frends_AzureBlobStorage_ClientSecret
+      env_var_name_4: Frends_AzureBlobStorage_TenantID
+      env_var_name_5: Frends_AzureBlobStorage_SASToken
+      env_var_name_6: Frends_AzureBlobStorage_Uri
+      dotnet_version: 8.0.x
+    secrets:
+      badge_service_api_key: ${{ secrets.BADGE_SERVICE_API_KEY }}
+      test_feed_api_key: ${{ secrets.TASKS_TEST_FEED_API_KEY }}
+      env_var_value_1: ${{ secrets.Frends_AZUREBLOBSTORAGE_CONNSTRING }}
+      env_var_value_2: ${{ secrets.Frends_AZUREBLOBSTORAGE_APPID }}
+      env_var_value_3: ${{ secrets.Frends_AZUREBLOBSTORAGE_CLIENTSECRET }}
+      env_var_value_4: ${{ secrets.Frends_AZUREBLOBSTORAGE_TENANTID }}
+      env_var_value_5: ${{ secrets.Frends_AZUREBLOBSTORAGE_SASTOKEN }}
+      env_var_value_6: ${{ secrets.Frends_AZUREBLOBSTORAGE_URI }}
