@@ -86,6 +86,7 @@ public class UnitTests
         await container.DeleteIfExistsAsync();
         // Empties the const container.
         await DeleteBlobsInContainer(_connectionString, _container, _input.BlobName);
+        await Task.Delay(200); // Give some time for the deletion to propagate
         DeleteFiles();
     }
 
@@ -855,7 +856,7 @@ public class UnitTests
     private async Task GenerateRandomFile(string filePath, long fileSize)
     {
         var rnd = new Random();
-        using var fs = new FileStream(filePath, FileMode.Create, FileAccess.Write);
+        await using var fs = new FileStream(filePath, FileMode.Create, FileAccess.Write);
         var buffer = new byte[81920];
         long written = 0;
 
@@ -902,8 +903,33 @@ public class UnitTests
 
     private void DeleteFiles()
     {
-        if (Directory.Exists(_testFileDir))
-            Directory.Delete(_testFileDir, true);
+        DeleteDirectorySafe(_testFileDir);
+    }
+
+    private void DeleteDirectorySafe(string path)
+    {
+        if (!Directory.Exists(path))
+            return;
+
+        for (int i = 0; i < 10; i++)
+        {
+            try
+            {
+                Directory.Delete(path, true);
+                return;
+            }
+            catch (IOException)
+            {
+                Thread.Sleep(100);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                Thread.Sleep(100);
+            }
+        }
+
+        // final attempt without catching
+        Directory.Delete(path, true);
     }
 
     private async Task DeleteBlobsInContainer(string connectionString, string containerName, string blobName)
