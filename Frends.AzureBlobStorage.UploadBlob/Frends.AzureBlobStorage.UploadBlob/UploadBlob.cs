@@ -544,7 +544,13 @@ public class AzureBlobStorage
 
     private static Stream CreateUploadStream(string tempFile)
     {
-        return new FileStream(tempFile, FileMode.Open, FileAccess.Read, FileShare.Read, StreamBufferSize, FileOptions.Asynchronous | FileOptions.DeleteOnClose);
+        return new FileStream(
+            tempFile,
+            FileMode.Open,
+            FileAccess.Read,
+            FileShare.Read,
+            StreamBufferSize,
+            FileOptions.Asynchronous | FileOptions.SequentialScan);
     }
 
     private static Encoding CreateStrictEncoding(Encoding encoding)
