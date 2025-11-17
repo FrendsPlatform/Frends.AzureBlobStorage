@@ -11,9 +11,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.IO.Compression;
-using System.IO.Pipes;
 using System.Linq;
-using System.Reflection.Metadata;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -25,6 +23,7 @@ namespace Frends.AzureBlobStorage.UploadBlob;
 /// </summary>
 public class AzureBlobStorage
 {
+    private const int StreamBufferSize = 81920;
     /// <summary>
     /// Frends Task to upload blobs to Azure Blob Storage.
     /// [Documentation](https://tasks.frends.com/tasks/frends-tasks/Frends.AzureBlobStorage.UploadBlob)
@@ -200,7 +199,6 @@ public class AzureBlobStorage
             case AzureBlobType.Block:
                 try
                 {
-                    var blobname = blobName;
                     BlobClient blobClient = connection.ConnectionMethod is ConnectionMethod.OAuth2 ? new BlobClient(new Uri($"{connection.Uri}/{connection.ContainerName.ToLower()}/{blobName}"), credentials) : containerClient.GetBlobClient(blobName);
 
                     var exists = await blobClient.ExistsAsync(cancellationToken);
@@ -208,9 +206,8 @@ public class AzureBlobStorage
                     if (exists.Value && input.ActionOnExistingFile is OnExistingFile.Throw)
                     {
                         if (!options.ThrowErrorOnFailure)
-                            return @$"Blob {blobName} already exists.";
-                        else
-                            throw new Exception(@$"Blob {blobName} already exists.");
+                            return $"Blob {blobName} already exists.";
+                        throw new Exception($"Blob {blobName} already exists.");
                     }
 
                     var blobUploadOptions = new BlobUploadOptions
@@ -230,7 +227,7 @@ public class AzureBlobStorage
                         await blobClient.DeleteIfExistsAsync(DeleteSnapshotsOption.None, null, cancellationToken);
                     }
 
-                    using (var stream = GetStream(input.Compress, input.ContentsOnly, encoding, fi))
+                    await using (var stream = GetStream(input.Compress, input.ContentsOnly, encoding, fi))
                     {
                         await blobClient.UploadAsync(stream, blobUploadOptions, cancellationToken);
                     }
@@ -259,8 +256,7 @@ public class AzureBlobStorage
                     {
                         if (options.ThrowErrorOnFailure)
                             throw new Exception(@$"Blob {blobName} already exists.");
-                        else
-                            return @$"Blob {blobName} already exists.";
+                        return @$"Blob {blobName} already exists.";
                     }
 
                     if (exists && input.ActionOnExistingFile is OnExistingFile.Overwrite)
@@ -404,13 +400,17 @@ public class AzureBlobStorage
             }
             else
             {
-                var tempFile = Path.Combine(Path.GetTempPath(), blobName);
+                var tempFile = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+
+                // Download original blob
                 await blobClient.DownloadToAsync(tempFile, cancellationToken);
 
-                using var sourceData = new StreamReader(sourceFile);
-                using var destinationFile = File.AppendText(tempFile);
-                var line = await sourceData.ReadLineAsync();
-                await destinationFile.WriteAsync(line);
+                // Append entire source file in binary mode
+                using (var source = new FileStream(sourceFile, FileMode.Open, FileAccess.Read, FileShare.Read))
+                using (var dest = new FileStream(tempFile, FileMode.Append, FileAccess.Write, FileShare.Read))
+                {
+                    await source.CopyToAsync(dest, cancellationToken);
+                }
 
                 return new FileInfo(tempFile);
             }
@@ -423,43 +423,144 @@ public class AzureBlobStorage
 
     private static Stream GetStream(bool compress, bool fromString, Encoding encoding, FileInfo file)
     {
-        var fileStream = File.OpenRead(file.FullName);
-
         if (!compress && !fromString)
-            return fileStream;
+            return new FileStream(file.FullName, FileMode.Open, FileAccess.Read, FileShare.Read, StreamBufferSize, FileOptions.Asynchronous | FileOptions.SequentialScan);
 
+        return compress
+            ? GetCompressedStream(file, fromString, encoding)
+            : GetReencodedStream(file, encoding);
+    }
+
+    private static Stream GetCompressedStream(FileInfo file, bool fromString, Encoding encoding)
+    {
+        if (!fromString)
+            return CreateCompressedBinaryStream(file);
+
+        string tempFile = Path.GetTempFileName();
         try
         {
-            if (!compress)
+            using var destination = new FileStream(tempFile, FileMode.Create, FileAccess.Write, FileShare.ReadWrite);
+            using var gzip = new GZipStream(destination, CompressionMode.Compress);
+
+            try
             {
-                using var reader = new StreamReader(fileStream, encoding);
-                var bytes = encoding.GetBytes(reader.ReadToEnd());
-                return new MemoryStream(bytes);
+                using var source = new FileStream(file.FullName, FileMode.Open, FileAccess.Read, FileShare.Read);
+                using var reader = new StreamReader(source, CreateStrictEncoding(encoding), true);
+                using var writer = new StreamWriter(gzip, encoding);
+
+                CopyText(reader, writer);
+                writer.Flush();
+            }
+            catch (DecoderFallbackException)
+            {
+                // Not valid text → fallback
+                destination.Close();
+                File.Delete(tempFile);
+                return CreateCompressedBinaryStream(file);
             }
 
-            var tempFile = Path.GetTempFileName();
-            using (var outFile = File.Create(tempFile))
-            using (var gzip = new GZipStream(outFile, CompressionMode.Compress))
-            {
-                if (!fromString)
-                {
-                    fileStream.CopyTo(gzip);
-                }
-                else
-                {
-                    using var reader = new StreamReader(fileStream, encoding);
-                    var content = reader.ReadToEnd();
-                    using var encodedMemory = new MemoryStream(encoding.GetBytes(content));
-                    encodedMemory.CopyTo(gzip);
-                }
-            }
-
-            return new FileStream(tempFile, FileMode.Open, FileAccess.Read, FileShare.Read, 81920, FileOptions.Asynchronous | FileOptions.DeleteOnClose);
+            return CreateUploadStream(tempFile);
         }
-        finally
+        catch
         {
-            fileStream.Dispose();
+            File.Delete(tempFile);
+            throw;
         }
+    }
+
+    private static Stream GetReencodedStream(FileInfo file, Encoding encoding)
+    {
+        var tempFile = Path.GetTempFileName();
+        try
+        {
+            using (var source = new FileStream(file.FullName, FileMode.Open, FileAccess.Read, FileShare.Read, StreamBufferSize, FileOptions.SequentialScan))
+            using (var reader = new StreamReader(source, CreateStrictEncoding(encoding), detectEncodingFromByteOrderMarks: true, bufferSize: StreamBufferSize, leaveOpen: false))
+            using (var writer = new StreamWriter(tempFile, false, encoding, StreamBufferSize))
+            {
+                CopyText(reader, writer);
+                writer.Flush();
+            }
+
+            return CreateUploadStream(tempFile);
+        }
+        catch (DecoderFallbackException)
+        {
+            File.Delete(tempFile);
+            return CreateBinaryCopyStream(file);
+        }
+        catch
+        {
+            File.Delete(tempFile);
+            throw;
+        }
+    }
+
+    private static void CopyText(StreamReader reader, TextWriter writer)
+    {
+        var buffer = new char[StreamBufferSize];
+        int read;
+        while ((read = reader.Read(buffer, 0, buffer.Length)) > 0)
+            writer.Write(buffer, 0, read);
+    }
+
+    private static Stream CreateCompressedBinaryStream(FileInfo file)
+    {
+        var tempFile = Path.GetTempFileName();
+        try
+        {
+            using (var destination = new FileStream(tempFile, FileMode.Create, FileAccess.Write, FileShare.None, StreamBufferSize, FileOptions.SequentialScan))
+            using (var gzip = new GZipStream(destination, CompressionMode.Compress, leaveOpen: true))
+            using (var source = new FileStream(file.FullName, FileMode.Open, FileAccess.Read, FileShare.Read, StreamBufferSize, FileOptions.SequentialScan))
+            {
+                source.CopyTo(gzip);
+            }
+
+            return CreateUploadStream(tempFile);
+        }
+        catch
+        {
+            File.Delete(tempFile);
+            throw;
+        }
+    }
+
+    private static Stream CreateBinaryCopyStream(FileInfo file)
+    {
+        var tempFile = Path.GetTempFileName();
+        try
+        {
+            using (var source = new FileStream(file.FullName, FileMode.Open, FileAccess.Read, FileShare.Read, StreamBufferSize, FileOptions.SequentialScan))
+            using (var destination = new FileStream(tempFile, FileMode.Create, FileAccess.Write, FileShare.None, StreamBufferSize, FileOptions.SequentialScan))
+            {
+                source.CopyTo(destination);
+            }
+
+            return CreateUploadStream(tempFile);
+        }
+        catch
+        {
+            File.Delete(tempFile);
+            throw;
+        }
+    }
+
+    private static Stream CreateUploadStream(string tempFile)
+    {
+        return new FileStream(
+            tempFile,
+            FileMode.Open,
+            FileAccess.Read,
+            FileShare.Read,
+            StreamBufferSize,
+            FileOptions.Asynchronous | FileOptions.SequentialScan);
+    }
+
+    private static Encoding CreateStrictEncoding(Encoding encoding)
+    {
+        var strictEncoding = (Encoding)encoding.Clone();
+        strictEncoding.DecoderFallback = DecoderFallback.ExceptionFallback;
+        strictEncoding.EncoderFallback = EncoderFallback.ExceptionFallback;
+        return strictEncoding;
     }
 
 

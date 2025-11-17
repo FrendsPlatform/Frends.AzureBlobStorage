@@ -1,5 +1,16 @@
 # Changelog
 
+## [3.3.0] - 2025-11-12
+
+### Changed
+- Updated stream handling in to improve performance and reduce memory usage during large file uploads.
+
+## [3.2.0] - 2025-11-01
+
+### Changed
+
+- Performance improvements
+
 ## [3.1.0] - 2025-08-26
 ### Changed
 - Updated the UploadBlob task to use a streaming approach (GetStream) instead of reading the entire file into memory (GetBytes), added unit tests to verify integrity for small and 200MB files.
