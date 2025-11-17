@@ -1,9 +1,15 @@
 # Changelog
 
-## [3.2.0] - 2025-11-12
+## [3.3.0] - 2025-11-12
 
 ### Changed
 - Updated stream handling in to improve performance and reduce memory usage during large file uploads.
+
+## [3.2.0] - 2025-11-01
+
+### Changed
+
+- Performance improvements
 
 ## [3.1.0] - 2025-08-26
 ### Changed

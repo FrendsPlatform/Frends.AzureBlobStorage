@@ -473,8 +473,8 @@ public class AzureBlobStorage
         var tempFile = Path.GetTempFileName();
         try
         {
-            using(var source = new FileStream(file.FullName, FileMode.Open, FileAccess.Read, FileShare.Read, StreamBufferSize, FileOptions.SequentialScan))
-            using(var reader = new StreamReader(source, CreateStrictEncoding(encoding), detectEncodingFromByteOrderMarks: true, bufferSize: StreamBufferSize, leaveOpen: false))
+            using (var source = new FileStream(file.FullName, FileMode.Open, FileAccess.Read, FileShare.Read, StreamBufferSize, FileOptions.SequentialScan))
+            using (var reader = new StreamReader(source, CreateStrictEncoding(encoding), detectEncodingFromByteOrderMarks: true, bufferSize: StreamBufferSize, leaveOpen: false))
             using (var writer = new StreamWriter(tempFile, false, encoding, StreamBufferSize))
             {
                 CopyText(reader, writer);
