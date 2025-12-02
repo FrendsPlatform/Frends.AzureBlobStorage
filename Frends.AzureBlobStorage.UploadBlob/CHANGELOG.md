@@ -1,5 +1,8 @@
 # Changelog
 
+## [3.4.0] - 2025-11-12
+- Added note about OAuth2 requiring Storage Blob Data Owner role for Tags property
+
 ## [3.3.0] - 2025-11-12
 
 ### Changed
@@ -8,7 +11,7 @@
 ## [3.2.0] - 2025-11-01
 
 ### Changed
-- Added note about OAuth2 requiring Storage Blob Data Owner role for Tags property
+- Performance improvements
 
 ## [3.1.0] - 2025-08-26
 ### Changed
