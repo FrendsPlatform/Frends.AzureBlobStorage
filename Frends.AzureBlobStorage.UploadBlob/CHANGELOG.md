@@ -1,6 +1,12 @@
 # Changelog
 
-## [3.2.0] - 2025-10-15
+## [3.3.0] - 2025-11-12
+
+### Changed
+- Updated stream handling in to improve performance and reduce memory usage during large file uploads.
+
+## [3.2.0] - 2025-11-01
+
 ### Changed
 - Added note about OAuth2 requiring Storage Blob Data Owner role for Tags property
 

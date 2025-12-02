@@ -86,6 +86,7 @@ public class UnitTests
         await container.DeleteIfExistsAsync();
         // Empties the const container.
         await DeleteBlobsInContainer(_connectionString, _container, _input.BlobName);
+        await Task.Delay(200); // Give some time for the deletion to propagate
         DeleteFiles();
     }
 
@@ -786,10 +787,12 @@ public class UnitTests
     }
 
     [Test]
-    [TestCase(10 * 1024, "small_with_compress.dat")]
-    [TestCase(200L * 1024 * 1024, "large_with_compress.dat")]
-    [TestCase(3L * 1024 * 1024 * 1024, "very_large_3gb_file.dat")]
-    public async Task UploadDownload_WithCompression_VerifyIntegrity(long fileSize, string fileName)
+    [TestCase(10 * 1024, "small_with_compress.dat", true)]
+    [TestCase(10 * 1024, "small_with_compress.dat", false)]
+    [TestCase(200L * 1024 * 1024, "large_with_compress.dat", true)]
+    [TestCase(200L * 1024 * 1024, "large_with_compress.dat", false)]
+    [TestCase(3L * 1024 * 1024 * 1024, "very_large_3gb_file.dat", false)]
+    public async Task UploadDownload_WithCompression_VerifyIntegrity(long fileSize, string fileName, bool contentsOnly)
     {
         var tempDir = Path.GetTempPath();
         var originalFile = Path.Combine(tempDir, "original_" + fileName);
@@ -807,7 +810,7 @@ public class UnitTests
                 SourceFile = originalFile,
                 BlobName = fileName,
                 Compress = true,
-                ContentsOnly = false,
+                ContentsOnly = contentsOnly,
                 ActionOnExistingFile = OnExistingFile.Overwrite
             };
 
@@ -818,10 +821,10 @@ public class UnitTests
                 ResizeFile = default,
                 PageMaxSize = default,
                 PageOffset = default,
-                ContentType = null,
+                ContentType = "",
                 Encoding = FileEncoding.UTF8,
-                EnableBom = false,
-                ParallelOperations = default
+                EnableBom = true,
+                ParallelOperations = 4
             };
 
             var uploadResult = await AzureBlobStorage.UploadBlob(input, _connection, options, default);
@@ -855,7 +858,7 @@ public class UnitTests
     private async Task GenerateRandomFile(string filePath, long fileSize)
     {
         var rnd = new Random();
-        using var fs = new FileStream(filePath, FileMode.Create, FileAccess.Write);
+        await using var fs = new FileStream(filePath, FileMode.Create, FileAccess.Write);
         var buffer = new byte[81920];
         long written = 0;
 
@@ -902,8 +905,33 @@ public class UnitTests
 
     private void DeleteFiles()
     {
-        if (Directory.Exists(_testFileDir))
-            Directory.Delete(_testFileDir, true);
+        DeleteDirectorySafe(_testFileDir);
+    }
+
+    private void DeleteDirectorySafe(string path)
+    {
+        if (!Directory.Exists(path))
+            return;
+
+        for (int i = 0; i < 10; i++)
+        {
+            try
+            {
+                Directory.Delete(path, true);
+                return;
+            }
+            catch (IOException)
+            {
+                Thread.Sleep(100);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                Thread.Sleep(100);
+            }
+        }
+
+        // final attempt without catching
+        Directory.Delete(path, true);
     }
 
     private async Task DeleteBlobsInContainer(string connectionString, string containerName, string blobName)

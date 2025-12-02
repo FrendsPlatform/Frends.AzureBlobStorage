@@ -9,17 +9,18 @@ public class Result
     /// Container created.
     /// </summary>
     /// <example>true</example>
-    public bool Success { get; private set; }
+    public bool Success { get; set; }
 
     /// <summary>
-    /// URI string of newly created container.
+    /// URI string of a newly created container.
     /// </summary>
     /// <example>https://test.blob.core.windows.net/test8f237ae0-ad33-b4b3-48d9-23b20a14c909</example>
-    public string Uri { get; private set; }
+    public string Uri { get; set; } = string.Empty;
 
-    internal Result(bool success, string uri)
-    {
-        Success = success;
-        Uri = uri;
-    }
+
+    /// <summary>
+    /// Error information if the operation failed.
+    /// </summary>
+    /// <example>object { string Message, Exception AdditionalInfo }</example>
+    public Error Error { get; set; }
 }
