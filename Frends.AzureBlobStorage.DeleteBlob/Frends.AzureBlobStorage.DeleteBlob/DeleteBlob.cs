@@ -34,9 +34,9 @@ public class AzureBlobStorage
             var blob = GetBlobClient(input);
 
             if (!await blob.ExistsAsync(cancellationToken) && !options.ThrowErrorIfBlobDoesNotExists)
-                return new Result(false, $"Blob {input.BlobName} doesn't exists in container {input.ContainerName}.");
+                return new Result(false, $"Blob {input.BlobName} doesn't exist in container {input.ContainerName}.");
             if (!await blob.ExistsAsync(cancellationToken) && options.ThrowErrorIfBlobDoesNotExists)
-                throw new Exception($"Blob {input.BlobName} doesn't exists in container {input.ContainerName}.");
+                throw new Exception($"Blob {input.BlobName} doesn't exist in container {input.ContainerName}.");
 
             var accessCondition = string.IsNullOrWhiteSpace(options.VerifyETagWhenDeleting)
                 ? new BlobRequestConditions { IfMatch = new Azure.ETag(options.VerifyETagWhenDeleting) }
