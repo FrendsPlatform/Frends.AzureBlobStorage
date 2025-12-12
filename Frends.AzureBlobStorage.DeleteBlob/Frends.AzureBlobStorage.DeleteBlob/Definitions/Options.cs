@@ -23,7 +23,7 @@ public class Options
     public string VerifyETagWhenDeleting { get; set; }
 
     /// <summary>
-    /// If true, throw an error if blob to be deleted doesn't exists.
+    /// If true, throw an error if blob to be deleted doesn't exist.
     /// If false, Task will return Success = true.
     /// </summary>
     /// <example>false</example>

@@ -67,7 +67,7 @@ public class DeleteTest
 
         var result = await AzureBlobStorage.DeleteBlob(input, options, default);
         Assert.IsFalse(result.Success);
-        Assert.IsTrue(result.Info.Contains("doesn't exists in container"));
+        Assert.IsTrue(result.Info.Contains("doesn't exist in container"));
     }
 
     [TestMethod]
@@ -89,7 +89,7 @@ public class DeleteTest
 
         var result = await AzureBlobStorage.DeleteBlob(input, options, default);
         Assert.IsFalse(result.Success);
-        Assert.IsTrue(result.Info.Contains("doesn't exists in container"));
+        Assert.IsTrue(result.Info.Contains("doesn't exist in container"));
     }
 
     [TestMethod]
@@ -115,7 +115,7 @@ public class DeleteTest
 
         var result = await AzureBlobStorage.DeleteBlob(input, options, default);
         Assert.IsFalse(result.Success);
-        Assert.IsTrue(result.Info.Contains("doesn't exists in container"));
+        Assert.IsTrue(result.Info.Contains("doesn't exist in container"));
     }
 
     [TestMethod]
@@ -173,7 +173,7 @@ public class DeleteTest
 
         var result = await AzureBlobStorage.DeleteBlob(input, new Options(), default);
         Assert.IsFalse(result.Success);
-        Assert.IsTrue(result.Info.Contains("doesn't exists in container"));
+        Assert.IsTrue(result.Info.Contains("doesn't exist in container"));
     }
 
     [TestMethod]
@@ -189,7 +189,7 @@ public class DeleteTest
 
         var result = await AzureBlobStorage.DeleteBlob(input, new Options(), default);
         Assert.IsFalse(result.Success);
-        Assert.IsTrue(result.Info.Contains("doesn't exists in container"));
+        Assert.IsTrue(result.Info.Contains("doesn't exist in container"));
     }
 
     private static BlobContainerClient GetBlobContainer(string connectionString, string containerName)
