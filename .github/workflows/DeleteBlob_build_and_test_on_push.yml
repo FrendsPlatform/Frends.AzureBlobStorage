@@ -17,6 +17,7 @@ jobs:
       env_var_name_2: Frends_AzureBlobStorage_AppID
       env_var_name_3: Frends_AzureBlobStorage_ClientSecret
       env_var_name_4: Frends_AzureBlobStorage_TenantID
+      env_var_name_5: Frends_AzureBlobStorage_StorageAccount
     secrets:
       badge_service_api_key: ${{ secrets.BADGE_SERVICE_API_KEY }}
       test_feed_api_key: ${{ secrets.TASKS_TEST_FEED_API_KEY }}
@@ -24,3 +25,4 @@ jobs:
       env_var_value_2: ${{ secrets.FRENDS_AZUREBLOBSTORAGE_APPID }}
       env_var_value_3: ${{ secrets.FRENDS_AZUREBLOBSTORAGE_CLIENTSECRET }}
       env_var_value_4: ${{ secrets.FRENDS_AZUREBLOBSTORAGE_TENANTID }}
+      env_var_value_5: ${{ secrets.FRENDS_AZUREBLOBSTORAGE_STORAGEACCOUNT }}
