@@ -16,7 +16,7 @@ public class DeleteTest
     private readonly string _appID = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_AppID");
     private readonly string _clientSecret = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_ClientSecret");
     private readonly string _tenantID = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_TenantID");
-    private readonly string _storageAccount = "frendstaskstestcontainer";
+    private readonly string _storageAccount = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_StorageAccount");
     private readonly string _testFileDir = Path.Combine(Environment.CurrentDirectory, "TestFiles");
     private readonly string _firstTestFile = Path.Combine(Environment.CurrentDirectory, "TestFiles", "testfile.txt");
     private readonly string _secondTestFile = Path.Combine(Environment.CurrentDirectory, "TestFiles", "testfile2.txt");
@@ -67,7 +67,7 @@ public class DeleteTest
 
         var result = await AzureBlobStorage.DeleteBlob(input, options, default);
         Assert.IsFalse(result.Success);
-        Assert.IsTrue(result.Info.Contains("doesn't exists in container"));
+        Assert.IsTrue(result.Info.Contains("doesn't exist in container"));
     }
 
     [TestMethod]
@@ -89,7 +89,7 @@ public class DeleteTest
 
         var result = await AzureBlobStorage.DeleteBlob(input, options, default);
         Assert.IsFalse(result.Success);
-        Assert.IsTrue(result.Info.Contains("doesn't exists in container"));
+        Assert.IsTrue(result.Info.Contains("doesn't exist in container"));
     }
 
     [TestMethod]
@@ -115,7 +115,7 @@ public class DeleteTest
 
         var result = await AzureBlobStorage.DeleteBlob(input, options, default);
         Assert.IsFalse(result.Success);
-        Assert.IsTrue(result.Info.Contains("doesn't exists in container"));
+        Assert.IsTrue(result.Info.Contains("doesn't exist in container"));
     }
 
     [TestMethod]
@@ -173,7 +173,7 @@ public class DeleteTest
 
         var result = await AzureBlobStorage.DeleteBlob(input, new Options(), default);
         Assert.IsFalse(result.Success);
-        Assert.IsTrue(result.Info.Contains("doesn't exists in container"));
+        Assert.IsTrue(result.Info.Contains("doesn't exist in container"));
     }
 
     [TestMethod]
@@ -189,7 +189,7 @@ public class DeleteTest
 
         var result = await AzureBlobStorage.DeleteBlob(input, new Options(), default);
         Assert.IsFalse(result.Success);
-        Assert.IsTrue(result.Info.Contains("doesn't exists in container"));
+        Assert.IsTrue(result.Info.Contains("doesn't exist in container"));
     }
 
     private static BlobContainerClient GetBlobContainer(string connectionString, string containerName)
