@@ -18,7 +18,12 @@ public enum AuthenticationMethod
     /// <summary>
     /// OAuth2.
     /// </summary>
-    OAuth2
+    OAuth2,
+    
+    /// <summary>
+    /// Managed Identity.
+    /// </summary>
+    ArcManagedIdentity,
 }
 
 /// <summary>

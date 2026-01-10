@@ -69,6 +69,7 @@ public class AzureBlobStorage
                 while (await hierarchyItemEnumerator.MoveNextAsync())
                 {
                     var blobItems = hierarchyItemEnumerator.Current;
+
                     foreach (var blobItem in blobItems.Values)
                     {
                         cancellationToken.ThrowIfCancellationRequested();
@@ -99,8 +100,10 @@ public class AzureBlobStorage
                         }
                     }
                 }
+
                 await hierarchyItemEnumerator.DisposeAsync();
             }
+
             return blobListing;
         }
         catch (Exception ex)
@@ -118,15 +121,27 @@ public class AzureBlobStorage
                 case AuthenticationMethod.ConnectionString:
                     if (string.IsNullOrWhiteSpace(source.ConnectionString))
                         throw new Exception("Connection string required.");
+
                     return new BlobContainerClient(source.ConnectionString, source.ContainerName);
                 case AuthenticationMethod.SASToken:
                     if (string.IsNullOrWhiteSpace(source.SASToken) || string.IsNullOrWhiteSpace(source.URI))
                         throw new Exception("SAS Token and URI required.");
+
                     return new BlobContainerClient(new Uri($"{source.URI}/{source.ContainerName}?"), new AzureSasCredential(source.SASToken));
                 case AuthenticationMethod.OAuth2:
+                {
                     var credentials = new ClientSecretCredential(source.TenantID, source.ApplicationID, source.ClientSecret, new ClientSecretCredentialOptions());
                     var blobServiceClient = new BlobServiceClient(new Uri($"{source.URI}"), credentials);
+
                     return blobServiceClient.GetBlobContainerClient(source.ContainerName);
+                }
+                case AuthenticationMethod.ArcManagedIdentity:
+                {
+                    var credentials = new ManagedIdentityCredential();
+                    var blobServiceClient = new BlobServiceClient(new Uri($"{source.URI}"), credentials);
+
+                    return blobServiceClient.GetBlobContainerClient(source.ContainerName);
+                }
                 default: throw new NotSupportedException();
             }
         }
