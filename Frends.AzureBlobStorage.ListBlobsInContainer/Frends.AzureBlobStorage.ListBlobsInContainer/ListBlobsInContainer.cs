@@ -31,7 +31,7 @@ public class AzureBlobStorage
 
     private static async Task<List<BlobData>> ListBlobHandler(Source source, Options options, CancellationToken cancellationToken)
     {
-        var blobContainerClient = GetBlobContainerClient(source);
+        var blobContainerClient = GetBlobContainerClient(source, cancellationToken);
         var blobListing = new List<BlobData>();
 
         try
@@ -112,7 +112,7 @@ public class AzureBlobStorage
         }
     }
 
-    private static BlobContainerClient GetBlobContainerClient(Source source)
+    private static BlobContainerClient GetBlobContainerClient(Source source, CancellationToken cancellationToken)
     {
         try
         {
@@ -139,6 +139,24 @@ public class AzureBlobStorage
                 {
                     var credentials = new ManagedIdentityCredential();
                     var blobServiceClient = new BlobServiceClient(new Uri($"{source.URI}"), credentials);
+
+                    return blobServiceClient.GetBlobContainerClient(source.ContainerName);
+                }
+                case AuthenticationMethod.ArcManagedIdentityCrossTenant:
+                {
+                    var credentials = new ManagedIdentityCredential();
+                    ClientAssertionCredential assertion = new(
+                        source.TargetTenantId,
+                        source.TargetClientId,
+                        async _ =>
+                        {
+                            var tokenRequestContext = new Azure.Core.TokenRequestContext();
+                            var accessToken = await credentials.GetTokenAsync(tokenRequestContext, cancellationToken).ConfigureAwait(false);
+
+                            return accessToken.Token;
+                        });
+
+                    var blobServiceClient = new BlobServiceClient(new Uri(source.URI), assertion);
 
                     return blobServiceClient.GetBlobContainerClient(source.ContainerName);
                 }

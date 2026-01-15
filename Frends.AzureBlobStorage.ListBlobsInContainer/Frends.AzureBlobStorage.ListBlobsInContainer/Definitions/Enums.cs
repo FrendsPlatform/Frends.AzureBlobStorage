@@ -24,6 +24,11 @@ public enum AuthenticationMethod
     /// Managed Identity.
     /// </summary>
     ArcManagedIdentity,
+    
+    /// <summary>
+    /// Managed Identity for cross-tenant.
+    /// </summary>
+    ArcManagedIdentityCrossTenant,
 }
 
 /// <summary>
