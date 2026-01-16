@@ -17,7 +17,7 @@ public class OAuthUnitTests
     private readonly string _appID = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_AppID");
     private readonly string _tenantID = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_TenantID");
     private readonly string _clientSecret = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_ClientSecret");
-    private readonly string _storageaccount = "frendstaskstestcontainer";
+    private readonly string _storageaccount = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_StorageAccount");
 
     [TestInitialize]
     public async Task Init()
