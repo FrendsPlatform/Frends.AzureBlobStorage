@@ -16,7 +16,7 @@ public class UnitTests
     private readonly string _appID = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_AppID");
     private readonly string _clientSecret = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_ClientSecret");
     private readonly string _tenantID = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_TenantID");
-    private readonly string _storageAccount = "frendstaskstestcontainer";
+    private readonly string _storageAccount = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_StorageAccount");
     private string _containerName;
 
     [TestInitialize]
@@ -37,6 +37,7 @@ public class UnitTests
     private BlobContainerClient GetBlobServiceClient()
     {
         var blobServiceClient = new BlobServiceClient(_connectionString);
+
         return blobServiceClient.GetBlobContainerClient(_containerName);
     }
 
@@ -91,7 +92,8 @@ public class UnitTests
     [ExpectedException(typeof(Exception))]
     public async Task TestDeleteContainer_throws_ClientNotFound()
     {
-        await AzureBlobStorage.DeleteContainer(new Input { ConnectionString = "DefaultEndpointsProtocol=https;AccountName=unitTestStorage;AccountKey=abcdefghijklmnopqrstuyxz123456789;EndpointSuffix=core.windows.net", ContainerName = _containerName }, new Options { ThrowErrorIfContainerDoesNotExists = false }, new CancellationToken());
+        await AzureBlobStorage.DeleteContainer(new Input { ConnectionString = "DefaultEndpointsProtocol=https;AccountName=unitTestStorage;AccountKey=abcdefghijklmnopqrstuyxz123456789;EndpointSuffix=core.windows.net", ContainerName = _containerName },
+            new Options { ThrowErrorIfContainerDoesNotExists = false }, new CancellationToken());
     }
 
     [TestMethod]
