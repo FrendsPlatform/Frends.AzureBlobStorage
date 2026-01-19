@@ -1,31 +1,48 @@
 # Changelog
 
+## [1.3.0] - 2026-01-15
+
+### Changed
+
+- Updated Azure packages to the latest versions:
+- Azure.Storage.Blobs 12.27.0
+- Azure.Identity 1.17.1
+
 ## [1.2.0] - 2024-08-21
+
 ### Updated
+
 - Updated Azure.Identity to version 1.12.0.
 
 ## [1.1.1] - 2024-01-31
+
 ### Updated
+
 - Azure.Identity to version 1.10.4
 - Azure.Storage.Blobs to version 12.19.1
 
 ## [1.1.0] - 2022-12-16
+
 ### Added
+
 - OAuth2 as a new additional authentication method.
 
 ### Changed
+
 - Dependency update:
-    Removed dependencies:
-        System.ComponentModel.Annotations
-        Azure.Core
-        Azure.Storage.Common
+  Removed dependencies:
+  System.ComponentModel.Annotations
+  Azure.Core
+  Azure.Storage.Common
 
-    Added dependencies:
-        Azure.Identity 1.8.0
+  Added dependencies:
+  Azure.Identity 1.8.0
 
-    Update dependencies:
-        Azure.Storage.Blobs 12.13.1 to 12.14.1
+  Update dependencies:
+  Azure.Storage.Blobs 12.13.1 to 12.14.1
 
 ## [1.0.0] - 2022-04-08
+
 ### Added
+
 - Initial implementation

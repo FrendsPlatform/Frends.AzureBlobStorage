@@ -84,9 +84,11 @@ public static class AzureBlobStorage
             reader.Read();
             encoding = reader.CurrentEncoding.BodyName;
         }
+
         if (targetEncoding.BodyName != encoding)
         {
             var tempFilePath = Path.Combine(directory, "encodingTemp" + fileExtension);
+
             using (var sr = new StreamReader(fullPath, true))
             using (var sw = new StreamWriter(tempFilePath, false, targetEncoding))
             {
@@ -94,6 +96,7 @@ public static class AzureBlobStorage
                 while ((line = sr.ReadLine()) != null)
                     sw.WriteLine(line);
             }
+
             File.Delete(fullPath);
             File.Copy(tempFilePath, fullPath);
             File.Delete(tempFilePath);
@@ -110,6 +113,7 @@ public static class AzureBlobStorage
                 return new BlobClient(new Uri($"{source.Uri}/{source.ContainerName.ToLower()}/{source.BlobName}"), new ClientSecretCredential(source.TenantID, source.ApplicationID, source.ClientSecret, new ClientSecretCredentialOptions()));
             case ConnectionMethod.SASToken:
                 var containerClient = new BlobContainerClient(new Uri($"{source.Uri}/{source.ContainerName.ToLower()}"), new AzureSasCredential(source.SASToken));
+
                 return containerClient.GetBlobClient(source.BlobName);
             default: throw new NotSupportedException();
         }
@@ -131,8 +135,10 @@ public static class AzureBlobStorage
                 try
                 {
                     var encodingFromString = CodePagesEncodingProvider.Instance.GetEncoding(encodingString);
+
                     if (encodingFromString == null)
                         throw new ArgumentException($"Encoding '{encodingString}' is not supported.");
+
                     return encodingFromString;
                 }
                 catch (ArgumentException ex)
@@ -141,6 +147,6 @@ public static class AzureBlobStorage
                 }
             default:
                 throw new ArgumentOutOfRangeException($"Unknown Encoding type: '{encoding}'.");
-        };
+        }
     }
 }
