@@ -2,7 +2,7 @@ name: ListBlobsInContainer_build_main
 
 on:
   push:
-    branches:    
+    branches:
       - main
     paths:
       - 'Frends.AzureBlobStorage.ListBlobsInContainer/**'
@@ -19,6 +19,7 @@ jobs:
       env_var_name_4: Frends_AzureBlobStorage_TenantID
       env_var_name_5: Frends_AzureBlobStorage_frendstaskstestcontainerAccessKey
       env_var_name_6: Frends_AzureBlobStorage_URI
+      env_var_name_7: Frends_AzureBlobStorage_StorageAccount
     secrets:
       badge_service_api_key: ${{ secrets.BADGE_SERVICE_API_KEY }}
       env_var_value_1: ${{ secrets.FRENDS_AZUREBLOBSTORAGE_CONNSTRING }}
@@ -27,3 +28,4 @@ jobs:
       env_var_value_4: ${{ secrets.FRENDS_AZUREBLOBSTORAGE_TENANTID }}
       env_var_value_5: ${{ secrets.FRENDS_AZUREBLOBSTORAGE_FRENDSTASKSTESTCONTAINERACCESSKEY }}
       env_var_value_6: ${{ secrets.FRENDS_AZUREBLOBSTORAGE_URI }}
+      env_var_value_7: ${{ secrets.FRENDS_AZUREBLOBSTORAGE_STORAGEACCOUNT }}

@@ -18,7 +18,7 @@ public class SASUnitTests
     private readonly string _accessKey = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_frendstaskstestcontainerAccessKey");
     private readonly string _connstring = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_ConnString");
     private readonly string _containerName = $"test-container{DateTime.Now.ToString("mmssffffff", CultureInfo.InvariantCulture)}";
-    private readonly string _storageaccount = "frendstaskstestcontainer";
+    private readonly string _storageaccount = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_StorageAccount");
 
     [TestInitialize]
     public async Task Init()
@@ -147,6 +147,7 @@ public class SASUnitTests
 
         blobSasBuilder.SetPermissions(BlobContainerSasPermissions.List);
         var sasToken = blobSasBuilder.ToSasQueryParameters(new StorageSharedKeyCredential(_storageaccount, _accessKey)).ToString();
+
         return sasToken;
     }
 }
