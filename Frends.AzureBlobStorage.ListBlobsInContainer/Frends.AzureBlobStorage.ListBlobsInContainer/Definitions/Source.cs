@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 namespace Frends.AzureBlobStorage.ListBlobsInContainer.Definitions;
 
@@ -15,6 +16,13 @@ public class Source
     public AuthenticationMethod AuthenticationMethod { get; set; }
 
     /// <summary>
+    /// Scopes used when authenticating with Arc Managed Identity Cross Tenant.
+    /// </summary>
+    /// <example>[api://AzureADTokenExchange/.default]</example>
+    [UIHint(nameof(AuthenticationMethod), "", AuthenticationMethod.ArcManagedIdentityCrossTenant)]
+    public string[] Scopes { get; set; } = Array.Empty<string>();
+
+    /// <summary>
     /// The name of the blob container in the storage account.
     /// </summary>
     /// <example>ExampleContainer</example>
@@ -29,7 +37,7 @@ public class Source
     public string ConnectionString { get; set; }
 
     /// <summary>
-    /// A shared access signature to use when connecting to Azure storage container. 
+    /// A shared access signature to use when connecting to Azure storage container.
     /// Grants restricted access rights to Azure Storage resources when combined with URI.
     /// </summary>
     /// <example>sv=2021-04-10&amp;se=2022-04-10T10%3A431Z&amp;sr=c&amp;sp=l&amp;sig=ZJg983RovE%2BZXI</example>
@@ -65,14 +73,14 @@ public class Source
     [UIHint(nameof(AuthenticationMethod), "", AuthenticationMethod.OAuth2)]
     [PasswordPropertyText]
     public string ClientSecret { get; set; }
-    
+
     /// <summary>
     /// Target Tenant ID of Azure Tenant.
     /// </summary>
     /// <example>Y6b1hf2a-80e2-xyz2-qwer3h-3a7c3a8as4b7f</example>
     [UIHint(nameof(AuthenticationMethod), "", AuthenticationMethod.ArcManagedIdentityCrossTenant)]
     public string TargetTenantId { get; set; }
-    
+
     /// <summary>
     /// Target Client ID of Azure Tenant.
     /// </summary>

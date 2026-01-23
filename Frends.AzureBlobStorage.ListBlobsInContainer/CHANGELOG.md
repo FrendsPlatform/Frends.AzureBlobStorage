@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.3.0] - 2026-01-23
+### Added
+- Add options to support Arc Managed Identity authentication.
+
 ## [1.2.0] - 2024-08-21
 ### Updated
 - Updated Azure.Identity to version 1.12.0.
