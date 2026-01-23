@@ -1,24 +1,21 @@
 ﻿using System;
 using System.ComponentModel;
-using Azure.Storage.Blobs;
-using Azure;
 using Frends.AzureBlobStorage.ListBlobsInContainer.Definitions;
 using System.Threading.Tasks;
 using Azure.Storage.Blobs.Models;
 using System.Collections.Generic;
 using System.Threading;
-using Azure.Core;
-using Azure.Identity;
+using Frends.AzureBlobStorage.ListBlobsInContainer.Helpers;
 
 namespace Frends.AzureBlobStorage.ListBlobsInContainer;
 
 /// <summary>
 /// Azure Blob Storage Task.
 /// </summary>
-public class AzureBlobStorage
+public static class AzureBlobStorage
 {
     /// <summary>
-    /// List blobs and directories from Azure Blob Storage container.
+    /// List blobs and directories from the Azure Blob Storage container.
     /// [Documentation](https://tasks.frends.com/tasks/frends-tasks/Frends.AzureBlobStorage.ListBlobsInContainer)
     /// </summary>
     /// <param name="source">Source connection parameters.</param>
@@ -34,7 +31,7 @@ public class AzureBlobStorage
     private static async Task<List<BlobData>> ListBlobHandler(Source source, Options options,
         CancellationToken cancellationToken)
     {
-        var blobContainerClient = GetBlobContainerClient(source, cancellationToken);
+        var blobContainerClient = ConnectionHandler.GetBlobContainerClient(source, cancellationToken);
         var blobListing = new List<BlobData>();
 
         try
@@ -118,66 +115,6 @@ public class AzureBlobStorage
         catch (Exception ex)
         {
             throw new ArgumentException("ListBlobHandler error: ", ex);
-        }
-    }
-
-    private static BlobContainerClient GetBlobContainerClient(Source source, CancellationToken cancellationToken)
-    {
-        try
-        {
-            switch (source.AuthenticationMethod)
-            {
-                case AuthenticationMethod.ConnectionString:
-                    if (string.IsNullOrWhiteSpace(source.ConnectionString))
-                        throw new Exception("Connection string required.");
-
-                    return new BlobContainerClient(source.ConnectionString, source.ContainerName);
-                case AuthenticationMethod.SASToken:
-                    if (string.IsNullOrWhiteSpace(source.SASToken) || string.IsNullOrWhiteSpace(source.URI))
-                        throw new Exception("SAS Token and URI required.");
-
-                    return new BlobContainerClient(new Uri($"{source.URI}/{source.ContainerName}?"),
-                        new AzureSasCredential(source.SASToken));
-                case AuthenticationMethod.OAuth2:
-                    {
-                        var credentials = new ClientSecretCredential(source.TenantID, source.ApplicationID,
-                            source.ClientSecret, new ClientSecretCredentialOptions());
-                        var blobServiceClient = new BlobServiceClient(new Uri($"{source.URI}"), credentials);
-
-                        return blobServiceClient.GetBlobContainerClient(source.ContainerName);
-                    }
-                case AuthenticationMethod.ArcManagedIdentity:
-                    {
-                        var credentials = new ManagedIdentityCredential();
-                        var blobServiceClient = new BlobServiceClient(new Uri($"{source.URI}"), credentials);
-
-                        return blobServiceClient.GetBlobContainerClient(source.ContainerName);
-                    }
-                case AuthenticationMethod.ArcManagedIdentityCrossTenant:
-                    {
-                        var credentials = new ManagedIdentityCredential();
-                        ClientAssertionCredential assertion = new(
-                            source.TargetTenantId,
-                            source.TargetClientId,
-                            async _ =>
-                            {
-                                var tokenRequestContext = new TokenRequestContext(source.Scopes);
-                                var accessToken = await credentials
-                                    .GetTokenAsync(tokenRequestContext, cancellationToken).ConfigureAwait(false);
-
-                                return accessToken.Token;
-                            });
-
-                        var blobServiceClient = new BlobServiceClient(new Uri(source.URI), assertion);
-
-                        return blobServiceClient.GetBlobContainerClient(source.ContainerName);
-                    }
-                default: throw new NotSupportedException();
-            }
-        }
-        catch (Exception ex)
-        {
-            throw new ArgumentException("GetBlobContainerClient error: ", ex);
         }
     }
 }
