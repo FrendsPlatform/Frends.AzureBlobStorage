@@ -31,6 +31,8 @@ internal static class ConnectionHandler
         }
     }
 
+    private static Uri GetUri(string storageAccountName) => new($"https://{storageAccountName}.blob.core.windows.net");
+
     private static BlobContainerClient GetClientWithConnectionString(Connection connection, Input input)
     {
         var blobServiceClient = new BlobServiceClient(connection.ConnectionString);
@@ -43,7 +45,7 @@ internal static class ConnectionHandler
         var credentials = new ClientSecretCredential(connection.TenantId, connection.ApplicationId,
             connection.ClientSecret, new ClientSecretCredentialOptions());
         var blobServiceClient =
-            new BlobServiceClient(new Uri($"https://{connection.StorageAccountName}.blob.core.windows.net"),
+            new BlobServiceClient(GetUri(connection.StorageAccountName),
                 credentials);
 
         return blobServiceClient.GetBlobContainerClient(input.ContainerName);
@@ -55,7 +57,7 @@ internal static class ConnectionHandler
         {
             var credentials = new ManagedIdentityCredential();
             var blobServiceClient = new BlobServiceClient(
-                new Uri($"https://{connection.StorageAccountName}.blob.core.windows.net"),
+                GetUri(connection.StorageAccountName),
                 credentials);
 
             return blobServiceClient.GetBlobContainerClient(input.ContainerName);
@@ -81,7 +83,7 @@ internal static class ConnectionHandler
                 });
 
             var blobServiceClient = new BlobServiceClient(
-                new Uri($"https://{connection.StorageAccountName}.blob.core.windows.net"),
+                GetUri(connection.StorageAccountName),
                 assertion);
 
             return blobServiceClient.GetBlobContainerClient(input.ContainerName);
