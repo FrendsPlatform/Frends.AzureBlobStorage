@@ -1,7 +1,7 @@
-﻿using Frends.AzureBlobStorage.DeleteBlob.Definitions;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-namespace Frends.AzureBlobStorage.DeleteBlob;
+
+namespace Frends.AzureBlobStorage.DeleteBlob.Definitions;
 
 /// <summary>
 /// Options parameters.

@@ -1,4 +1,4 @@
-﻿namespace Frends.AzureBlobStorage.DeleteBlob;
+﻿namespace Frends.AzureBlobStorage.DeleteBlob.Definitions;
 
 /// <summary>
 /// Result parameters.
