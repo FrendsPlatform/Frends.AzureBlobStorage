@@ -1,10 +1,9 @@
-﻿using Azure.Identity;
-using Azure.Storage.Blobs;
-using Frends.AzureBlobStorage.DeleteContainer.Definitions;
+﻿using Frends.AzureBlobStorage.DeleteContainer.Definitions;
 using System;
 using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
+using Frends.AzureBlobStorage.DeleteContainer.Helpers;
 
 namespace Frends.AzureBlobStorage.DeleteContainer;
 
@@ -32,7 +31,7 @@ public class AzureBlobStorage
 
         try
         {
-            var container = GetBlobContainer(input);
+            var container = ConnectionHandler.GetBlobContainerClient(input, cancellationToken);
 
             if (!await container.ExistsAsync(cancellationToken) && !options.ThrowErrorIfContainerDoesNotExists)
                 return new Result(false, "Container not found.");
@@ -44,29 +43,7 @@ public class AzureBlobStorage
         }
         catch (Exception e)
         {
-            throw new Exception("DeleteContaine: Error occured while trying to delete blob container.", e);
-        }
-    }
-
-    private static BlobContainerClient GetBlobContainer(Input input)
-    {
-        try
-        {
-            BlobServiceClient client;
-
-            if (input.ConnectionMethod is ConnectionMethod.ConnectionString)
-                client = new BlobServiceClient(input.ConnectionString);
-            else
-            {
-                var credentials = new ClientSecretCredential(input.TenantID, input.ApplicationID, input.ClientSecret, new ClientSecretCredentialOptions());
-                client = new BlobServiceClient(new Uri($"https://{input.StorageAccountName}.blob.core.windows.net"), credentials);
-            }
-
-            return client.GetBlobContainerClient(input.ContainerName);
-        }
-        catch (Exception ex)
-        {
-            throw new Exception(@$"GetBlobContainer error {ex}");
+            throw new Exception("DeleteContainer: Error occured while trying to delete blob container.", e);
         }
     }
 }
