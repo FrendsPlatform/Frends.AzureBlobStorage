@@ -134,7 +134,7 @@ public class ReadTest
             Encoding = Encode.ASCII
         };
 
-        var ex = Assert.ThrowsAsync<Exception>(() => AzureBlobStorage.ReadBlob(source, options, default));
+        var ex = Assert.ThrowsAsync<ArgumentException>(() => AzureBlobStorage.ReadBlob(source, options, default));
         Assert.AreEqual("SAS Token and URI required.", ex.Message);
     }
 
@@ -156,7 +156,7 @@ public class ReadTest
             Encoding = Encode.ASCII
         };
 
-        var ex = Assert.ThrowsAsync<Exception>(() => AzureBlobStorage.ReadBlob(source, options, default));
+        var ex = Assert.ThrowsAsync<ArgumentException>(() => AzureBlobStorage.ReadBlob(source, options, default));
         Assert.AreEqual("Connection string required.", ex.Message);
     }
 
