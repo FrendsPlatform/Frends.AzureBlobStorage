@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using Frends.AzureBlobStorage.WriteBlob.Enums;
 
@@ -56,7 +57,7 @@ public class Destination
     public string ClientSecret { get; set; }
 
     /// <summary>
-    /// A shared access signature to use when connecting to Azure storage container. 
+    /// A shared access signature to use when connecting to Azure storage container.
     /// Grants restricted access rights to Azure Storage resources when combined with URI.
     /// </summary>
     /// <example>sv=2021-04-10&amp;se=2022-04-10T10%3A431Z&amp;sr=c&amp;sp=l&amp;sig=ZJg983RovE%2BZXI</example>
@@ -88,13 +89,34 @@ public class Destination
     public Tag[] Tags { get; set; }
 
     /// <summary>
-    /// Determines if the container should be created if it does not exist. 
+    /// Determines if the container should be created if it does not exist.
     /// See https://docs.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata for naming rules.
     /// </summary>
     /// <example>false</example>
     [UIHint(nameof(ConnectionMethod), "", ConnectionMethod.ConnectionString, ConnectionMethod.OAuth2)]
     [DefaultValue(false)]
     public bool CreateContainerIfItDoesNotExist { get; set; }
+
+    /// <summary>
+    /// Scopes used when authenticating with Arc Managed Identity Cross Tenant.
+    /// </summary>
+    /// <example>[api://AzureADTokenExchange/.default]</example>
+    [UIHint(nameof(ConnectionMethod), "", ConnectionMethod.ArcManagedIdentityCrossTenant)]
+    public string[] Scopes { get; set; } = Array.Empty<string>();
+
+    /// <summary>
+    /// Target Tenant ID of Azure Tenant.
+    /// </summary>
+    /// <example>Y6b1hf2a-80e2-xyz2-qwer3h-3a7c3a8as4b7f</example>
+    [UIHint(nameof(ConnectionMethod), "", ConnectionMethod.ArcManagedIdentityCrossTenant)]
+    public string TargetTenantId { get; set; }
+
+    /// <summary>
+    /// Target Client ID of Azure Tenant.
+    /// </summary>
+    /// <example>Y6b1hf2a-80e2-xyz2-qwer3h-3a7c3a8as4b7f</example>
+    [UIHint(nameof(ConnectionMethod), "", ConnectionMethod.ArcManagedIdentityCrossTenant)]
+    public string TargetClientId { get; set; }
 
     /// <summary>
     /// How the existing blob will be handled.

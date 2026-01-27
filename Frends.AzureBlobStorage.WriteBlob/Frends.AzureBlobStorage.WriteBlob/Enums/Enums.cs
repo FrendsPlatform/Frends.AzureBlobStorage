@@ -50,7 +50,17 @@ public enum ConnectionMethod
     /// <summary>
     /// OAuth2.
     /// </summary>
-    OAuth2
+    OAuth2,
+
+    /// <summary>
+    /// Managed Identity.
+    /// </summary>
+    ArcManagedIdentity,
+
+    /// <summary>
+    /// Managed Identity for cross-tenant.
+    /// </summary>
+    ArcManagedIdentityCrossTenant,
 }
 
 /// <summary>
