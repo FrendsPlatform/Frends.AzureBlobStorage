@@ -30,14 +30,17 @@ public static class AzureBlobStorage
         try
         {
             var blob = GetBlobClient(source);
-            var fullDestinationPath = Path.Combine(destination.Directory, source.BlobName);
-            var fileName = source.BlobName.Split('.')[0];
+            var blobFileName = string.IsNullOrWhiteSpace(destination.TargetFileName)
+                ? source.BlobName
+                : destination.TargetFileName;
+            var fullDestinationPath = Path.Combine(destination.Directory, blobFileName);
+            var fileName = blobFileName.Split('.')[0];
             var fileExtension = "";
 
-            if (source.BlobName.Split('.').Length > 1)
+            if (blobFileName.Split('.').Length > 1)
             {
-                fileName = string.Join(".", source.BlobName.Split('.').Take(source.BlobName.Split('.').Length - 1).ToArray());
-                fileExtension = "." + source.BlobName.Split('.').Last();
+                fileName = string.Join(".", blobFileName.Split('.').Take(blobFileName.Split('.').Length - 1).ToArray());
+                fileExtension = "." + blobFileName.Split('.').Last();
             }
 
             if (destination.FileExistsOperation == FileExistsAction.Error && File.Exists(fullDestinationPath))

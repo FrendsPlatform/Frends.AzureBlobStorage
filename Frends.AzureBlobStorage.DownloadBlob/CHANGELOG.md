@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.6.0] - 2026-01-27
+
+### Changed
+
+- Added TargetFileName property to Destination for custom file naming when downloading blobs.
+
 ## [1.5.0] - 2026-01-15
 
 ### Changed

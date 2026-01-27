@@ -177,6 +177,42 @@ public class UnitTests
         }
     }
 
+    [Test]
+    public async Task DownloadBlobAsync_UsesTargetFileName_WhenSpecified()
+    {
+        _destination.TargetFileName = "custom-name.txt";
+
+        var result = await AzureBlobStorage.DownloadBlob(_source, _destination, default);
+
+        Assert.AreEqual("custom-name.txt", result.FileName);
+        Assert.IsTrue(File.Exists(result.FullPath));
+        Assert.IsTrue(result.FullPath.EndsWith("custom-name.txt"));
+        var fileContent = File.ReadAllText(result.FullPath);
+        Assert.IsTrue(fileContent.Contains(@"<input>WhatHasBeenSeenCannotBeUnseen</input>"));
+
+        await Cleanup();
+        await TestSetup();
+
+        _source.ConnectionMethod = ConnectionMethod.OAuth2;
+        _destination.TargetFileName = "custom-name.txt";
+        result = await AzureBlobStorage.DownloadBlob(_source, _destination, default);
+
+        Assert.AreEqual("custom-name.txt", result.FileName);
+        Assert.IsTrue(File.Exists(result.FullPath));
+
+        await Cleanup();
+        await TestSetup();
+
+        _source.ConnectionMethod = ConnectionMethod.SASToken;
+        _source.ContainerName = _container;
+        _destination.TargetFileName = "custom-name.txt";
+        result = await AzureBlobStorage.DownloadBlob(_source, _destination, default);
+
+        Assert.AreEqual("custom-name.txt", result.FileName);
+        Assert.IsTrue(File.Exists(result.FullPath));
+    }
+
+
     private async Task UploadTestFiles(string containerName)
     {
         var blobServiceClient = new BlobServiceClient(_connectionString);
