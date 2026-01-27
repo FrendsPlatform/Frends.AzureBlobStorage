@@ -59,7 +59,7 @@ public static class AzureBlobStorage
                 }
 
                 fullDestinationPath = Path.Combine(destination.Directory, incrementedFileName);
-                fileName = incrementedFileName;
+                blobFileName = incrementedFileName;
                 await blob.DownloadToAsync(fullDestinationPath, cancellationToken);
             }
             else
@@ -70,7 +70,7 @@ public static class AzureBlobStorage
             var encoding = GetEncoding(source.Encoding, source.FileEncodingString, source.EnableBOM);
             CheckAndFixFileEncoding(fullDestinationPath, destination.Directory, fileExtension, encoding);
 
-            return new Result(fileName, destination.Directory, fullDestinationPath);
+            return new Result(blobFileName, destination.Directory, fullDestinationPath);
         }
         catch (Exception ex)
         {
