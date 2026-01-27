@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.4.0] - 2026-01-23
+
+### Added
+
+- Add options to support Arc Managed Identity authentication.
+
 ## [1.1.0] - 2026-01-15
 
 ### Changed
