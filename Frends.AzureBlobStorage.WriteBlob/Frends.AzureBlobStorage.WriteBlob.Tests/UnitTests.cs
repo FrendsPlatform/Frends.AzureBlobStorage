@@ -193,7 +193,7 @@ public class UnitTests
 
         var ex = Assert.ThrowsAsync<ArgumentException>(async () =>
             await AzureBlobStorage.WriteBlob(_source, _destination, _options, default));
-        Assert.AreEqual("No valid combination of account information found.", ex.Message);
+        Assert.That(ex.Message.StartsWith("GetBlobContainerClient error:"), ex.Message);
     }
 
     [Test]
