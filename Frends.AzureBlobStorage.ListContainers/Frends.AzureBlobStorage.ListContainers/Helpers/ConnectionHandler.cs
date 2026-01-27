@@ -8,9 +8,12 @@ using Frends.AzureBlobStorage.ListContainers.Definitions;
 
 namespace Frends.AzureBlobStorage.ListContainers.Helpers;
 
+// Internal class doesn't have to be documented
+#pragma warning disable SA1600
 internal static class ConnectionHandler
 {
     internal static BlobServiceClient GetBlobServiceClient(Connection connection, CancellationToken cancellationToken)
+#pragma warning restore SA1611
     {
         try
         {
@@ -86,3 +89,4 @@ internal static class ConnectionHandler
         }
     }
 }
+#pragma warning restore SA1600

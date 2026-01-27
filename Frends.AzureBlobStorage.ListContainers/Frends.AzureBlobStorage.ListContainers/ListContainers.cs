@@ -84,8 +84,10 @@ public static class AzureBlobStorage
                     string.IsNullOrWhiteSpace(connection.TenantId) ||
                     string.IsNullOrWhiteSpace(connection.ApplicationId) ||
                     string.IsNullOrWhiteSpace(connection.ClientSecret))
+                {
                     throw new Exception(
                         "URI, TenantId, ApplicationId, and ClientSecret are required for OAuth2 connection method.");
+                }
 
                 break;
 
