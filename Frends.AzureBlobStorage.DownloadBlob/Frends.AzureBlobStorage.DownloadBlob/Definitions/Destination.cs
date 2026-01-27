@@ -28,4 +28,5 @@ public class Destination
     /// </summary>
     /// <example>customname.txt</example>
     [DefaultValue("")]
-    public string TargetFileName { get; set; } = = string.Empty;
+    public string TargetFileName { get; set; } = string.Empty;
+}
