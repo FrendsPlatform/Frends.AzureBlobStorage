@@ -31,7 +31,7 @@ internal static class ConnectionHandler
         }
         catch (Exception ex)
         {
-            throw new ArgumentException("GetBlobContainerClient error: ", ex);
+            throw new ArgumentException("GetBlobServiceClient error: ", ex);
         }
     }
 
