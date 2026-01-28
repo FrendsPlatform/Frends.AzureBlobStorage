@@ -1,10 +1,16 @@
 # Changelog
 
-## [1.6.0] - 2026-01-26
+## [1.7.0] - 2026-01-28
 
 ### Added
 
 - Add options to support Arc Managed Identity authentication.
+
+## [1.6.0] - 2026-01-27
+
+### Added
+
+- Added TargetFileName property to Destination for custom file naming when downloading blobs.
 
 ## [1.5.0] - 2026-01-15
 

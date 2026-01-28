@@ -22,4 +22,11 @@ public class Destination
     /// <example>Error</example>
     [DefaultValue(FileExistsAction.Error)]
     public FileExistsAction FileExistsOperation { get; set; }
+
+    /// <summary>
+    /// Optional custom filename for the downloaded blob. If not specified, the original blob name will be used.
+    /// </summary>
+    /// <example>customname.txt</example>
+    [DefaultValue("")]
+    public string TargetFileName { get; set; } = string.Empty;
 }
