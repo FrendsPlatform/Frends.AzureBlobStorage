@@ -1,7 +1,7 @@
 ﻿namespace Frends.AzureBlobStorage.ReadBlob.Definitions;
 
 /// <summary>
-/// Encoding name in which blob content is read. 
+/// Encoding name in which blob content is read.
 /// </summary>
 public enum Encode
 {
@@ -31,5 +31,15 @@ public enum AuthenticationMethod
     /// <summary>
     /// Authenticate with OAuth2.
     /// </summary>
-    OAuth2
+    OAuth2,
+
+    /// <summary>
+    /// Managed Identity.
+    /// </summary>
+    ArcManagedIdentity,
+
+    /// <summary>
+    /// Managed Identity for cross-tenant.
+    /// </summary>
+    ArcManagedIdentityCrossTenant,
 }

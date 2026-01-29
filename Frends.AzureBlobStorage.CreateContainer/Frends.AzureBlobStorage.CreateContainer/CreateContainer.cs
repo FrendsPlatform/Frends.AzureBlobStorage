@@ -3,8 +3,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.ComponentModel;
 using Frends.AzureBlobStorage.CreateContainer.Definitions;
-using Azure.Identity;
-using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Frends.AzureBlobStorage.CreateContainer.Helpers;
 
@@ -29,44 +27,14 @@ public static class AzureBlobStorage
     {
         try
         {
-            var container = GetBlobContainer(input, connection);
+            var container = ConnectionHandler.GetBlobContainerClient(connection, input, cancellationToken);
             await container.CreateIfNotExistsAsync(PublicAccessType.None, null, null, cancellationToken);
-            return new Result
-            {
-                Success = true,
-                Uri = container.Uri.ToString(),
-            };
+
+            return new Result { Success = true, Uri = container.Uri.ToString(), };
         }
         catch (Exception e) when (e is not OperationCanceledException)
         {
             return ErrorHandler.Handle(e, options.ThrowErrorOnFailure, options.ErrorMessageOnFailure);
-        }
-    }
-
-    private static BlobContainerClient GetBlobContainer(Input input, Connection connection)
-    {
-        try
-        {
-            BlobServiceClient blobServiceClient;
-
-            switch (connection.AuthenticationMethod)
-            {
-                case ConnectionMethod.ConnectionString:
-                    blobServiceClient = new BlobServiceClient(connection.ConnectionString);
-                    return blobServiceClient.GetBlobContainerClient(input.ContainerName);
-                case ConnectionMethod.OAuth2:
-                    var credentials = new ClientSecretCredential(connection.TenantId, connection.ApplicationId,
-                        connection.ClientSecret, new ClientSecretCredentialOptions());
-                    blobServiceClient =
-                        new BlobServiceClient(new Uri($"https://{connection.StorageAccountName}.blob.core.windows.net"),
-                            credentials);
-                    return blobServiceClient.GetBlobContainerClient(input.ContainerName);
-                default: throw new NotSupportedException();
-            }
-        }
-        catch (Exception ex)
-        {
-            throw new Exception($"GetBlobContainer error: {ex}");
         }
     }
 }

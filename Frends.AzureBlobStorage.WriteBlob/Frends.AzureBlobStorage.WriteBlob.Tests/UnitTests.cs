@@ -16,7 +16,9 @@ namespace Frends.AzureBlobStorage.WriteBlob.Tests;
 [TestFixture]
 public class UnitTests
 {
-    private readonly string _connectionString = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_ConnString");
+    private readonly string _connectionString =
+        Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_ConnString");
+
     private string _containerName;
     private readonly string _appID = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_AppID");
     private readonly string _clientSecret = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_ClientSecret");
@@ -156,7 +158,8 @@ public class UnitTests
         _destination.CreateContainerIfItDoesNotExist = true;
 
         // Connection string
-        _destination.ContainerName = $"test-container{DateTime.Now.ToString("mmssffffff", CultureInfo.InvariantCulture)}";
+        _destination.ContainerName =
+            $"test-container{DateTime.Now.ToString("mmssffffff", CultureInfo.InvariantCulture)}";
         var result = await AzureBlobStorage.WriteBlob(_source, _destination, _options, default);
         Assert.IsTrue(result.Success);
 
@@ -168,7 +171,8 @@ public class UnitTests
 
         // OAuth
         _destination.ConnectionString = null;
-        _destination.ContainerName = $"test-container{DateTime.Now.ToString("mmssffffff", CultureInfo.InvariantCulture)}";
+        _destination.ContainerName =
+            $"test-container{DateTime.Now.ToString("mmssffffff", CultureInfo.InvariantCulture)}";
         _destination.BlobName = $"testblob_{Guid.NewGuid()}";
         _destination.ConnectionMethod = ConnectionMethod.OAuth2;
         result = await AzureBlobStorage.WriteBlob(_source, _destination, _options, default);
@@ -184,10 +188,12 @@ public class UnitTests
     [Test]
     public void WriteBlob_InvalidConnectionString_ShouldThrowException()
     {
-        _destination.ConnectionString = "DefaultEndpointsProtocol=https;AccountName=invalid;AccountKey=InvalidAccountKey;EndpointSuffix=core.windows.net"; // Simulate an invalid connection string
+        _destination.ConnectionString =
+            "DefaultEndpointsProtocol=https;AccountName=invalid;AccountKey=InvalidAccountKey;EndpointSuffix=core.windows.net"; // Simulate an invalid connection string
 
-        var ex = Assert.ThrowsAsync<FormatException>(async () => await AzureBlobStorage.WriteBlob(_source, _destination, _options, default));
-        Assert.AreEqual("No valid combination of account information found.", ex.Message);
+        var ex = Assert.ThrowsAsync<ArgumentException>(async () =>
+            await AzureBlobStorage.WriteBlob(_source, _destination, _options, default));
+        Assert.That(ex.Message.StartsWith("GetBlobContainerClient error:"), ex.Message);
     }
 
     [Test]
@@ -196,7 +202,8 @@ public class UnitTests
         _destination.ConnectionMethod = ConnectionMethod.OAuth2;
         _destination.ClientSecret = "InvalidClientSecret";
 
-        var ex = Assert.ThrowsAsync<AuthenticationFailedException>(async () => await AzureBlobStorage.WriteBlob(_source, _destination, _options, default));
+        var ex = Assert.ThrowsAsync<AuthenticationFailedException>(async () =>
+            await AzureBlobStorage.WriteBlob(_source, _destination, _options, default));
         Assert.IsTrue(ex.Message.Contains("ClientSecretCredential authentication failed"));
     }
 
@@ -229,7 +236,9 @@ public class UnitTests
         _destination.Compress = true;
         var result = await AzureBlobStorage.WriteBlob(_source, _destination, _options, default);
         Assert.IsTrue(result.Success);
-        Assert.AreEqual($"https://stataskdevelopment.blob.core.windows.net/{_destination.ContainerName}/{_destination.BlobName}", result.Uri);
+        Assert.AreEqual(
+            $"https://stataskdevelopment.blob.core.windows.net/{_destination.ContainerName}/{_destination.BlobName}",
+            result.Uri);
     }
 
     private async static Task CreateBlobContainer(string connectionString, string containerName)
@@ -251,6 +260,7 @@ public class UnitTests
         var blobServiceClient = new BlobServiceClient(_connectionString);
         var container = blobServiceClient.GetBlobContainerClient(containerName);
         var blob = container.GetBlobClient(blobName);
+
         if (!blob.Exists())
             return false;
 
@@ -259,6 +269,7 @@ public class UnitTests
 
         using var reader = new StreamReader(blobDownload.Value.Content);
         var content = await reader.ReadToEndAsync();
+
         return content == expected;
     }
 }

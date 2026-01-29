@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
 namespace Frends.AzureBlobStorage.UploadBlob.Definitions;
@@ -72,11 +73,32 @@ public class Connection
     public string SasToken { get; set; }
 
     /// <summary>
-    /// Determines if the container should be created if it does not exist. 
+    /// Determines if the container should be created if it does not exist.
     /// See https://docs.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata for naming rules.
     /// </summary>
     /// <example>false</example>
     [UIHint(nameof(ConnectionMethod), "", ConnectionMethod.ConnectionString)]
     [DefaultValue(false)]
     public bool CreateContainerIfItDoesNotExist { get; set; }
+
+    /// <summary>
+    /// Scopes used when authenticating with Arc Managed Identity Cross Tenant.
+    /// </summary>
+    /// <example>[api://AzureADTokenExchange/.default]</example>
+    [UIHint(nameof(ConnectionMethod), "", ConnectionMethod.ArcManagedIdentityCrossTenant)]
+    public string[] Scopes { get; set; } = Array.Empty<string>();
+
+    /// <summary>
+    /// Target Tenant ID of Azure Tenant.
+    /// </summary>
+    /// <example>Y6b1hf2a-80e2-xyz2-qwer3h-3a7c3a8as4b7f</example>
+    [UIHint(nameof(ConnectionMethod), "", ConnectionMethod.ArcManagedIdentityCrossTenant)]
+    public string TargetTenantId { get; set; }
+
+    /// <summary>
+    /// Target Client ID of Azure Tenant.
+    /// </summary>
+    /// <example>Y6b1hf2a-80e2-xyz2-qwer3h-3a7c3a8as4b7f</example>
+    [UIHint(nameof(ConnectionMethod), "", ConnectionMethod.ArcManagedIdentityCrossTenant)]
+    public string TargetClientId { get; set; }
 }

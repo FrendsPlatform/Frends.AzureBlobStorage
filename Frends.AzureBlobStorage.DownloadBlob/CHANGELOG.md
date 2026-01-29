@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.7.0] - 2026-01-28
+
+### Added
+
+- Add options to support Arc Managed Identity authentication.
+
 ## [1.6.0] - 2026-01-27
 
 ### Added
@@ -57,20 +63,20 @@
 ### Changed
 
 - Security updated for dependency:
-    - Azure.Storage.Blobs 12.13.1 to 12.14.1
-    - Azure.Storage.Common 12.12.0 to 12.13.0
-    - Azure.Core 1.25.0 to 1.26.0
+  - Azure.Storage.Blobs 12.13.1 to 12.14.1
+  - Azure.Storage.Common 12.12.0 to 12.13.0
+  - Azure.Core 1.25.0 to 1.26.0
 
 ## [1.0.2] - 2022-09-02
 
 ### Changed
 
 - Security updated for dependency:
-    - Azure.Storage.Blobs 12.10.0 to 12.13.1
-    - Also updated dependencies:
-    - Azure.Storage.Common 12.9.0 to 12.12.0
-    - Azure.Core 1.20.0 to 1.25.0
-    - System.ComponentModel.Annotations 4.7.0 to 5.0.0
+  - Azure.Storage.Blobs 12.10.0 to 12.13.1
+  - Also updated dependencies:
+  - Azure.Storage.Common 12.9.0 to 12.12.0
+  - Azure.Core 1.20.0 to 1.25.0
+  - System.ComponentModel.Annotations 4.7.0 to 5.0.0
 
 ## [1.0.1] - 2022-02-28
 

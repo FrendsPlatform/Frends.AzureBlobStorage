@@ -3,7 +3,7 @@
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
         <LangVersion>latest</LangVersion>
-        <Version>1.1.0</Version>
+        <Version>1.2.0</Version>
         <Authors>Frends</Authors>
         <Copyright>Copyright (c) 2025 Frends EiPaaS</Copyright>
         <Company>Frends</Company>

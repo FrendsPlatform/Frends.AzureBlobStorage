@@ -1,5 +1,7 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+
 namespace Frends.AzureBlobStorage.ReadBlob.Definitions;
 
 /// <summary>
@@ -65,6 +67,27 @@ public class Source
     /// <example>Storager</example>
     [UIHint(nameof(AuthenticationMethod), "", AuthenticationMethod.OAuth2)]
     public string StorageAccountName { get; set; }
+
+    /// <summary>
+    /// Scopes used when authenticating with Arc Managed Identity Cross Tenant.
+    /// </summary>
+    /// <example>[api://AzureADTokenExchange/.default]</example>
+    [UIHint(nameof(AuthenticationMethod), "", AuthenticationMethod.ArcManagedIdentityCrossTenant)]
+    public string[] Scopes { get; set; } = Array.Empty<string>();
+
+    /// <summary>
+    /// Target Tenant ID of Azure Tenant.
+    /// </summary>
+    /// <example>Y6b1hf2a-80e2-xyz2-qwer3h-3a7c3a8as4b7f</example>
+    [UIHint(nameof(AuthenticationMethod), "", AuthenticationMethod.ArcManagedIdentityCrossTenant)]
+    public string TargetTenantId { get; set; }
+
+    /// <summary>
+    /// Target Client ID of Azure Tenant.
+    /// </summary>
+    /// <example>Y6b1hf2a-80e2-xyz2-qwer3h-3a7c3a8as4b7f</example>
+    [UIHint(nameof(AuthenticationMethod), "", AuthenticationMethod.ArcManagedIdentityCrossTenant)]
+    public string TargetClientId { get; set; }
 
     /// <summary>
     /// Azure storage container's name.

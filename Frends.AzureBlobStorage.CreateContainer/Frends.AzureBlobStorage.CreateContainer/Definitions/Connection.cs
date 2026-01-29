@@ -52,4 +52,25 @@ public class Connection
     [UIHint(nameof(AuthenticationMethod), "", ConnectionMethod.OAuth2)]
     [PasswordPropertyText]
     public string ClientSecret { get; set; }
+
+    /// <summary>
+    /// Scopes used when authenticating with Arc Managed Identity Cross Tenant.
+    /// </summary>
+    /// <example>[api://AzureADTokenExchange/.default]</example>
+    [UIHint(nameof(AuthenticationMethod), "", ConnectionMethod.ArcManagedIdentityCrossTenant)]
+    public string[] Scopes { get; set; } = [];
+
+    /// <summary>
+    /// Target Tenant ID of Azure Tenant.
+    /// </summary>
+    /// <example>Y6b1hf2a-80e2-xyz2-qwer3h-3a7c3a8as4b7f</example>
+    [UIHint(nameof(AuthenticationMethod), "", ConnectionMethod.ArcManagedIdentityCrossTenant)]
+    public string TargetTenantId { get; set; }
+
+    /// <summary>
+    /// Target Client ID of Azure Tenant.
+    /// </summary>
+    /// <example>Y6b1hf2a-80e2-xyz2-qwer3h-3a7c3a8as4b7f</example>
+    [UIHint(nameof(AuthenticationMethod), "", ConnectionMethod.ArcManagedIdentityCrossTenant)]
+    public string TargetClientId { get; set; }
 }
