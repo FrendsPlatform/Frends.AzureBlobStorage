@@ -59,12 +59,16 @@ public class DeleteTest
     {
         var input = new Input
         {
-            BlobName = Guid.NewGuid().ToString(), ContainerName = "none", ConnectionString = _connectionString,
+            BlobName = Guid.NewGuid().ToString(),
+            ContainerName = "none",
+            ConnectionString = _connectionString
         };
 
         var options = new Options()
         {
-            SnapshotDeleteOption = default, VerifyETagWhenDeleting = default, ThrowErrorIfBlobDoesNotExists = false,
+            SnapshotDeleteOption = default,
+            VerifyETagWhenDeleting = default,
+            ThrowErrorIfBlobDoesNotExists = false,
         };
 
         var result = await AzureBlobStorage.DeleteBlob(input, options, default);
@@ -73,16 +77,44 @@ public class DeleteTest
     }
 
     [TestMethod]
+    public async Task DeleteBlobAsync_ThrowError_WithFlagEnabled()
+    {
+        var input = new Input
+        {
+            BlobName = Guid.NewGuid().ToString(),
+            ContainerName = "none",
+            ConnectionString = _connectionString,
+        };
+
+        var options = new Options
+        {
+            SnapshotDeleteOption = default,
+            VerifyETagWhenDeleting = default,
+            ThrowErrorIfBlobDoesNotExists = true,
+        };
+
+        var exception = await Assert.ThrowsExceptionAsync<Exception>(() =>
+            AzureBlobStorage.DeleteBlob(input, options, CancellationToken.None));
+
+        Assert.IsNotNull(exception);
+        Assert.IsTrue(exception.Message.Contains("An error occured while trying to delete blob"), exception.Message);
+    }
+
+    [TestMethod]
     public async Task DeleteBlobAsync_ConnectionString_BlobDoesNotExistsInfo()
     {
         var input = new Input
         {
-            BlobName = "none", ContainerName = _containerName, ConnectionString = _connectionString,
+            BlobName = "none",
+            ContainerName = _containerName,
+            ConnectionString = _connectionString,
         };
 
         var options = new Options()
         {
-            SnapshotDeleteOption = default, VerifyETagWhenDeleting = default, ThrowErrorIfBlobDoesNotExists = false,
+            SnapshotDeleteOption = default,
+            VerifyETagWhenDeleting = default,
+            ThrowErrorIfBlobDoesNotExists = false,
         };
 
         var result = await AzureBlobStorage.DeleteBlob(input, options, default);
@@ -106,7 +138,9 @@ public class DeleteTest
 
         var options = new Options()
         {
-            SnapshotDeleteOption = default, VerifyETagWhenDeleting = default, ThrowErrorIfBlobDoesNotExists = false,
+            SnapshotDeleteOption = default,
+            VerifyETagWhenDeleting = default,
+            ThrowErrorIfBlobDoesNotExists = false,
         };
 
         var result = await AzureBlobStorage.DeleteBlob(input, options, default);
@@ -127,7 +161,9 @@ public class DeleteTest
 
         var options = new Options()
         {
-            SnapshotDeleteOption = default, VerifyETagWhenDeleting = default, ThrowErrorIfBlobDoesNotExists = true,
+            SnapshotDeleteOption = default,
+            VerifyETagWhenDeleting = default,
+            ThrowErrorIfBlobDoesNotExists = true,
         };
 
         var result = await AzureBlobStorage.DeleteBlob(input, options, default);
