@@ -30,7 +30,7 @@ internal static class ConnectionHandler
         }
         catch (Exception ex)
         {
-            throw new ArgumentException("GetBlobClient error: ", ex);
+            throw new ArgumentException($"GetBlobClient error: {ex.Message}", ex);
         }
     }
 

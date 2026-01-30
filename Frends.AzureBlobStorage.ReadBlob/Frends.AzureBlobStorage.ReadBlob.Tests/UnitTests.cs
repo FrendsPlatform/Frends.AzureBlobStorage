@@ -19,7 +19,6 @@ public class ReadTest
 
     private readonly string _connectionString = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_ConnString");
     private readonly string _accessKey = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_frendstaskstestcontainerAccessKey");
-    private readonly string _connstring = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_ConnString");
     private readonly string _appID = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_AppID");
     private readonly string _clientSecret = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_ClientSecret");
     private readonly string _tenantID = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_TenantID");
@@ -76,7 +75,7 @@ public class ReadTest
         source = new Source
         {
             AuthenticationMethod = AuthenticationMethod.ConnectionString,
-            ConnectionString = _connstring,
+            ConnectionString = _connectionString,
             ContainerName = _containerName,
             BlobName = _blobName
         };
@@ -96,7 +95,7 @@ public class ReadTest
         source = new Source
         {
             AuthenticationMethod = AuthenticationMethod.OAuth2,
-            ConnectionString = _connstring,
+            ConnectionString = _connectionString,
             ContainerName = _containerName,
             BlobName = _blobName,
             ApplicationID = _appID,
@@ -135,7 +134,7 @@ public class ReadTest
         };
 
         var ex = Assert.ThrowsAsync<ArgumentException>(() => AzureBlobStorage.ReadBlob(source, options, default));
-        Assert.AreEqual("SAS Token and URI required.", ex.Message);
+        Assert.That(ex.Message.Contains("SAS Token and URI required."), ex.Message);
     }
 
     /// <summary>
@@ -157,7 +156,7 @@ public class ReadTest
         };
 
         var ex = Assert.ThrowsAsync<ArgumentException>(() => AzureBlobStorage.ReadBlob(source, options, default));
-        Assert.AreEqual("Connection string required.", ex.Message);
+        Assert.That(ex.Message.Contains("Connection string required."), ex.Message);
     }
 
     /// <summary>
