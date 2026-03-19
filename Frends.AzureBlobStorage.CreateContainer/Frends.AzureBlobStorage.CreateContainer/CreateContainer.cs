@@ -5,6 +5,9 @@ using System.ComponentModel;
 using Frends.AzureBlobStorage.CreateContainer.Definitions;
 using Azure.Storage.Blobs.Models;
 using Frends.AzureBlobStorage.CreateContainer.Helpers;
+using Frends.AzureBlobStorage.Toolkit.Handlers;
+using Frends.Common.Toolkit.Handlers;
+using ErrorHandler = Frends.AzureBlobStorage.CreateContainer.Helpers.ErrorHandler;
 
 namespace Frends.AzureBlobStorage.CreateContainer;
 
@@ -27,6 +30,8 @@ public static class AzureBlobStorage
     {
         try
         {
+            ValidationHandler.Run(input, connection);
+
             var container = ConnectionHandler.GetBlobContainerClient(connection, input, cancellationToken);
             await container.CreateIfNotExistsAsync(PublicAccessType.None, null, null, cancellationToken);
 

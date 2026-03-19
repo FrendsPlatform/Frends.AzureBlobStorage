@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net6.0</TargetFramework>
-        <Version>1.5.0</Version>
+        <TargetFramework>net8.0</TargetFramework>
+        <Version>1.5.1</Version>
         <Authors>Frends</Authors>
         <Copyright>Frends</Copyright>
         <Company>Frends</Company>
@@ -24,6 +24,14 @@
     <ItemGroup>
         <PackageReference Include="Azure.Identity" Version="1.17.1"/>
         <PackageReference Include="Azure.Storage.Blobs" Version="12.27.0"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Helpers\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\Frends.AzureBlobStorage.Toolkit\Frends.AzureBlobStorage.Toolkit\Frends.AzureBlobStorage.Toolkit.csproj" />
     </ItemGroup>
 </Project>
 

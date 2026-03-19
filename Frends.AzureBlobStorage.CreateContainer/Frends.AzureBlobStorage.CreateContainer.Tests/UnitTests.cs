@@ -5,6 +5,9 @@ using System;
 using System.Globalization;
 using System.Threading.Tasks;
 using System.Threading;
+using Frends.AzureBlobStorage.Toolkit.Definitions;
+using Connection = Frends.AzureBlobStorage.CreateContainer.Definitions.Connection;
+using Input = Frends.AzureBlobStorage.CreateContainer.Definitions.Input;
 
 namespace Frends.AzureBlobStorage.CreateContainer.Tests;
 

@@ -4,13 +4,18 @@ using System.Threading;
 using Azure.Core;
 using Azure.Identity;
 using Azure.Storage.Blobs;
-using Frends.AzureBlobStorage.CreateContainer.Definitions;
+using Frends.AzureBlobStorage.Toolkit.Definitions;
 
-namespace Frends.AzureBlobStorage.CreateContainer.Helpers;
+namespace Frends.AzureBlobStorage.Toolkit.Handlers;
 
-internal static class ConnectionHandler
+
+public static class ConnectionHandler
 {
-    internal static BlobContainerClient GetBlobContainerClient(Connection connection, Input input,
+    public static BlobClient GetBlobClient(BlobContainerClient blobContainerClient, string blobName)
+    {
+        return blobContainerClient.GetBlobClient(blobName);
+    }
+    public static BlobContainerClient GetBlobContainerClient(Connection connection, Input input,
         CancellationToken cancellationToken)
     {
         try
@@ -36,7 +41,6 @@ internal static class ConnectionHandler
     private static BlobContainerClient GetClientWithConnectionString(Connection connection, Input input)
     {
         var blobServiceClient = new BlobServiceClient(connection.ConnectionString);
-
         return blobServiceClient.GetBlobContainerClient(input.ContainerName);
     }
 

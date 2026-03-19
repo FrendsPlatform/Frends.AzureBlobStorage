@@ -1,4 +1,4 @@
-namespace Frends.AzureBlobStorage.CreateContainer.Definitions;
+namespace Frends.AzureBlobStorage.DeleteBlob.Definitions;
 
 /// <summary>
 /// Connection parameters

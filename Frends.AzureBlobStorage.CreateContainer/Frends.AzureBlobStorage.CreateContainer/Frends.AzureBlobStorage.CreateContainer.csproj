@@ -31,4 +31,8 @@
         <Content Include="migration.json" PackagePath="/" Pack="true"/>
         <Content Include="../CHANGELOG.md" PackagePath="/" Pack="true"/>
     </ItemGroup>
+    <ItemGroup>
+      <ProjectReference Include="..\..\..\FrendsTasks\Frends.Common.Toolkit\Frends.Common.Toolkit\Frends.Common.Toolkit.csproj" />
+      <ProjectReference Include="..\..\Frends.AzureBlobStorage.Toolkit\Frends.AzureBlobStorage.Toolkit\Frends.AzureBlobStorage.Toolkit.csproj" />
+    </ItemGroup>
 </Project>
