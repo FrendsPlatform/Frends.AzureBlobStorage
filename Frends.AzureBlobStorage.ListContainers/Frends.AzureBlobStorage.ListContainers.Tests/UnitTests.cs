@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Azure.Storage.Blobs;
 using Frends.AzureBlobStorage.ListContainers.Definitions;
+using Frends.AzureBlobStorage.Toolkit.Definitions;
 using NUnit.Framework;
 
 namespace Frends.AzureBlobStorage.ListContainers.Tests;
@@ -16,7 +17,7 @@ public class ListContainersTests
     private readonly string appID = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_AppID");
     private readonly string clientSecret = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_ClientSecret");
     private readonly string tenantID = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_TenantID");
-    private readonly string uri = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_Uri");
+    private const string storageAccount = "stataskdevelopment";
     private readonly string sasToken = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_SASToken");
 
     private Connection connection;
@@ -31,11 +32,11 @@ public class ListContainersTests
 
         connection = new Connection
         {
-            ConnectionMethod = ConnectionMethod.ConnectionString,
+            AuthenticationMethod = ConnectionMethod.ConnectionString,
             ConnectionString = connectionString,
             TenantId = tenantID,
             ApplicationId = appID,
-            Uri = uri,
+            StorageAccountName = storageAccount,
             SasToken = sasToken,
             ClientSecret = clientSecret,
         };
@@ -78,19 +79,19 @@ public class ListContainersTests
     public async Task ListContainers_ShouldWork_WithAllConnectionMethods()
     {
         // Connection String
-        connection.ConnectionMethod = ConnectionMethod.ConnectionString;
+        connection.AuthenticationMethod = ConnectionMethod.ConnectionString;
         var result = await AzureBlobStorage.ListContainers(input, connection, options, CancellationToken.None);
         Assert.That(result.Success, Is.True);
         Assert.That(result.Containers.Count > 0, Is.True);
 
         // SAS Token
-        connection.ConnectionMethod = ConnectionMethod.SasToken;
+        connection.AuthenticationMethod = ConnectionMethod.SasToken;
         result = await AzureBlobStorage.ListContainers(input, connection, options, CancellationToken.None);
         Assert.That(result.Success, Is.True);
         Assert.That(result.Containers.Count > 0, Is.True);
 
         // OAuth2
-        connection.ConnectionMethod = ConnectionMethod.OAuth2;
+        connection.AuthenticationMethod = ConnectionMethod.OAuth2;
         result = await AzureBlobStorage.ListContainers(input, connection, options, CancellationToken.None);
         Assert.That(result.Success, Is.True);
         Assert.That(result.Containers.Count > 0, Is.True);
@@ -99,7 +100,7 @@ public class ListContainersTests
     [Test]
     public async Task ListContainers_ShouldFail_WithInvalidConnectionString()
     {
-        connection.ConnectionMethod = ConnectionMethod.ConnectionString;
+        connection.AuthenticationMethod = ConnectionMethod.ConnectionString;
         connection.ConnectionString = "InvalidConnectionString";
 
         options.ThrowErrorOnFailure = false;
@@ -112,7 +113,7 @@ public class ListContainersTests
     [Test]
     public void ListContainers_ShouldThrow_WithMissingSasToken()
     {
-        connection.ConnectionMethod = ConnectionMethod.SasToken;
+        connection.AuthenticationMethod = ConnectionMethod.SasToken;
         connection.SasToken = string.Empty;
 
         Assert.ThrowsAsync<Exception>(

@@ -19,6 +19,8 @@
     <ItemGroup>
         <PackageReference Include="Azure.Identity" Version="1.17.1"/>
         <PackageReference Include="Azure.Storage.Blobs" Version="12.27.0"/>
+        <PackageReference Include="Frends.AzureBlobStorage.Toolkit" Version="1.0.0" />
+        <PackageReference Include="Frends.Common.Toolkit" Version="1.0.0" />
         <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
