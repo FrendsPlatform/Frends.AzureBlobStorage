@@ -6,8 +6,6 @@ using System.Globalization;
 using System.Threading.Tasks;
 using System.Threading;
 using Frends.AzureBlobStorage.Toolkit.Definitions;
-using Connection = Frends.AzureBlobStorage.CreateContainer.Definitions.Connection;
-using Input = Frends.AzureBlobStorage.CreateContainer.Definitions.Input;
 
 namespace Frends.AzureBlobStorage.CreateContainer.Tests;
 
@@ -45,13 +43,19 @@ public class UnitTests
     [TestMethod]
     public async Task TestCreateContainer()
     {
-        var input = new Input { ContainerName = _containerName };
+        var input = new Input
+        {
+            ContainerName = _containerName
+        };
         var connection = new Connection
         {
             AuthenticationMethod = ConnectionMethod.ConnectionString,
             ConnectionString = _connectionString
         };
-        var options = new Options { ThrowErrorOnFailure = true };
+        var options = new Options
+        {
+            ThrowErrorOnFailure = true
+        };
         var result = await AzureBlobStorage.CreateContainer(input, connection, options, CancellationToken.None);
         Assert.IsNotNull(result);
         Assert.AreEqual(new BlobClient(_connectionString, _containerName, "").Uri.ToString(), result.Uri);
@@ -65,13 +69,19 @@ public class UnitTests
     [ExpectedException(typeof(Exception))]
     public async Task TestCreateContainer_throws_ParameterNotValid(string conString)
     {
-        var input = new Input { ContainerName = "Valid name" };
+        var input = new Input
+        {
+            ContainerName = "Valid name"
+        };
         var connection = new Connection
         {
             AuthenticationMethod = ConnectionMethod.ConnectionString,
             ConnectionString = conString
         };
-        var options = new Options { ThrowErrorOnFailure = true };
+        var options = new Options
+        {
+            ThrowErrorOnFailure = true
+        };
         await AzureBlobStorage.CreateContainer(input, connection, options, CancellationToken.None);
     }
 
@@ -79,14 +89,20 @@ public class UnitTests
     [ExpectedException(typeof(Exception))]
     public async Task TestCreateContainer_throws_ClientNotFound()
     {
-        var input = new Input { ContainerName = _containerName };
+        var input = new Input
+        {
+            ContainerName = _containerName
+        };
         var connection = new Connection
         {
             AuthenticationMethod = ConnectionMethod.ConnectionString,
             ConnectionString =
                 "DefaultEndpointsProtocol=https;AccountName=unitTestStorage;AccountKey=abcdefghijklmnopqrstuyxz123456789;EndpointSuffix=core.windows.net"
         };
-        var options = new Options { ThrowErrorOnFailure = true };
+        var options = new Options
+        {
+            ThrowErrorOnFailure = true
+        };
         await AzureBlobStorage.CreateContainer(input, connection, options, CancellationToken.None);
     }
 
@@ -109,7 +125,10 @@ public class UnitTests
             ClientSecret = _clientSecret
         };
 
-        var options = new Options { ThrowErrorOnFailure = true };
+        var options = new Options
+        {
+            ThrowErrorOnFailure = true
+        };
         var result = await AzureBlobStorage.CreateContainer(_input, _connection, options, CancellationToken.None);
         Assert.IsTrue(result.Success);
         Assert.IsNull(result.Error);
@@ -123,13 +142,20 @@ public class UnitTests
     [TestMethod]
     public async Task TestCreateContainer_ThrowErrorOnFailure_False()
     {
-        var input = new Input { ContainerName = "Valid name" };
+        var input = new Input
+        {
+            ContainerName = "Valid name"
+        };
         var connection = new Connection
         {
             AuthenticationMethod = ConnectionMethod.ConnectionString,
             ConnectionString = "Not valid parameter"
         };
-        var options = new Options { ThrowErrorOnFailure = false, ErrorMessageOnFailure = "Custom error message" };
+        var options = new Options
+        {
+            ThrowErrorOnFailure = false,
+            ErrorMessageOnFailure = "Custom error message"
+        };
 
         var result = await AzureBlobStorage.CreateContainer(input, connection, options, CancellationToken.None);
 
@@ -144,13 +170,20 @@ public class UnitTests
     [ExpectedException(typeof(Exception))]
     public async Task TestCreateContainer_ThrowErrorOnFailure_True()
     {
-        var input = new Input { ContainerName = "Valid name" };
+        var input = new Input
+        {
+            ContainerName = "Valid name"
+        };
         var connection = new Connection
         {
             AuthenticationMethod = ConnectionMethod.ConnectionString,
             ConnectionString = "Not valid parameter"
         };
-        var options = new Options { ThrowErrorOnFailure = true, ErrorMessageOnFailure = "Custom error message" };
+        var options = new Options
+        {
+            ThrowErrorOnFailure = true,
+            ErrorMessageOnFailure = "Custom error message"
+        };
 
         await AzureBlobStorage.CreateContainer(input, connection, options, CancellationToken.None);
     }

@@ -1,6 +1,0 @@
-namespace Frends.AzureBlobStorage.CreateContainer.Definitions;
-
-/// <summary>
-/// Connection parameters
-/// </summary>
-public class Connection : Toolkit.Definitions.Connection;

@@ -4,10 +4,11 @@ using System.Threading.Tasks;
 using System.ComponentModel;
 using Frends.AzureBlobStorage.CreateContainer.Definitions;
 using Azure.Storage.Blobs.Models;
-using Frends.AzureBlobStorage.CreateContainer.Helpers;
+using Frends.AzureBlobStorage.Toolkit.Definitions;
 using Frends.AzureBlobStorage.Toolkit.Handlers;
 using Frends.Common.Toolkit.Handlers;
 using ErrorHandler = Frends.AzureBlobStorage.CreateContainer.Helpers.ErrorHandler;
+using Input = Frends.AzureBlobStorage.CreateContainer.Definitions.Input;
 
 namespace Frends.AzureBlobStorage.CreateContainer;
 
@@ -32,10 +33,15 @@ public static class AzureBlobStorage
         {
             ValidationHandler.Run(input, connection);
 
-            var container = ConnectionHandler.GetBlobContainerClient(connection, input, cancellationToken);
+            var container =
+                ConnectionHandler.GetBlobContainerClient(connection, input.ContainerName, cancellationToken);
             await container.CreateIfNotExistsAsync(PublicAccessType.None, null, null, cancellationToken);
 
-            return new Result { Success = true, Uri = container.Uri.ToString(), };
+            return new Result
+            {
+                Success = true,
+                Uri = container.Uri.ToString(),
+            };
         }
         catch (Exception e) when (e is not OperationCanceledException)
         {
