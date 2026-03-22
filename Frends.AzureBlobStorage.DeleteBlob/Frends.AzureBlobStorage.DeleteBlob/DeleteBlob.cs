@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Frends.AzureBlobStorage.DeleteBlob.Definitions;
 using Frends.AzureBlobStorage.Toolkit.Definitions;
 using Frends.AzureBlobStorage.Toolkit.Handlers;
+using Frends.Common.Toolkit.Handlers;
 
 namespace Frends.AzureBlobStorage.DeleteBlob;
 
@@ -29,7 +30,9 @@ public static class AzureBlobStorage
     {
         try
         {
-            var blob = ConnectionHandler.GetBlobClient(connection, input.ContainerName, input.BlobName, cancellationToken);
+            ValidationHandler.Run(input, connection);
+            var blob = ConnectionHandler.GetBlobClient(connection, input.ContainerName, input.BlobName,
+                cancellationToken);
 
             if (!await blob.ExistsAsync(cancellationToken) && !options.ThrowErrorIfBlobDoesNotExists)
                 return new Result(false, $"Blob {input.BlobName} doesn't exist in container {input.ContainerName}.");
@@ -38,7 +41,10 @@ public static class AzureBlobStorage
                 throw new Exception($"Blob {input.BlobName} doesn't exist in container {input.ContainerName}.");
 
             var accessCondition = string.IsNullOrWhiteSpace(options.VerifyETagWhenDeleting)
-                ? new BlobRequestConditions { IfMatch = new Azure.ETag(options.VerifyETagWhenDeleting) }
+                ? new BlobRequestConditions
+                {
+                    IfMatch = new Azure.ETag(options.VerifyETagWhenDeleting)
+                }
                 : null;
 
             var result = await blob.DeleteIfExistsAsync(
