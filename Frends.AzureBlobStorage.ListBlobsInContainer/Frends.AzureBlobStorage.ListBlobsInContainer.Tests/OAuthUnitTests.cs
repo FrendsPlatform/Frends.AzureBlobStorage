@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using Frends.AzureBlobStorage.Toolkit.Definitions;
 
 namespace Frends.AzureBlobStorage.ListBlobsInContainer.Tests;
 
@@ -13,11 +14,16 @@ namespace Frends.AzureBlobStorage.ListBlobsInContainer.Tests;
 public class OAuthUnitTests
 {
     private readonly string _connstring = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_ConnString");
-    private readonly string _containerName = $"test-container{DateTime.Now.ToString("mmssffffff", CultureInfo.InvariantCulture)}";
+
+    private readonly string _containerName =
+        $"test-container{DateTime.Now.ToString("mmssffffff", CultureInfo.InvariantCulture)}";
+
     private readonly string _appID = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_AppID");
     private readonly string _tenantID = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_TenantID");
     private readonly string _clientSecret = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_ClientSecret");
-    private readonly string _storageaccount = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_StorageAccount");
+
+    private readonly string _storageaccount =
+        Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_StorageAccount");
 
     [TestInitialize]
     public async Task Init()
@@ -34,16 +40,24 @@ public class OAuthUnitTests
     [TestMethod]
     public async Task ListBlob_OAuth_ListingStructures()
     {
-        var listing = new List<ListingStructure>() { ListingStructure.Flat, ListingStructure.Hierarchical };
+        var listing = new List<ListingStructure>()
+        {
+            ListingStructure.Flat,
+            ListingStructure.Hierarchical
+        };
 
         var source = new Source
         {
-            AuthenticationMethod = AuthenticationMethod.OAuth2,
-            ApplicationID = _appID,
-            TenantID = _tenantID,
-            ClientSecret = _clientSecret,
-            URI = $"https://{_storageaccount}.blob.core.windows.net",
             ContainerName = _containerName,
+        };
+
+        var connection = new Connection
+        {
+            AuthenticationMethod = ConnectionMethod.OAuth2,
+            ApplicationId = _appID,
+            TenantId = _tenantID,
+            ClientSecret = _clientSecret,
+            StorageAccountName = _storageaccount,
         };
 
         foreach (var structure in listing)
@@ -54,7 +68,7 @@ public class OAuthUnitTests
                 ListingStructure = structure
             };
 
-            var result = await AzureBlobStorage.ListBlobsInContainer(source, options, default);
+            var result = await AzureBlobStorage.ListBlobsInContainer(source, connection, options, default);
 
             if (structure is ListingStructure.Flat)
             {
@@ -81,16 +95,24 @@ public class OAuthUnitTests
     [TestMethod]
     public async Task ListBlob_OAuth_Prefix()
     {
-        var listing = new List<ListingStructure>() { ListingStructure.Flat, ListingStructure.Hierarchical };
+        var listing = new List<ListingStructure>()
+        {
+            ListingStructure.Flat,
+            ListingStructure.Hierarchical
+        };
 
         var source = new Source
         {
-            AuthenticationMethod = AuthenticationMethod.OAuth2,
-            ApplicationID = _appID,
-            TenantID = _tenantID,
-            ClientSecret = _clientSecret,
-            URI = $"https://{_storageaccount}.blob.core.windows.net",
             ContainerName = _containerName,
+        };
+
+        var connection = new Connection
+        {
+            AuthenticationMethod = ConnectionMethod.OAuth2,
+            ApplicationId = _appID,
+            TenantId = _tenantID,
+            ClientSecret = _clientSecret,
+            StorageAccountName = _storageaccount,
         };
 
         foreach (var structure in listing)
@@ -101,7 +123,7 @@ public class OAuthUnitTests
                 ListingStructure = structure
             };
 
-            var result = await AzureBlobStorage.ListBlobsInContainer(source, options, default);
+            var result = await AzureBlobStorage.ListBlobsInContainer(source, connection, options, default);
 
             Assert.IsFalse(result.BlobList.Any(x => x.Name == "Temp/SubFolderFile"));
             Assert.IsFalse(result.BlobList.Any(x => x.Name == "Temp/SubFolderFile2"));

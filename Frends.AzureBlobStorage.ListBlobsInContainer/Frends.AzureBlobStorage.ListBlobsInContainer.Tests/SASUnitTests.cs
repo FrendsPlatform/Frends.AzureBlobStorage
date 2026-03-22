@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using Frends.AzureBlobStorage.Toolkit.Definitions;
 
 
 namespace Frends.AzureBlobStorage.ListBlobsInContainer.Tests;
@@ -15,10 +16,16 @@ namespace Frends.AzureBlobStorage.ListBlobsInContainer.Tests;
 [TestClass]
 public class SASUnitTests
 {
-    private readonly string _accessKey = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_frendstaskstestcontainerAccessKey");
+    private readonly string _accessKey =
+        Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_frendstaskstestcontainerAccessKey");
+
     private readonly string _connstring = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_ConnString");
-    private readonly string _containerName = $"test-container{DateTime.Now.ToString("mmssffffff", CultureInfo.InvariantCulture)}";
-    private readonly string _storageaccount = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_StorageAccount");
+
+    private readonly string _containerName =
+        $"test-container{DateTime.Now.ToString("mmssffffff", CultureInfo.InvariantCulture)}";
+
+    private readonly string _storageaccount =
+        Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_StorageAccount");
 
     [TestInitialize]
     public async Task Init()
@@ -37,10 +44,14 @@ public class SASUnitTests
     {
         var source = new Source
         {
-            AuthenticationMethod = AuthenticationMethod.SASToken,
-            URI = $"https://{_storageaccount}.blob.core.windows.net",
-            SASToken = "",
             ContainerName = _containerName,
+        };
+
+        var connection = new Connection
+        {
+            AuthenticationMethod = ConnectionMethod.SasToken,
+            SasToken = string.Empty,
+            StorageAccountName = _storageaccount,
         };
 
         var options = new Options
@@ -49,21 +60,30 @@ public class SASUnitTests
             ListingStructure = ListingStructure.Flat,
         };
 
-        var ex = await Assert.ThrowsExceptionAsync<ArgumentException>(async () => await AzureBlobStorage.ListBlobsInContainer(source, options, default));
+        var ex = await Assert.ThrowsExceptionAsync<ArgumentException>(async () =>
+            await AzureBlobStorage.ListBlobsInContainer(source, connection, options, default));
         Assert.AreEqual("SAS Token and URI required.", ex.InnerException.Message);
     }
 
     [TestMethod]
     public async Task ListBlobUnitTest_SAS_ListingStructures()
     {
-        var listing = new List<ListingStructure>() { ListingStructure.Flat, ListingStructure.Hierarchical };
+        var listing = new List<ListingStructure>()
+        {
+            ListingStructure.Flat,
+            ListingStructure.Hierarchical
+        };
 
         var source = new Source
         {
-            AuthenticationMethod = AuthenticationMethod.SASToken,
-            URI = $"https://{_storageaccount}.blob.core.windows.net",
-            SASToken = GenerateSASToken(),
             ContainerName = _containerName
+        };
+
+        var connection = new Connection
+        {
+            AuthenticationMethod = ConnectionMethod.SasToken,
+            SasToken = GenerateSASToken(),
+            StorageAccountName = _storageaccount,
         };
 
         foreach (var structure in listing)
@@ -74,7 +94,7 @@ public class SASUnitTests
                 ListingStructure = structure
             };
 
-            var result = await AzureBlobStorage.ListBlobsInContainer(source, options, default);
+            var result = await AzureBlobStorage.ListBlobsInContainer(source, connection, options, default);
 
             if (structure is ListingStructure.Flat)
             {
@@ -101,15 +121,24 @@ public class SASUnitTests
     [TestMethod]
     public async Task ListBlob_SAS_Prefix()
     {
-        var listing = new List<ListingStructure>() { ListingStructure.Flat, ListingStructure.Hierarchical };
+        var listing = new List<ListingStructure>()
+        {
+            ListingStructure.Flat,
+            ListingStructure.Hierarchical
+        };
 
         var source = new Source
         {
-            AuthenticationMethod = AuthenticationMethod.SASToken,
-            URI = $"https://{_storageaccount}.blob.core.windows.net",
-            SASToken = GenerateSASToken(),
             ContainerName = _containerName,
         };
+
+        var connection = new Connection
+        {
+            AuthenticationMethod = ConnectionMethod.SasToken,
+            SasToken = GenerateSASToken(),
+            StorageAccountName = _storageaccount,
+        };
+
 
         foreach (var structure in listing)
         {
@@ -119,7 +148,7 @@ public class SASUnitTests
                 ListingStructure = structure
             };
 
-            var result = await AzureBlobStorage.ListBlobsInContainer(source, options, default);
+            var result = await AzureBlobStorage.ListBlobsInContainer(source, connection, options, default);
 
             Assert.IsFalse(result.BlobList.Any(x => x.Name == "Temp/SubFolderFile"));
             Assert.IsFalse(result.BlobList.Any(x => x.Name == "Temp/SubFolderFile2"));
@@ -146,7 +175,8 @@ public class SASUnitTests
         };
 
         blobSasBuilder.SetPermissions(BlobContainerSasPermissions.List);
-        var sasToken = blobSasBuilder.ToSasQueryParameters(new StorageSharedKeyCredential(_storageaccount, _accessKey)).ToString();
+        var sasToken = blobSasBuilder.ToSasQueryParameters(new StorageSharedKeyCredential(_storageaccount, _accessKey))
+            .ToString();
 
         return sasToken;
     }
