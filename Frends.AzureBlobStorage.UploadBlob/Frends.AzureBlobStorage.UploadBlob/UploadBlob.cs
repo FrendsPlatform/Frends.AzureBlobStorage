@@ -17,6 +17,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Frends.AzureBlobStorage.Toolkit.Definitions;
 using Frends.AzureBlobStorage.Toolkit.Handlers;
+using Frends.Common.Toolkit.Handlers;
 
 namespace Frends.AzureBlobStorage.UploadBlob;
 
@@ -46,6 +47,7 @@ public static class AzureBlobStorage
 
         try
         {
+            ValidationHandler.Run(input, connection);
             CheckParameters(input);
             var blobName = string.Empty;
 
