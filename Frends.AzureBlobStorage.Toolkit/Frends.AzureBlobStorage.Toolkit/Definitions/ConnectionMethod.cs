@@ -5,10 +5,11 @@ namespace Frends.AzureBlobStorage.Toolkit.Definitions;
 /// </summary>
 public enum ConnectionMethod
 {
-#pragma warning disable CS1591 // self explanatory
+#pragma warning disable SA1602 // self explanatory
     ConnectionString,
     OAuth2,
+    SasToken,
     ArcManagedIdentity,
     ArcManagedIdentityCrossTenant,
-#pragma warning restore CS1591 // self explanatory
+#pragma warning restore SA1602 // self explanatory
 }

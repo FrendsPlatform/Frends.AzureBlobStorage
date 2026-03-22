@@ -2,16 +2,26 @@
 
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
+        <Version>1.0.0</Version>
+        <Authors>Frends</Authors>
+        <Description>Toolkit for Azure Blob Storage Frends tasks.</Description>
+        <RepositoryUrl>https://github.com/FrendsPlatform/Frends.AzureBlobStorage/tree/main/Frends.AzureBlobStorage.Toolkit</RepositoryUrl>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <Nullable>disable</Nullable>
+        <NoWarn>
+            CS1591, <!-- StyleCop SA1602 already enforces documentation for enum members -->
+        </NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
       <PackageReference Include="Azure.Identity" Version="1.17.1" />
       <PackageReference Include="Azure.Storage.Blobs" Version="12.27.0" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\..\..\FrendsTasks\Frends.Common.Toolkit\Frends.Common.Toolkit\Frends.Common.Toolkit.csproj" />
+      <PackageReference Include="Frends.Common.Toolkit" Version="1.0.0" />
     </ItemGroup>
 
 </Project>
