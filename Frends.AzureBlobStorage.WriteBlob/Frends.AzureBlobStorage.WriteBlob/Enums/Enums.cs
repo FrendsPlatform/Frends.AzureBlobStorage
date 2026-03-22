@@ -33,37 +33,6 @@ public enum HandleExistingFile
 }
 
 /// <summary>
-/// Connection methods.
-/// </summary>
-public enum ConnectionMethod
-{
-    /// <summary>
-    /// Authenticate with connectiong string.
-    /// </summary>
-    ConnectionString,
-
-    /// <summary>
-    /// Authenticate with SAS Token. Requires Storage URI.
-    /// </summary>
-    SASToken,
-
-    /// <summary>
-    /// OAuth2.
-    /// </summary>
-    OAuth2,
-
-    /// <summary>
-    /// Managed Identity.
-    /// </summary>
-    ArcManagedIdentity,
-
-    /// <summary>
-    /// Managed Identity for cross-tenant.
-    /// </summary>
-    ArcManagedIdentityCrossTenant,
-}
-
-/// <summary>
 /// Content encoding.
 /// </summary>
 public enum FileEncoding
