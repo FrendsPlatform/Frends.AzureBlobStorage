@@ -7,7 +7,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Frends.AzureBlobStorage.Toolkit" Version="1.0.0" />
         <PackageReference Include="MSTest.TestAdapter" Version="2.1.2"/>
         <PackageReference Include="MSTest.TestFramework" Version="2.1.2"/>
         <PackageReference Include="nunit" Version="3.12.0"/>
