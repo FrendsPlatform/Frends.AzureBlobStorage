@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using Frends.Common.Toolkit.Attributes;
 
 namespace Frends.AzureBlobStorage.UploadBlob.Definitions;
 
@@ -8,6 +9,15 @@ namespace Frends.AzureBlobStorage.UploadBlob.Definitions;
 /// </summary>
 public class Input
 {
+    /// <summary>
+    /// Name of the Azure Blob Storage container.
+    /// Task will convert all letters to lowercase.
+    /// </summary>
+    /// <example>examplecontainer</example>
+    [DisplayFormat(DataFormatString = "Text")]
+    [NotEmptyString]
+    public string ContainerName { get; set; }
+
     /// <summary>
     /// Source type.
     /// </summary>
@@ -24,7 +34,7 @@ public class Input
     public string SourceDirectory { get; set; }
 
     /// <summary>
-    /// The search string is used to match against the names of files in the path. 
+    /// The search string is used to match against the names of files in the path.
     /// This parameter can contain a combination of valid literal path and wildcard (* and ?) characters, but it doesn't support regular expressions
     /// </summary>
     /// <example>*.*, Search*.*, *.xml</example>

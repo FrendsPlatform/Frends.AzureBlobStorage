@@ -15,14 +15,15 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Frends.AzureBlobStorage.UploadBlob.Helpers;
+using Frends.AzureBlobStorage.Toolkit.Definitions;
+using Frends.AzureBlobStorage.Toolkit.Handlers;
 
 namespace Frends.AzureBlobStorage.UploadBlob;
 
 /// <summary>
 /// Azure Blob Storage Task.
 /// </summary>
-public class AzureBlobStorage
+public static class AzureBlobStorage
 {
     private const int StreamBufferSize = 81920;
 
@@ -45,13 +46,13 @@ public class AzureBlobStorage
 
         try
         {
-            CheckParameters(input, connection);
+            CheckParameters(input);
             var blobName = string.Empty;
 
-            if (connection.CreateContainerIfItDoesNotExist &&
-                (connection.ConnectionMethod is ConnectionMethod.ConnectionString ||
-                 connection.ConnectionMethod is ConnectionMethod.OAuth2))
-                await CreateContainerIfItDoesNotExist(connection, connection.ContainerName.ToLower(),
+            if (options.CreateContainerIfItDoesNotExist &&
+                (connection.AuthenticationMethod is ConnectionMethod.ConnectionString ||
+                 connection.AuthenticationMethod is ConnectionMethod.OAuth2))
+                await CreateContainerIfItDoesNotExist(connection, input.ContainerName.ToLower(),
                     cancellationToken);
 
             switch (input.SourceType)
@@ -161,7 +162,8 @@ public class AzureBlobStorage
                 try
                 {
                     var appendBlobClient =
-                        (AppendBlobClient)ConnectionHandler.GetBlobClient(connection, options, blobName,
+                        (AppendBlobClient)ConnectionHandler.GetBlobBaseClient(connection, input.ContainerName,
+                            input.BlobName, options.BlobType,
                             cancellationToken);
                     var exists = false;
                     exists = await appendBlobClient.ExistsAsync(cancellationToken);
@@ -216,7 +218,8 @@ public class AzureBlobStorage
                 try
                 {
                     BlobClient blobClient =
-                        (BlobClient)ConnectionHandler.GetBlobClient(connection, options, blobName, cancellationToken);
+                        (BlobClient)ConnectionHandler.GetBlobBaseClient(connection, input.ContainerName, input.BlobName,
+                            options.BlobType, cancellationToken);
                     var exists = await blobClient.ExistsAsync(cancellationToken);
 
                     if (exists.Value && input.ActionOnExistingFile is OnExistingFile.Throw)
@@ -229,9 +232,17 @@ public class AzureBlobStorage
 
                     var blobUploadOptions = new BlobUploadOptions
                     {
-                        Conditions = overwrite ? null : new BlobRequestConditions { IfNoneMatch = new ETag("*") },
+                        Conditions = overwrite
+                            ? null
+                            : new BlobRequestConditions
+                            {
+                                IfNoneMatch = new ETag("*")
+                            },
                         TransferOptions =
-                            new StorageTransferOptions { MaximumConcurrency = options.ParallelOperations },
+                            new StorageTransferOptions
+                            {
+                                MaximumConcurrency = options.ParallelOperations
+                            },
                         HttpHeaders =
                             new BlobHttpHeaders
                             {
@@ -272,8 +283,8 @@ public class AzureBlobStorage
                 try
                 {
                     PageBlobClient pageBlobClient =
-                        (PageBlobClient)ConnectionHandler.GetBlobClient(connection, options, blobName,
-                            cancellationToken);
+                        (PageBlobClient)ConnectionHandler.GetBlobBaseClient(connection, input.ContainerName,
+                            input.BlobName, options.BlobType, cancellationToken);
                     var origSize = 0;
                     var exists = false;
                     exists = await pageBlobClient.ExistsAsync(cancellationToken);
@@ -377,26 +388,7 @@ public class AzureBlobStorage
     {
         try
         {
-            BlobServiceClient blobServiceClient;
-
-            if (connection.ConnectionMethod is ConnectionMethod.ConnectionString)
-            {
-                blobServiceClient = new BlobServiceClient(connection.ConnectionString);
-            }
-            else if (connection.ConnectionMethod is ConnectionMethod.SasToken)
-            {
-                var serviceURI = new Uri($"{connection.Uri}");
-                blobServiceClient = new BlobServiceClient(serviceURI, new AzureSasCredential(connection.SasToken));
-            }
-            else
-            {
-                var serviceURI = new Uri($"{connection.Uri}");
-                var credentials = new ClientSecretCredential(connection.TenantId, connection.ApplicationId,
-                    connection.ClientSecret, new ClientSecretCredentialOptions());
-                blobServiceClient = new BlobServiceClient(serviceURI, credentials);
-            }
-
-            var container = blobServiceClient.GetBlobContainerClient(containerName);
+            var container = ConnectionHandler.GetBlobContainerClient(connection, containerName, cancellationToken);
             await container.CreateIfNotExistsAsync(PublicAccessType.None, null, null, cancellationToken);
         }
         catch (Exception ex)
@@ -431,7 +423,10 @@ public class AzureBlobStorage
                     while ((bytesRead = await file.ReadAsync(buffer, cancellationToken)) > 0)
                     {
                         var newArray = new Span<byte>(buffer, 0, bytesRead).ToArray();
-                        using Stream stream = new MemoryStream(newArray) { Position = 0 };
+                        using Stream stream = new MemoryStream(newArray)
+                        {
+                            Position = 0
+                        };
                         await ((AppendBlobClient)blobClient).AppendBlockAsync(stream,
                             cancellationToken: cancellationToken);
                     }
@@ -636,7 +631,7 @@ public class AzureBlobStorage
         };
     }
 
-    private static void CheckParameters(Input input, Connection connection)
+    private static void CheckParameters(Input input)
     {
         if (input.SourceType is UploadSourceType.Directory && !string.IsNullOrEmpty(input.SourceDirectory) &&
             !Directory.Exists(input.SourceDirectory))
@@ -649,29 +644,5 @@ public class AzureBlobStorage
             throw new Exception("Input.SourceFile value is empty.");
         if (input.SourceType is UploadSourceType.File && !File.Exists(input.SourceFile))
             throw new Exception("Input.SourceFile not found.");
-        if (connection.ConnectionMethod is ConnectionMethod.OAuth2 && (string.IsNullOrEmpty(connection.ApplicationId) ||
-                                                                       string.IsNullOrEmpty(connection.ClientSecret) ||
-                                                                       string.IsNullOrEmpty(connection.TenantId) ||
-                                                                       string.IsNullOrEmpty(connection.Uri)))
-            throw new Exception(
-                "Connection.Uri, Connection.ClientSecret, Connection.ApplicationId and Connection.TenantId parameters can't be empty when Connection.ConnectionMethod = OAuth2.");
-        if (connection.ConnectionMethod is ConnectionMethod.ConnectionString &&
-            string.IsNullOrEmpty(connection.ConnectionString))
-            throw new Exception(
-                "Connection.ConnectionString parameter can't be empty when Connection.ConnectionMethod = ConnectionString.");
-
-        if (connection.ConnectionMethod is ConnectionMethod.SasToken)
-        {
-            if (string.IsNullOrEmpty(connection.Uri) || string.IsNullOrEmpty(connection.SasToken))
-                throw new Exception(
-                    "Connection.SasToken and Connection.Uri parameters can't be empty when Connection.ConnectionMethod = SasToken.");
-            if (!Uri.TryCreate(connection.Uri, UriKind.Absolute, out _))
-                throw new Exception("Connection.Uri must be a valid absolute URI.");
-            if (!connection.SasToken.Contains("sig="))
-                throw new Exception("Connection.SasToken appears to be invalid. It should contain a signature.");
-        }
-
-        if (string.IsNullOrEmpty(connection.ContainerName))
-            throw new Exception("Connection.ContainerName parameter can't be empty.");
     }
 }
