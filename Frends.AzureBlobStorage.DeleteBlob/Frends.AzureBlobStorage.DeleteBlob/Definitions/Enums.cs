@@ -1,7 +1,7 @@
 ﻿namespace Frends.AzureBlobStorage.DeleteBlob.Definitions;
 
 /// <summary>
-/// Options for Blob spanshots.
+/// Options for Blob snapshots.
 /// </summary>
 public enum SnapshotDeleteOption
 {

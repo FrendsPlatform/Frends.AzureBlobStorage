@@ -24,14 +24,8 @@
     <ItemGroup>
         <PackageReference Include="Azure.Identity" Version="1.17.1"/>
         <PackageReference Include="Azure.Storage.Blobs" Version="12.27.0"/>
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Helpers\" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\..\Frends.AzureBlobStorage.Toolkit\Frends.AzureBlobStorage.Toolkit\Frends.AzureBlobStorage.Toolkit.csproj" />
+        <PackageReference Include="Frends.AzureBlobStorage.Toolkit" Version="1.0.0" />
+        <PackageReference Include="Frends.Common.Toolkit" Version="1.0.0" />
     </ItemGroup>
 </Project>
 

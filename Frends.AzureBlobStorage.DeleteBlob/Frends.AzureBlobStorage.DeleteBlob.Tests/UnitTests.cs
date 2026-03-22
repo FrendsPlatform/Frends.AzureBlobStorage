@@ -8,8 +8,6 @@ using Azure.Storage.Blobs.Models;
 using Frends.AzureBlobStorage.DeleteBlob.Definitions;
 using Frends.AzureBlobStorage.Toolkit.Definitions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Connection = Frends.AzureBlobStorage.DeleteBlob.Definitions.Connection;
-using Input = Frends.AzureBlobStorage.DeleteBlob.Definitions.Input;
 
 namespace Frends.AzureBlobStorage.DeleteBlob.Tests;
 
@@ -245,7 +243,6 @@ public class DeleteTest
         {
             BlobName = "testfile*",
             ContainerName = _containerName,
-
         };
 
         var connection = new Connection()

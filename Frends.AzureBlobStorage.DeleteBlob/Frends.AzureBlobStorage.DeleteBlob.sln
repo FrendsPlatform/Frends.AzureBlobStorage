@@ -16,10 +16,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Frends.AzureBlobStorage.Toolkit", "..\Frends.AzureBlobStorage.Toolkit\Frends.AzureBlobStorage.Toolkit\Frends.AzureBlobStorage.Toolkit.csproj", "{7E39EE58-AED7-4E42-9E88-94B0F3FD6B09}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Frends.Common.Toolkit", "..\..\FrendsTasks\Frends.Common.Toolkit\Frends.Common.Toolkit\Frends.Common.Toolkit.csproj", "{6CC7B140-6C54-40C9-AD3E-00B5C0EC905A}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -34,14 +30,6 @@ Global
 		{8CA92187-8E4F-4414-803B-EC899479022E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8CA92187-8E4F-4414-803B-EC899479022E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8CA92187-8E4F-4414-803B-EC899479022E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7E39EE58-AED7-4E42-9E88-94B0F3FD6B09}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7E39EE58-AED7-4E42-9E88-94B0F3FD6B09}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7E39EE58-AED7-4E42-9E88-94B0F3FD6B09}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7E39EE58-AED7-4E42-9E88-94B0F3FD6B09}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6CC7B140-6C54-40C9-AD3E-00B5C0EC905A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6CC7B140-6C54-40C9-AD3E-00B5C0EC905A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6CC7B140-6C54-40C9-AD3E-00B5C0EC905A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6CC7B140-6C54-40C9-AD3E-00B5C0EC905A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
