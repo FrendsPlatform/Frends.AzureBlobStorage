@@ -23,6 +23,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Frends.AzureBlobStorage.CreateContainer\Frends.AzureBlobStorage.CreateContainer.csproj"/>
+        <None Include=".env" CopyToOutputDirectory="PreserveNewest" Condition="Exists('.env')"/>
     </ItemGroup>
 
 </Project>

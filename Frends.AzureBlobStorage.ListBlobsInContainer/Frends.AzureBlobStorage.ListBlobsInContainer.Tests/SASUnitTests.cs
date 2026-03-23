@@ -5,10 +5,12 @@ using Frends.AzureBlobStorage.ListBlobsInContainer.Tests.lib;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Frends.AzureBlobStorage.Toolkit.Definitions;
+using Frends.AzureBlobStorage.Toolkit.Handlers;
 
 
 namespace Frends.AzureBlobStorage.ListBlobsInContainer.Tests;
@@ -16,27 +18,20 @@ namespace Frends.AzureBlobStorage.ListBlobsInContainer.Tests;
 [TestClass]
 public class SASUnitTests
 {
-    private readonly string _accessKey =
-        Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_frendstaskstestcontainerAccessKey");
-
-    private readonly string _connstring = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_ConnString");
-
     private readonly string _containerName =
         $"test-container{DateTime.Now.ToString("mmssffffff", CultureInfo.InvariantCulture)}";
-
-    private readonly string _storageaccount =
-        Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_StorageAccount");
 
     [TestInitialize]
     public async Task Init()
     {
-        await Helper.CreateContainerAndTestFiles(false, _connstring, _containerName);
+        TestHandler.LoadEnvironmentVariables();
+        await Helper.CreateContainerAndTestFiles(false, TestHandler.ConnectionString, _containerName);
     }
 
     [TestCleanup]
     public async Task CleanUp()
     {
-        await Helper.CreateContainerAndTestFiles(true, _connstring, _containerName);
+        await Helper.CreateContainerAndTestFiles(true, TestHandler.ConnectionString, _containerName);
     }
 
     [TestMethod]
@@ -51,7 +46,7 @@ public class SASUnitTests
         {
             AuthenticationMethod = ConnectionMethod.SasToken,
             SasToken = string.Empty,
-            StorageAccountName = _storageaccount,
+            StorageAccountName = TestHandler.StorageAccountName,
         };
 
         var options = new Options
@@ -60,9 +55,10 @@ public class SASUnitTests
             ListingStructure = ListingStructure.Flat,
         };
 
-        var ex = await Assert.ThrowsExceptionAsync<ArgumentException>(async () =>
+        var ex = await Assert.ThrowsExceptionAsync<ValidationException>(async () =>
             await AzureBlobStorage.ListBlobsInContainer(source, connection, options, default));
-        Assert.AreEqual("SAS Token and URI required.", ex.InnerException.Message);
+        Assert.IsTrue(ex.Message.Contains("SasToken is required."), ex.Message);
+
     }
 
     [TestMethod]
@@ -83,7 +79,7 @@ public class SASUnitTests
         {
             AuthenticationMethod = ConnectionMethod.SasToken,
             SasToken = GenerateSASToken(),
-            StorageAccountName = _storageaccount,
+            StorageAccountName = TestHandler.StorageAccountName,
         };
 
         foreach (var structure in listing)
@@ -136,7 +132,7 @@ public class SASUnitTests
         {
             AuthenticationMethod = ConnectionMethod.SasToken,
             SasToken = GenerateSASToken(),
-            StorageAccountName = _storageaccount,
+            StorageAccountName = TestHandler.StorageAccountName,
         };
 
 
@@ -175,7 +171,7 @@ public class SASUnitTests
         };
 
         blobSasBuilder.SetPermissions(BlobContainerSasPermissions.List);
-        var sasToken = blobSasBuilder.ToSasQueryParameters(new StorageSharedKeyCredential(_storageaccount, _accessKey))
+        var sasToken = blobSasBuilder.ToSasQueryParameters(new StorageSharedKeyCredential(TestHandler.StorageAccountName, TestHandler.AccessKey))
             .ToString();
 
         return sasToken;

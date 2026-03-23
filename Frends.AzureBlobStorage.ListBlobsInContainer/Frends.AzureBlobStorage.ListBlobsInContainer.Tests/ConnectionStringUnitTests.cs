@@ -3,31 +3,32 @@ using Frends.AzureBlobStorage.ListBlobsInContainer.Tests.lib;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Frends.AzureBlobStorage.Toolkit.Definitions;
+using Frends.AzureBlobStorage.Toolkit.Handlers;
 
 namespace Frends.AzureBlobStorage.ListBlobsInContainer.Tests;
 
 [TestClass]
 public class ConnectionStringUnitTests
 {
-    private readonly string _connstring = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_ConnString");
-
     private readonly string _containerName =
         $"test-container{DateTime.Now.ToString("mmssffffff", CultureInfo.InvariantCulture)}";
 
     [TestInitialize]
     public async Task Init()
     {
-        await Helper.CreateContainerAndTestFiles(false, _connstring, _containerName);
+        TestHandler.LoadEnvironmentVariables();
+        await Helper.CreateContainerAndTestFiles(false, TestHandler.ConnectionString, _containerName);
     }
 
     [TestCleanup]
     public async Task CleanUp()
     {
-        await Helper.CreateContainerAndTestFiles(true, _connstring, _containerName);
+        await Helper.CreateContainerAndTestFiles(true, TestHandler.ConnectionString, _containerName);
     }
 
     [TestMethod]
@@ -47,7 +48,7 @@ public class ConnectionStringUnitTests
         var connection = new Connection
         {
             AuthenticationMethod = ConnectionMethod.ConnectionString,
-            ConnectionString = _connstring,
+            ConnectionString = TestHandler.ConnectionString,
         };
 
         foreach (var structure in listing)
@@ -99,7 +100,7 @@ public class ConnectionStringUnitTests
         var connection = new Connection
         {
             AuthenticationMethod = ConnectionMethod.ConnectionString,
-            ConnectionString = _connstring,
+            ConnectionString = TestHandler.ConnectionString,
         };
 
         foreach (var structure in listing)
@@ -148,8 +149,8 @@ public class ConnectionStringUnitTests
             ListingStructure = ListingStructure.Hierarchical
         };
 
-        var ex = await Assert.ThrowsExceptionAsync<ArgumentException>(async () =>
+        var ex = await Assert.ThrowsExceptionAsync<ValidationException>(async () =>
             await AzureBlobStorage.ListBlobsInContainer(source, connection, options, default));
-        Assert.AreEqual("Connection string required.", ex.InnerException.Message);
+        Assert.IsTrue(ex.Message.Contains("ConnectionString is required."), ex.Message);
     }
 }

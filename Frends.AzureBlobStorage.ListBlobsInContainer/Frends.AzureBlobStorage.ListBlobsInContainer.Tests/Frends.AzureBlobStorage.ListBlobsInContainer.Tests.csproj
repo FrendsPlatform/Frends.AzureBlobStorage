@@ -1,22 +1,25 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <IsPackable>false</IsPackable>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
 
-	<ItemGroup>
-		<PackageReference Include="MSTest.TestAdapter" Version="2.1.2" />
-		<PackageReference Include="MSTest.TestFramework" Version="2.1.2" />
-		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.7.0" />
-		<PackageReference Include="coverlet.collector" Version="3.1.0">
-			<PrivateAssets>all</PrivateAssets>
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
-	</ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="MSTest.TestAdapter" Version="2.1.2"/>
+        <PackageReference Include="MSTest.TestFramework" Version="2.1.2"/>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.7.0"/>
+        <PackageReference Include="coverlet.collector" Version="3.1.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+    </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Frends.AzureBlobStorage.ListBlobsInContainer\Frends.AzureBlobStorage.ListBlobsInContainer.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\Frends.AzureBlobStorage.ListBlobsInContainer\Frends.AzureBlobStorage.ListBlobsInContainer.csproj"/>
+    </ItemGroup>
+    <ItemGroup>
+        <None Include=".env" CopyToOutputDirectory="PreserveNewest" Condition="Exists('.env')"/>
+    </ItemGroup>
 
 </Project>

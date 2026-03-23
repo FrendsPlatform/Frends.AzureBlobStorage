@@ -7,15 +7,13 @@ using Azure.Storage.Blobs.Models;
 using Azure.Storage.Blobs;
 using Frends.AzureBlobStorage.DownloadBlob.Definitions;
 using Frends.AzureBlobStorage.Toolkit.Definitions;
+using Frends.AzureBlobStorage.Toolkit.Handlers;
 
 namespace Frends.AzureBlobStorage.DownloadBlob.Tests;
 
 [TestFixture]
 public class UnitTests
 {
-    private readonly string _connectionString =
-        Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_ConnString");
-
     private readonly string _testBlob = "test-blob.txt";
     private string _containerName;
     private Destination _destination;
@@ -26,16 +24,13 @@ public class UnitTests
     private readonly string _testFilePath =
         Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TestFiles", "TestFile.xml");
 
-    private readonly string _appID = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_AppID");
-    private readonly string _tenantID = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_TenantID");
-    private readonly string _clientSecret = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_ClientSecret");
-    private readonly string _sasToken = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_SASToken");
     private readonly string _container = "const-test-container";
     private readonly string _storageAccountName = "stataskdevelopment";
 
     [SetUp]
     public async Task TestSetup()
     {
+        TestHandler.LoadEnvironmentVariables();
         _destinationDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
         Directory.CreateDirectory(_destinationDirectory);
 
@@ -51,12 +46,12 @@ public class UnitTests
 
         _connection = new Connection()
         {
-            ConnectionString = _connectionString,
-            TenantId = _tenantID,
-            ApplicationId = _appID,
-            ClientSecret = _clientSecret,
-            StorageAccountName = _storageAccountName,
-            SasToken = _sasToken,
+            ConnectionString = TestHandler.ConnectionString,
+            TenantId = TestHandler.TenantId,
+            ApplicationId = TestHandler.ClientId,
+            ClientSecret = TestHandler.ClientSecret,
+            StorageAccountName = TestHandler.StorageAccountName,
+            SasToken = TestHandler.SasToken,
         };
 
         _destination = new Destination
@@ -74,10 +69,10 @@ public class UnitTests
     [TearDown]
     public async Task Cleanup()
     {
-        var container = GetBlobContainer(_connectionString, _containerName);
+        var container = GetBlobContainer(TestHandler.ConnectionString, _containerName);
         await container.DeleteIfExistsAsync();
         // Empties the const container
-        await DeleteBlobsInContainer(_connectionString, _container, _source.BlobName);
+        await DeleteBlobsInContainer(TestHandler.ConnectionString, _container, _source.BlobName);
     }
 
     [Test]
@@ -207,7 +202,7 @@ public class UnitTests
 
     private async Task UploadTestFiles(string containerName)
     {
-        var blobServiceClient = new BlobServiceClient(_connectionString);
+        var blobServiceClient = new BlobServiceClient(TestHandler.ConnectionString);
         var container = blobServiceClient.GetBlobContainerClient(containerName);
         await container.CreateIfNotExistsAsync(PublicAccessType.None, null, null);
         var blockBlob = container.GetBlobClient(_testBlob);

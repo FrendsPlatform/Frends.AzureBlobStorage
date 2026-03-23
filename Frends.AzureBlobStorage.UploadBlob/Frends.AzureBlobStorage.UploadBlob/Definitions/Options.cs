@@ -25,7 +25,7 @@ public class Options
     /// </summary>
     /// <example>Block</example>
     [DefaultValue(AzureBlobType.Block)]
-    public AzureBlobType BlobType { get; set; }
+    public AzureBlobType BlobType { get; set; } = AzureBlobType.Block;
 
     /// <summary>
     /// Determines if the container should be created if it does not exist.

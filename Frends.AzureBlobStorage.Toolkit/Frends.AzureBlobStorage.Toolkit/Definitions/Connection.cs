@@ -14,7 +14,7 @@ public sealed class Connection
     /// </summary>
     /// <example>ConnectionMethod.ConnectionString</example>
     [DefaultValue(ConnectionMethod.ConnectionString)]
-    public ConnectionMethod AuthenticationMethod { get; set; }
+    public ConnectionMethod AuthenticationMethod { get; set; } = ConnectionMethod.ConnectionString;
 
     /// <summary>
     /// Connection string to Azure storage.
@@ -23,6 +23,7 @@ public sealed class Connection
     [DisplayFormat(DataFormatString = "Text")]
     [PasswordPropertyText]
     [UIHint(nameof(AuthenticationMethod), "", ConnectionMethod.ConnectionString)]
+    [RequiredIf(nameof(AuthenticationMethod), ConnectionMethod.ConnectionString)]
     public string ConnectionString { get; set; }
 
     /// <summary>
@@ -30,6 +31,8 @@ public sealed class Connection
     /// </summary>
     /// <example>Y6b1hf2a-80e2-xyz2-abc33h-3a7c3a8as4b7f</example>
     [UIHint(nameof(AuthenticationMethod), "", ConnectionMethod.OAuth2)]
+    [RequiredIf(nameof(AuthenticationMethod), ConnectionMethod.OAuth2)]
+
     public string ApplicationId { get; set; }
 
     /// <summary>
@@ -37,6 +40,8 @@ public sealed class Connection
     /// </summary>
     /// <example>Y6b1hf2a-80e2-xyz2-abc33h-3a7c3a8as4b7f</example>
     [UIHint(nameof(AuthenticationMethod), "", ConnectionMethod.OAuth2)]
+    [RequiredIf(nameof(AuthenticationMethod), ConnectionMethod.OAuth2)]
+
     public string TenantId { get; set; }
 
     /// <summary>
@@ -44,6 +49,7 @@ public sealed class Connection
     /// </summary>
     /// <example>Password!</example>
     [UIHint(nameof(AuthenticationMethod), "", ConnectionMethod.OAuth2)]
+    [RequiredIf(nameof(AuthenticationMethod), ConnectionMethod.OAuth2)]
     [PasswordPropertyText]
     public string ClientSecret { get; set; }
 
@@ -61,13 +67,19 @@ public sealed class Connection
     /// Name of the Azure storage account.
     /// </summary>
     /// <example>TestStorage</example>
-    [UIHint(nameof(AuthenticationMethod), "", ConnectionMethod.OAuth2)]
+    [UIHint(
+        nameof(AuthenticationMethod),
+        "",
+        ConnectionMethod.OAuth2,
+        ConnectionMethod.SasToken,
+        ConnectionMethod.ArcManagedIdentity,
+        ConnectionMethod.ArcManagedIdentityCrossTenant)]
     [RequiredIf(
         nameof(AuthenticationMethod),
         ConnectionMethod.OAuth2,
+        ConnectionMethod.SasToken,
         ConnectionMethod.ArcManagedIdentity,
-        ConnectionMethod.ArcManagedIdentityCrossTenant)
-    ]
+        ConnectionMethod.ArcManagedIdentityCrossTenant),]
     public string StorageAccountName { get; set; }
 
     /// <summary>
@@ -82,6 +94,8 @@ public sealed class Connection
     /// </summary>
     /// <example>Y6b1hf2a-80e2-xyz2-abc33h-3a7c3a8as4b7f</example>
     [UIHint(nameof(AuthenticationMethod), "", ConnectionMethod.ArcManagedIdentityCrossTenant)]
+    [RequiredIf(nameof(AuthenticationMethod), ConnectionMethod.ArcManagedIdentityCrossTenant)]
+
     public string TargetTenantId { get; set; }
 
     /// <summary>
@@ -89,5 +103,6 @@ public sealed class Connection
     /// </summary>
     /// <example>Y6b1hf2a-80e2-xyz2-abc33h-3a7c3a8as4b7f</example>
     [UIHint(nameof(AuthenticationMethod), "", ConnectionMethod.ArcManagedIdentityCrossTenant)]
+    [RequiredIf(nameof(AuthenticationMethod), ConnectionMethod.ArcManagedIdentityCrossTenant)]
     public string TargetClientId { get; set; }
 }

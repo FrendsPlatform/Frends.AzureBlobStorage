@@ -5,10 +5,12 @@ using Azure.Storage.Sas;
 using Frends.AzureBlobStorage.ReadBlob.Definitions;
 using NUnit.Framework;
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
 using Frends.AzureBlobStorage.Toolkit.Definitions;
+using Frends.AzureBlobStorage.Toolkit.Handlers;
 
 namespace Frends.AzureBlobStorage.ReadBlob.Tests;
 
@@ -19,19 +21,6 @@ public class ReadTest
     Options options;
     Connection connection;
 
-    private readonly string _connectionString =
-        Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_ConnString");
-
-    private readonly string _accessKey =
-        Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_frendstaskstestcontainerAccessKey");
-
-    private readonly string _appID = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_AppID");
-    private readonly string _clientSecret = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_ClientSecret");
-    private readonly string _tenantID = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_TenantID");
-
-    private readonly string _storageaccount =
-        Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_StorageAccount");
-
     private string _containerName;
     private readonly string _blobName = "test.txt";
 
@@ -41,10 +30,11 @@ public class ReadTest
     [SetUp]
     public async Task SetUp()
     {
+        TestHandler.LoadEnvironmentVariables();
         // Generate unique container name to avoid conflicts when running multiple tests
         _containerName = $"test-container{DateTime.Now.ToString("mmssffffff", CultureInfo.InvariantCulture)}";
 
-        var blobServiceClient = new BlobServiceClient(_connectionString);
+        var blobServiceClient = new BlobServiceClient(TestHandler.ConnectionString);
         var container = blobServiceClient.GetBlobContainerClient(_containerName);
         await container.CreateIfNotExistsAsync(PublicAccessType.None, null, null);
         var blockBlob = container.GetBlobClient(_blobName);
@@ -54,7 +44,7 @@ public class ReadTest
     [TearDown]
     public async Task TearDown()
     {
-        var blobServiceClient = new BlobServiceClient(_connectionString);
+        var blobServiceClient = new BlobServiceClient(TestHandler.ConnectionString);
         var container = blobServiceClient.GetBlobContainerClient(_containerName);
         await container.DeleteIfExistsAsync(null);
     }
@@ -71,7 +61,7 @@ public class ReadTest
         connection = new Connection
         {
             AuthenticationMethod = ConnectionMethod.SasToken,
-            StorageAccountName = _storageaccount,
+            StorageAccountName = TestHandler.StorageAccountName,
             SasToken = GetServiceSasUriForBlob(),
         };
 
@@ -96,7 +86,7 @@ public class ReadTest
         connection = new Connection
         {
             AuthenticationMethod = ConnectionMethod.ConnectionString,
-            ConnectionString = _connectionString,
+            ConnectionString = TestHandler.ConnectionString,
         };
 
         options = new Options
@@ -120,11 +110,11 @@ public class ReadTest
         connection = new Connection
         {
             AuthenticationMethod = ConnectionMethod.OAuth2,
-            ConnectionString = _connectionString,
-            ApplicationId = _appID,
-            StorageAccountName = _storageaccount,
-            ClientSecret = _clientSecret,
-            TenantId = _tenantID,
+            ConnectionString = TestHandler.ConnectionString,
+            ApplicationId = TestHandler.ClientId,
+            StorageAccountName = TestHandler.StorageAccountName,
+            ClientSecret = TestHandler.ClientSecret,
+            TenantId = TestHandler.TenantId,
         };
 
         options = new Options
@@ -151,7 +141,7 @@ public class ReadTest
         connection = new Connection
         {
             AuthenticationMethod = ConnectionMethod.SasToken,
-            StorageAccountName = _storageaccount,
+            StorageAccountName = TestHandler.StorageAccountName,
             SasToken = string.Empty,
         };
 
@@ -160,9 +150,9 @@ public class ReadTest
             Encoding = Encode.ASCII
         };
 
-        var ex = Assert.ThrowsAsync<ArgumentException>(() =>
+        var ex = Assert.ThrowsAsync<ValidationException>(() =>
             AzureBlobStorage.ReadBlob(source, connection, options, default));
-        Assert.That(ex.Message.Contains("SAS Token and URI required."), ex.Message);
+        Assert.That(ex.Message.Contains("SasToken is required."), ex.Message);
     }
 
     /// <summary>
@@ -186,9 +176,9 @@ public class ReadTest
             Encoding = Encode.ASCII
         };
 
-        var ex = Assert.ThrowsAsync<ArgumentException>(() =>
+        var ex = Assert.ThrowsAsync<ValidationException>(() =>
             AzureBlobStorage.ReadBlob(source, connection, options, default));
-        Assert.That(ex.Message.Contains("Connection string required."), ex.Message);
+        Assert.That(ex.Message.Contains("ConnectionString is required."), ex.Message);
     }
 
     /// <summary>
@@ -203,7 +193,7 @@ public class ReadTest
             ExpiresOn = DateTime.UtcNow.AddMinutes(5)
         };
         blobSasBuilder.SetPermissions(BlobSasPermissions.Read);
-        var sasToken = blobSasBuilder.ToSasQueryParameters(new StorageSharedKeyCredential(_storageaccount, _accessKey))
+        var sasToken = blobSasBuilder.ToSasQueryParameters(new StorageSharedKeyCredential(TestHandler.StorageAccountName, TestHandler.AccessKey))
             .ToString();
 
         return sasToken;

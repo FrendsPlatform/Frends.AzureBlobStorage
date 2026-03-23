@@ -92,7 +92,7 @@ public class Input
     /// </summary>
     /// <example>OnExistingFile.Throw</example>
     [DefaultValue(OnExistingFile.Throw)]
-    public OnExistingFile ActionOnExistingFile { get; set; }
+    public OnExistingFile ActionOnExistingFile { get; set; } = OnExistingFile.Throw;
 
     /// <summary>
     /// Tags for the block or append blob.

@@ -7,6 +7,7 @@ using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Frends.AzureBlobStorage.DeleteBlob.Definitions;
 using Frends.AzureBlobStorage.Toolkit.Definitions;
+using Frends.AzureBlobStorage.Toolkit.Handlers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Frends.AzureBlobStorage.DeleteBlob.Tests;
@@ -14,16 +15,6 @@ namespace Frends.AzureBlobStorage.DeleteBlob.Tests;
 [TestClass]
 public class DeleteTest
 {
-    private readonly string _connectionString =
-        Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_ConnString");
-
-    private readonly string _appID = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_AppID");
-    private readonly string _clientSecret = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_ClientSecret");
-    private readonly string _tenantID = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_TenantID");
-
-    private readonly string _storageAccount =
-        Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_StorageAccount");
-
     private readonly string _testFileDir = Path.Combine(Environment.CurrentDirectory, "TestFiles");
     private readonly string _firstTestFile = Path.Combine(Environment.CurrentDirectory, "TestFiles", "testfile.txt");
     private readonly string _secondTestFile = Path.Combine(Environment.CurrentDirectory, "TestFiles", "testfile2.txt");
@@ -34,8 +25,9 @@ public class DeleteTest
     {
         try
         {
+            TestHandler.LoadEnvironmentVariables();
             _containerName = $"test-container{DateTime.Now.ToString("mmssffffff", CultureInfo.InvariantCulture)}";
-            var container = GetBlobContainer(_connectionString, _containerName);
+            var container = GetBlobContainer(TestHandler.ConnectionString, _containerName);
             await container.CreateIfNotExistsAsync(PublicAccessType.None, null, null, new CancellationToken());
             await CreateFiles();
             await UploadTestFiles(new FileInfo(_firstTestFile));
@@ -50,7 +42,7 @@ public class DeleteTest
     [TestCleanup]
     public async Task Cleanup()
     {
-        var container = GetBlobContainer(_connectionString, _containerName);
+        var container = GetBlobContainer(TestHandler.ConnectionString, _containerName);
         await container.DeleteIfExistsAsync();
         Directory.Delete(_testFileDir, true);
     }
@@ -66,7 +58,7 @@ public class DeleteTest
 
         var connection = new Connection()
         {
-            ConnectionString = _connectionString,
+            ConnectionString = TestHandler.ConnectionString,
         };
 
         var options = new Options()
@@ -92,7 +84,7 @@ public class DeleteTest
 
         var connection = new Connection()
         {
-            ConnectionString = _connectionString,
+            ConnectionString = TestHandler.ConnectionString,
         };
 
         var options = new Options
@@ -120,7 +112,7 @@ public class DeleteTest
 
         var connection = new Connection()
         {
-            ConnectionString = _connectionString,
+            ConnectionString = TestHandler.ConnectionString,
         };
 
         var options = new Options()
@@ -146,11 +138,11 @@ public class DeleteTest
 
         var connection = new Connection()
         {
-            ApplicationId = _appID,
-            StorageAccountName = _storageAccount,
-            ClientSecret = _clientSecret,
+            ApplicationId = TestHandler.ClientId,
+            StorageAccountName = TestHandler.StorageAccountName,
+            ClientSecret = TestHandler.ClientSecret,
             AuthenticationMethod = ConnectionMethod.OAuth2,
-            TenantId = _tenantID,
+            TenantId = TestHandler.TenantId,
         };
 
         var options = new Options()
@@ -177,7 +169,7 @@ public class DeleteTest
         var connection = new Connection()
         {
             AuthenticationMethod = ConnectionMethod.ConnectionString,
-            ConnectionString = _connectionString
+            ConnectionString = TestHandler.ConnectionString
         };
 
 
@@ -204,11 +196,11 @@ public class DeleteTest
 
         var connection = new Connection()
         {
-            ApplicationId = _appID,
-            StorageAccountName = _storageAccount,
-            ClientSecret = _clientSecret,
+            ApplicationId = TestHandler.ClientId,
+            StorageAccountName = TestHandler.StorageAccountName,
+            ClientSecret = TestHandler.ClientSecret,
             AuthenticationMethod = ConnectionMethod.OAuth2,
-            TenantId = _tenantID,
+            TenantId = TestHandler.TenantId,
         };
 
         var result = await AzureBlobStorage.DeleteBlob(input, connection, new Options(), default);
@@ -227,7 +219,7 @@ public class DeleteTest
 
         var connection = new Connection()
         {
-            ConnectionString = _connectionString,
+            ConnectionString = TestHandler.ConnectionString,
             AuthenticationMethod = ConnectionMethod.ConnectionString,
         };
 
@@ -247,7 +239,7 @@ public class DeleteTest
 
         var connection = new Connection()
         {
-            ConnectionString = _connectionString,
+            ConnectionString = TestHandler.ConnectionString,
             AuthenticationMethod = ConnectionMethod.ConnectionString,
         };
 
@@ -283,7 +275,7 @@ public class DeleteTest
         try
         {
             using var fileStream = File.OpenRead(fileInfo.FullName);
-            var blobClient = new BlobClient(_connectionString, _containerName, fileInfo.Name);
+            var blobClient = new BlobClient(TestHandler.ConnectionString, _containerName, fileInfo.Name);
             await blobClient.UploadAsync(fileStream);
         }
         catch (Exception ex)

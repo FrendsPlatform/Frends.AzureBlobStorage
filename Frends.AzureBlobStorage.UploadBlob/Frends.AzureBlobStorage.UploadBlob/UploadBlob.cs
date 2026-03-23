@@ -1,5 +1,4 @@
 ﻿using Azure;
-using Azure.Identity;
 using Azure.Storage;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
@@ -52,8 +51,7 @@ public static class AzureBlobStorage
             var blobName = string.Empty;
 
             if (options.CreateContainerIfItDoesNotExist &&
-                (connection.AuthenticationMethod is ConnectionMethod.ConnectionString ||
-                 connection.AuthenticationMethod is ConnectionMethod.OAuth2))
+                connection.AuthenticationMethod is ConnectionMethod.ConnectionString or ConnectionMethod.OAuth2 or ConnectionMethod.SasToken)
                 await CreateContainerIfItDoesNotExist(connection, input.ContainerName.ToLower(),
                     cancellationToken);
 
@@ -165,7 +163,7 @@ public static class AzureBlobStorage
                 {
                     var appendBlobClient =
                         (AppendBlobClient)ConnectionHandler.GetBlobBaseClient(connection, input.ContainerName,
-                            input.BlobName, options.BlobType,
+                            blobName, options.BlobType,
                             cancellationToken);
                     var exists = false;
                     exists = await appendBlobClient.ExistsAsync(cancellationToken);
@@ -209,7 +207,7 @@ public static class AzureBlobStorage
                         }
                     }
 
-                    return appendBlobClient.Uri.ToString();
+                    return appendBlobClient.Uri.GetLeftPart(UriPartial.Path);
                 }
                 catch (Exception ex)
                 {
@@ -220,7 +218,7 @@ public static class AzureBlobStorage
                 try
                 {
                     BlobClient blobClient =
-                        (BlobClient)ConnectionHandler.GetBlobBaseClient(connection, input.ContainerName, input.BlobName,
+                        (BlobClient)ConnectionHandler.GetBlobBaseClient(connection, input.ContainerName, blobName,
                             options.BlobType, cancellationToken);
                     var exists = await blobClient.ExistsAsync(cancellationToken);
 
@@ -274,7 +272,7 @@ public static class AzureBlobStorage
                         Path.GetDirectoryName(fi.FullName) != input.SourceDirectory)
                         fi.Delete();
 
-                    return blobClient.Uri.ToString();
+                    return blobClient.Uri.GetLeftPart(UriPartial.Path);
                 }
                 catch (Exception ex)
                 {
@@ -286,7 +284,7 @@ public static class AzureBlobStorage
                 {
                     PageBlobClient pageBlobClient =
                         (PageBlobClient)ConnectionHandler.GetBlobBaseClient(connection, input.ContainerName,
-                            input.BlobName, options.BlobType, cancellationToken);
+                            blobName, options.BlobType, cancellationToken);
                     var origSize = 0;
                     var exists = false;
                     exists = await pageBlobClient.ExistsAsync(cancellationToken);
@@ -351,11 +349,11 @@ public static class AzureBlobStorage
                         Path.GetDirectoryName(fi.FullName) != input.SourceDirectory)
                         fi.Delete();
 
-                    return pageBlobClient.Uri.ToString();
+                    return pageBlobClient.Uri.GetLeftPart(UriPartial.Path);
                 }
                 catch (Exception ex)
                 {
-                    throw new Exception($"UploadBlob (Page): An error occured while uploading {blobName}. {ex}");
+                    throw new Exception($"UploadBlob (Page): An error occured while uploading {blobName}. {ex.Message}", ex);
                 }
 
             default:

@@ -11,21 +11,15 @@ using Azure.Storage.Blobs.Models;
 using System.Collections.Generic;
 using Azure.Identity;
 using Frends.AzureBlobStorage.Toolkit.Definitions;
+using Frends.AzureBlobStorage.Toolkit.Handlers;
 
 namespace Frends.AzureBlobStorage.WriteBlob.Tests;
 
 [TestFixture]
 public class UnitTests
 {
-    private readonly string _connectionString =
-        Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_ConnString");
-
     private string _containerName;
-    private readonly string _appID = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_AppID");
-    private readonly string _clientSecret = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_ClientSecret");
-    private readonly string _tenantID = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_TenantID");
     private readonly string _storageAccount = "stataskdevelopment";
-    private readonly string _sasToken = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_SASToken");
 
     private readonly Tag[] _tags = new[]
     {
@@ -46,9 +40,10 @@ public class UnitTests
     [SetUp]
     public async Task TestSetup()
     {
+        TestHandler.LoadEnvironmentVariables();
         _containerName = $"test-container{DateTime.Now.ToString("mmssffffff", CultureInfo.InvariantCulture)}";
 
-        await CreateBlobContainer(_connectionString, _containerName);
+        await CreateBlobContainer(TestHandler.ConnectionString, _containerName);
 
         _source = new Source
         {
@@ -71,11 +66,11 @@ public class UnitTests
         _connection = new Connection
         {
             AuthenticationMethod = ConnectionMethod.ConnectionString,
-            ConnectionString = _connectionString,
-            TenantId = _tenantID,
-            ApplicationId = _appID,
+            ConnectionString = TestHandler.ConnectionString,
+            TenantId = TestHandler.TenantId,
+            ApplicationId = TestHandler.ClientId,
             StorageAccountName = _storageAccount,
-            ClientSecret = _clientSecret,
+            ClientSecret = TestHandler.ClientSecret,
         };
 
         _options = new Options()
@@ -211,7 +206,7 @@ public class UnitTests
 
         var ex = Assert.ThrowsAsync<ArgumentException>(async () =>
             await AzureBlobStorage.WriteBlob(_source, _destination, _connection, _options, default));
-        Assert.That(ex.Message.Contains("GetBlobClient error:"), ex.Message);
+        Assert.That(ex.Message.Contains("GetBlobServiceClient error:"), ex.Message);
     }
 
     [Test]
@@ -240,7 +235,7 @@ public class UnitTests
     public async Task WriteBlob_SasToken()
     {
         _connection.AuthenticationMethod = ConnectionMethod.SasToken;
-        _connection.SasToken = _sasToken;
+        _connection.SasToken = TestHandler.SasToken;
         _destination.ContainerName = _container;
 
         var result = await AzureBlobStorage.WriteBlob(_source, _destination, _connection, _options, default);
@@ -268,21 +263,21 @@ public class UnitTests
 
     private async Task DeleteBlobContainer(string containerName)
     {
-        var blobServiceClient = new BlobServiceClient(_connectionString);
+        var blobServiceClient = new BlobServiceClient(TestHandler.ConnectionString);
         var container = blobServiceClient.GetBlobContainerClient(containerName);
         await container.DeleteIfExistsAsync();
     }
 
     private async Task<bool> BlobExists(string containerName, string blobName, string expected)
     {
-        var blobServiceClient = new BlobServiceClient(_connectionString);
+        var blobServiceClient = new BlobServiceClient(TestHandler.ConnectionString);
         var container = blobServiceClient.GetBlobContainerClient(containerName);
         var blob = container.GetBlobClient(blobName);
 
         if (!blob.Exists())
             return false;
 
-        var blobClient = new BlobClient(_connectionString, _destination.ContainerName, _destination.BlobName);
+        var blobClient = new BlobClient(TestHandler.ConnectionString, _destination.ContainerName, _destination.BlobName);
         var blobDownload = await blobClient.DownloadAsync();
 
         using var reader = new StreamReader(blobDownload.Value.Content);
