@@ -1,0 +1,16 @@
+name: AzureBlobStorage Toolkit Test
+
+on:
+  push:
+    branches:
+      - '**'
+    paths:
+      - 'Frends.AzureBlobStorage.Toolkit/**'
+  workflow_dispatch:
+
+jobs:
+  build:
+    uses: FrendsPlatform/FrendsTasks/.github/workflows/toolkit_test.yml@main
+    with:
+      working-directory: 'Frends.AzureBlobStorage.Toolkit'
+      project-directory: 'Frends.AzureBlobStorage.Toolkit'

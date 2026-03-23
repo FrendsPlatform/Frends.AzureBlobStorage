@@ -1,0 +1,18 @@
+name: AzureBlobStorage Toolkit Release
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'Frends.AzureBlobStorage.Toolkit/**'
+  workflow_dispatch:
+
+jobs:
+  build:
+    uses: FrendsPlatform/FrendsTasks/.github/workflows/toolkit_release.yml@main
+    with:
+      working-directory: 'Frends.AzureBlobStorage.Toolkit'
+      project-directory: 'Frends.AzureBlobStorage.Toolkit'
+    secrets:
+      NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}

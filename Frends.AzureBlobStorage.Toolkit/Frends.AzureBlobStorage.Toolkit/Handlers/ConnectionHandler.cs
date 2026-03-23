@@ -102,7 +102,7 @@ public static class ConnectionHandler
         }
         catch (Exception ex)
         {
-            throw new ArgumentException("GetBlobServiceClient error: ", ex);
+            throw new ArgumentException($"GetBlobServiceClient error: {ex.Message}", ex);
         }
     }
 
