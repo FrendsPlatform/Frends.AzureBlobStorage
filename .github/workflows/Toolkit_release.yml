@@ -1,4 +1,6 @@
 name: AzureBlobStorage Toolkit Release
+permissions:
+  contents: read
 
 on:
   push:
@@ -14,5 +16,4 @@ jobs:
     with:
       working-directory: 'Frends.AzureBlobStorage.Toolkit'
       project-directory: 'Frends.AzureBlobStorage.Toolkit'
-    secrets:
-      NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+    secrets: inherit

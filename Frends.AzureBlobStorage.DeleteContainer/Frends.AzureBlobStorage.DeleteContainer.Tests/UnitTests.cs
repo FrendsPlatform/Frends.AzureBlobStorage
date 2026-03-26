@@ -111,42 +111,21 @@ public class UnitTests
             {
                 ThrowErrorIfContainerDoesNotExists = false
             }, new CancellationToken());
-        await AzureBlobStorage.DeleteContainer(new Input
-            {
-                ContainerName = _containerName
-            },
-            new Connection
-            {
-                ConnectionString = TestHandler.ConnectionString,
-            },
-            new Options
-            {
-                ThrowErrorIfContainerDoesNotExists = false
-            }, new CancellationToken());
     }
 
-    [TestMethod]
+    [DataTestMethod]
+    [DataRow("Not valid parameter")]
+    [DataRow("name=value")]
     [ExpectedException(typeof(Exception))]
-    public async Task TestDeleteContainer_throws_ParameterNotValid()
+    public async Task TestDeleteContainer_throws_ParameterNotValid(string conString)
     {
         await AzureBlobStorage.DeleteContainer(new Input
             {
-                ContainerName = "Valid name"
+                ContainerName = "valid"
             },
             new Connection
             {
-                ConnectionString = "Not valid parameter",
-            },
-            new Options
-            {
-                ThrowErrorIfContainerDoesNotExists = false
-            }, new CancellationToken());
-        await AzureBlobStorage.DeleteContainer(new Input
-            {
-                ContainerName = "Valid name"
-            }, new Connection
-            {
-                ConnectionString = "name=value",
+                ConnectionString = conString,
             },
             new Options
             {

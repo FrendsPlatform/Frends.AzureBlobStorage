@@ -1,4 +1,6 @@
 name: AzureBlobStorage Toolkit Test
+permissions:
+  contents: read
 
 on:
   push:
@@ -14,3 +16,4 @@ jobs:
     with:
       working-directory: 'Frends.AzureBlobStorage.Toolkit'
       project-directory: 'Frends.AzureBlobStorage.Toolkit'
+    secrets: inherit

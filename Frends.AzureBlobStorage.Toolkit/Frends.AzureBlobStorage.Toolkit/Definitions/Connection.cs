@@ -58,7 +58,7 @@ public sealed class Connection
     /// Grants restricted access rights to Azure Storage resources when combined with URI.
     /// </summary>
     /// <example>sv=2021-04-10&amp;se=2022-04-10T10%3A431Z&amp;sr=c&amp;sp=l&amp;sig=ZJg983RovE%23ZXI</example>
-    [UIHint(nameof(ConnectionMethod), "", ConnectionMethod.SasToken)]
+    [UIHint(nameof(AuthenticationMethod), "", ConnectionMethod.SasToken)]
     [RequiredIf(nameof(AuthenticationMethod), ConnectionMethod.SasToken)]
     [PasswordPropertyText]
     public string SasToken { get; set; }

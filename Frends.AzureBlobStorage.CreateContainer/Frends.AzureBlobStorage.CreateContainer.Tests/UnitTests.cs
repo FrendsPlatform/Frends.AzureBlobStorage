@@ -67,7 +67,7 @@ public class UnitTests
     {
         var input = new Input
         {
-            ContainerName = "Valid name"
+            ContainerName = "valid"
         };
         var connection = new Connection
         {
