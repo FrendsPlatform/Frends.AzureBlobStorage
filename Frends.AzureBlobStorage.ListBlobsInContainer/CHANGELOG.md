@@ -1,5 +1,27 @@
 # Changelog
 
+
+## [2.0.0] - 2026-03-24
+
+### Added
+- Added support for Default Managed Identity.
+- Added support for listing blobs by tag query using `Options.QueryType` and `Options.TagQuery`.
+
+### Changed
+- [Breaking] Reorganized and renamed parameters for clarity and consistency and updated dotnet SDK to version 8.
+  - To upgrade to the new version, use the corresponding new parameters listed below:
+	- Source.ConnectionMethod moved to Connection.AuthenticationMethod
+	- Source.ContainerName moved to Connection.ContainerName
+	- Source.ConnectionString moved to Connection.ConnectionString
+	- Source.ApplicationID was renamed and moved to Connection.ApplicationId
+	- Source.TenantID was renamed and moved to Connection.TenantId
+	- Source.ClientSecret moved to Connection.ClientSecret
+	- Source.Scopes moved to Connection.Scopes
+	- Source.TargetTenantId moved to Connection.TargetTenantId
+	- Source.TargetClientId moved to Connection.TargetClientId
+	- Source.StorageAccountName removed, use Connection.Uri
+- Updated dotnet SDK to version 8.
+
 ## [1.4.0] - 2026-01-23
 
 ### Added

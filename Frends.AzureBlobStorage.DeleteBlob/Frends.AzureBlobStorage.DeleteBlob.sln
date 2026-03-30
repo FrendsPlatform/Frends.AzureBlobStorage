@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29613.14
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.37012.4 d17.14
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Frends.AzureBlobStorage.DeleteBlob", "Frends.AzureBlobStorage.DeleteBlob\Frends.AzureBlobStorage.DeleteBlob.csproj", "{35C305C0-8108-4A98-BB1D-AFE5C926239E}"
 EndProject

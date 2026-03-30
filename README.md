@@ -13,6 +13,47 @@ Frends Tasks for Azure Blob Storage operations.
 - [Frends.AzureBlobStorage.DeleteContainer](Frends.AzureBlobStorage.DeleteContainer/README.md)
 - [Frends.AzureBlobStorage.ListContainers](Frends.AzureBlobStorage.ListContainers/README.md)
 
+# Building NuGet Packages
+
+`Pack-AllProjects.ps1` (located in the repository root) builds Release NuGet packages for every `Frends.AzureBlobStorage.*` project, excluding test projects.
+
+**Requirements:** PowerShell 5.1 or later and the .NET SDK must be available on `PATH`.
+
+## Parameters
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `-RootPath` | `string` | Script directory | Root directory searched recursively for `*.csproj` files. |
+| `-OutputDir` | `string` | `C:\Temp\AzureBlob` | Directory where the `.nupkg` files are written. Created automatically if it does not exist. |
+| `-BumpVersion` | `switch` | _(off)_ | When specified, increments the patch segment of `<Version>` in each project file before packing (e.g. `1.2.3` ? `1.2.4`). Pre-release suffixes such as `-beta` are preserved. |
+
+## Examples
+
+Pack all projects using their current versions:
+
+```powershell
+.\Pack-AllProjects.ps1
+```
+
+Pack and write packages to a custom output folder:
+
+```powershell
+.\Pack-AllProjects.ps1 -OutputDir "D:\MyPackages"
+```
+
+Bump each project's patch version, then pack:
+
+```powershell
+.\Pack-AllProjects.ps1 -BumpVersion
+```
+
+Bump the patch version and write packages to a custom folder:
+
+```powershell
+.\Pack-AllProjects.ps1 -BumpVersion -OutputDir "D:\MyPackages"
+```
+
+
 # Contributing
 When contributing to this repository, please first discuss the change you wish to make via issue, email, or any other method with the owners of this repository before making a change.
 

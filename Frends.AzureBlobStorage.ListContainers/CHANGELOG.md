@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.3.0] - 2026-03-24
+
+### Added
+- Added support for Default Managed Identity.
+
+### Changed
+
+- Minor refactoring for consitency between tasks.
+
 ## [1.2.0] - 2026-01-23
 
 ### Added

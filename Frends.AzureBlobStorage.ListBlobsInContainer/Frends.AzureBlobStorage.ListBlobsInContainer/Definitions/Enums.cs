@@ -29,6 +29,11 @@ public enum AuthenticationMethod
     /// Managed Identity for cross-tenant.
     /// </summary>
     ArcManagedIdentityCrossTenant,
+
+	/// <summary>
+	/// Default Managed Identity.
+	/// </summary>
+	DefaultManagedIdentity
 }
 
 /// <summary>
@@ -45,4 +50,19 @@ public enum ListingStructure
     /// Hierarchical listing structure.
     /// </summary>
     Hierarchical
+}
+
+/// <summary>
+/// Query type
+/// </summary>
+public enum QueryType
+{
+	/// <summary>
+	/// Retrieve blobs using the default GetBlob method.
+	/// </summary>
+	Default,
+	/// <summary>
+	/// Retrieve blobs using tags by query string.
+	/// </summary>
+	Tags
 }

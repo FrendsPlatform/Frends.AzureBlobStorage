@@ -1,5 +1,27 @@
 # Changelog
 
+## [2.0.0] - 2026-03-24
+
+### Added
+- Added support for Default Managed Identity.
+- Added support for SAS Token authentication.
+
+### Changed
+- [Breaking] Reorganized and renamed parameters for clarity and consistency and updated dotnet SDK to version 8.
+  - To upgrade to the new version you can select the new parameters matching the old ones.
+    You can find a list of the changes to parameter locations and names below:
+	- Input.ConnectionMethod moved to Connection.AuthenticationMethod
+	- Input.ContainerName moved to Connection.ContainerName
+	- Input.ConnectionString moved to Connection.ConnectionString
+	- Input.ApplicationID renamed moved to Connection.ApplicationId
+	- Input.TenantID renamed moved to Connection.TenantId
+	- Input.ClientSecret moved to Connection.ClientSecret
+	- Input.Scopes renamed moved to Connection.Scopes
+	- Input.TargetTenantId moved to Connection.TargetTenantId
+	- Input.TargetClientId moved to Connection.TargetClientId
+	- Input.StorageAccountName removed, use Connection.Uri
+- Updated dotnet SDK to version 8.
+	
 ## [1.5.0] - 2026-01-26
 
 ### Added

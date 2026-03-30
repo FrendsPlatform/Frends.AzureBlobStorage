@@ -65,21 +65,21 @@ public static class AzureBlobStorage
 
     private static void CheckParameters(Connection connection)
     {
-        switch (connection.ConnectionMethod)
+        switch (connection.AuthenticationMethod)
         {
-            case ConnectionMethod.ConnectionString:
+            case AuthenticationMethod.ConnectionString:
                 if (string.IsNullOrWhiteSpace(connection.ConnectionString))
                     throw new Exception("Connection string cannot be empty.");
 
                 break;
 
-            case ConnectionMethod.SasToken:
+            case AuthenticationMethod.SASToken:
                 if (string.IsNullOrWhiteSpace(connection.Uri) || string.IsNullOrWhiteSpace(connection.SasToken))
                     throw new Exception("Both URI and SAS token are required for SAS Token connection method.");
 
                 break;
 
-            case ConnectionMethod.OAuth2:
+            case AuthenticationMethod.OAuth2:
                 if (string.IsNullOrWhiteSpace(connection.Uri) ||
                     string.IsNullOrWhiteSpace(connection.TenantId) ||
                     string.IsNullOrWhiteSpace(connection.ApplicationId) ||
@@ -91,7 +91,13 @@ public static class AzureBlobStorage
 
                 break;
 
-            default:
+			case AuthenticationMethod.DefaultManagedIdentity:
+				if (string.IsNullOrWhiteSpace(connection.Uri))
+					throw new Exception("URI cannot be empty.");
+
+				break;
+
+			default:
                 throw new Exception("Invalid or unsupported connection method.");
         }
     }

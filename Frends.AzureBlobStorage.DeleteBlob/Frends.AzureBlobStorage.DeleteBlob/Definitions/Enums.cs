@@ -21,15 +21,39 @@ public enum SnapshotDeleteOption
     DeleteSnapshotsOnly
 }
 
+
 /// <summary>
-/// Connection methods.
+/// Authentication options.
 /// </summary>
-public enum ConnectionMethod
+public enum AuthenticationMethod
 {
-#pragma warning disable CS1591 // self explanatory
-    ConnectionString,
-    OAuth2,
-    ArcManagedIdentity,
-    ArcManagedIdentityCrossTenant,
-#pragma warning restore CS1591 // self explanatory
+	/// <summary>
+	/// Authenticate with connectiong string.
+	/// </summary>
+	ConnectionString,
+
+	/// <summary>
+	/// Authenticate with SAS Token. Requires Storage URI.
+	/// </summary>
+	SASToken,
+
+	/// <summary>
+	/// OAuth2.
+	/// </summary>
+	OAuth2,
+
+	/// <summary>
+	/// Managed Identity.
+	/// </summary>
+	ArcManagedIdentity,
+
+	/// <summary>
+	/// Managed Identity for cross-tenant.
+	/// </summary>
+	ArcManagedIdentityCrossTenant,
+
+	/// <summary>
+	/// Default Managed Identity.
+	/// </summary>
+	DefaultManagedIdentity
 }

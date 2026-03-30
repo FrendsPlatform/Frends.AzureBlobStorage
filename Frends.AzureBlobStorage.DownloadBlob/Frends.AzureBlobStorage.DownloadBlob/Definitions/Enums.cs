@@ -13,34 +13,39 @@ public enum FileExistsAction
 }
 
 /// <summary>
-/// Connection methods.
+/// Authentication options.
 /// </summary>
-public enum ConnectionMethod
+public enum AuthenticationMethod
 {
-    /// <summary>
-    /// Authenticate with connectiong string.
-    /// </summary>
-    ConnectionString,
+	/// <summary>
+	/// Authenticate with connectiong string.
+	/// </summary>
+	ConnectionString,
 
-    /// <summary>
-    /// Authenticate with SAS Token. Requires Storage URI.
-    /// </summary>
-    SASToken,
+	/// <summary>
+	/// Authenticate with SAS Token. Requires Storage URI.
+	/// </summary>
+	SASToken,
 
-    /// <summary>
-    /// OAuth2.
-    /// </summary>
-    OAuth2,
+	/// <summary>
+	/// OAuth2.
+	/// </summary>
+	OAuth2,
 
-    /// <summary>
-    /// Managed Identity.
-    /// </summary>
-    ArcManagedIdentity,
+	/// <summary>
+	/// Managed Identity.
+	/// </summary>
+	ArcManagedIdentity,
 
-    /// <summary>
-    /// Managed Identity for cross-tenant.
-    /// </summary>
-    ArcManagedIdentityCrossTenant,
+	/// <summary>
+	/// Managed Identity for cross-tenant.
+	/// </summary>
+	ArcManagedIdentityCrossTenant,
+
+	/// <summary>
+	/// Default Managed Identity.
+	/// </summary>
+	DefaultManagedIdentity
 }
 
 /// <summary>

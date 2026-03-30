@@ -12,21 +12,20 @@ namespace Frends.AzureBlobStorage.ListContainers.Helpers;
 #pragma warning disable SA1600
 internal static class ConnectionHandler
 {
-    internal static BlobServiceClient GetBlobServiceClient(Connection connection, CancellationToken cancellationToken)
+	internal static BlobServiceClient GetBlobServiceClient(Connection connection, CancellationToken cancellationToken)
 #pragma warning restore SA1611
     {
         try
         {
-            return connection.ConnectionMethod switch
+            return connection.AuthenticationMethod switch
             {
-                ConnectionMethod.ConnectionString => GetClientWithConnectionString(connection),
-                ConnectionMethod.SasToken => GetClientWithSasToken(connection),
-                ConnectionMethod.OAuth2 => GetClientWithOAuth2(connection),
-                ConnectionMethod.ArcManagedIdentity => GetClientWithArcManagedIdentity(connection),
-                ConnectionMethod.ArcManagedIdentityCrossTenant => GetClientWithArcManagedIdentityCrossTenant(
-                    connection,
-                    cancellationToken),
-                _ => throw new NotSupportedException(),
+                AuthenticationMethod.ConnectionString => GetClientWithConnectionString(connection),
+                AuthenticationMethod.SASToken => GetClientWithSasToken(connection),
+                AuthenticationMethod.OAuth2 => GetClientWithOAuth2(connection),
+                AuthenticationMethod.ArcManagedIdentity => GetClientWithArcManagedIdentity(connection),
+                AuthenticationMethod.ArcManagedIdentityCrossTenant => GetClientWithArcManagedIdentityCrossTenant(connection, cancellationToken),
+				AuthenticationMethod.DefaultManagedIdentity => GetClientWithDefaultManagedIdentity(connection),
+				_ => throw new NotSupportedException(),
             };
         }
         catch (Exception ex)
@@ -59,34 +58,40 @@ internal static class ConnectionHandler
     [ExcludeFromCodeCoverage(Justification = "We do not have environment prepared to test this connection")]
     private static BlobServiceClient GetClientWithArcManagedIdentity(Connection connection)
     {
-        {
-            var credentials = new ManagedIdentityCredential();
-
-            return new BlobServiceClient(new Uri($"{connection.Uri}"), credentials);
-        }
+		var credentials = new ManagedIdentityCredential(new ManagedIdentityCredentialOptions());
+		return new BlobServiceClient(new Uri($"{connection.Uri}"), credentials);
     }
 
-    [ExcludeFromCodeCoverage(Justification = "We do not have environment prepared to test this connection")]
-    private static BlobServiceClient GetClientWithArcManagedIdentityCrossTenant(
-        Connection connection,
-        CancellationToken cancellationToken)
-    {
-        {
-            var credentials = new ManagedIdentityCredential();
-            ClientAssertionCredential assertion = new(
-                connection.TargetTenantId,
-                connection.TargetClientId,
-                async _ =>
-                {
-                    var tokenRequestContext = new TokenRequestContext(connection.Scopes);
-                    var accessToken = await credentials
-                        .GetTokenAsync(tokenRequestContext, cancellationToken).ConfigureAwait(false);
+	[ExcludeFromCodeCoverage(Justification = "We do not have environment prepared to test this connection")]
+	private static BlobServiceClient GetClientWithArcManagedIdentityCrossTenant(
+		Connection connection,
+		CancellationToken cancellationToken)
+	{
+		var credentials = new ManagedIdentityCredential(new ManagedIdentityCredentialOptions());
+		ClientAssertionCredential assertion = new(
+			connection.TargetTenantId,
+			connection.TargetClientId,
+			async _ =>
+			{
+				var tokenRequestContext = new TokenRequestContext(connection.Scopes);
+				var accessToken = await credentials
+					.GetTokenAsync(tokenRequestContext, cancellationToken).ConfigureAwait(false);
 
-                    return accessToken.Token;
-                });
+				return accessToken.Token;
+			});
 
-            return new BlobServiceClient(new Uri(connection.Uri), assertion);
-        }
-    }
+		return new BlobServiceClient(new Uri(connection.Uri), assertion);
+
+	}
+
+	private static BlobServiceClient GetClientWithDefaultManagedIdentity(Connection connection)
+	{
+		if (string.IsNullOrWhiteSpace(connection.Uri))
+		{
+			throw new Exception("URI is required.");
+		}
+
+		return new BlobServiceClient(new Uri(connection.Uri.TrimEnd('/')), new DefaultAzureCredential());
+	}
 }
 #pragma warning restore SA1600

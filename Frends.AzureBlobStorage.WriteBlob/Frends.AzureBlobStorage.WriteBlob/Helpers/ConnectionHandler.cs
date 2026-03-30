@@ -6,157 +6,176 @@ using Azure.Core;
 using Azure.Identity;
 using Azure.Storage.Blobs;
 using Frends.AzureBlobStorage.WriteBlob.Definitions;
-using Frends.AzureBlobStorage.WriteBlob.Enums;
 
 namespace Frends.AzureBlobStorage.WriteBlob.Helpers;
-
 internal static class ConnectionHandler
 {
-    internal static BlobClient GetBlobClient(Destination destination, CancellationToken cancellationToken)
-    {
-        try
-        {
-            return destination.ConnectionMethod switch
-            {
-                ConnectionMethod.ConnectionString => GetBlobClientWithConnectionString(destination),
-                ConnectionMethod.SASToken => GetBlobClientWithSasToken(destination),
-                ConnectionMethod.OAuth2 => GetBlobClientWithOAuth2(destination),
-                ConnectionMethod.ArcManagedIdentity => GetBlobClientWithArcManagedIdentity(destination),
-                ConnectionMethod.ArcManagedIdentityCrossTenant => GetBlobClientWithArcManagedIdentityCrossTenant(
-                    destination,
-                    cancellationToken),
-                _ => throw new NotSupportedException()
-            };
-        }
-        catch (Exception ex)
-        {
-            throw new ArgumentException($"GetBlobClient error: {ex.Message}", ex);
-        }
-    }
+	private static Uri GetUri(string uri, string containerName, string blobName) =>
+		new($"{uri}/{containerName}/{blobName}");
 
-    internal static BlobServiceClient GetBlobServiceClient(Destination destination, CancellationToken cancellationToken)
-    {
-        try
-        {
-            return destination.ConnectionMethod switch
-            {
-                ConnectionMethod.ConnectionString => GetServiceBlobClientWithConnectionString(destination),
-                ConnectionMethod.OAuth2 => GetBlobServiceClientWithOAuth2(destination),
-                ConnectionMethod.ArcManagedIdentity => GetBlobServiceClientWithArcManagedIdentity(destination),
-                ConnectionMethod.ArcManagedIdentityCrossTenant => GetBlobServiceClientWithArcManagedIdentityCrossTenant(
-                    destination,
-                    cancellationToken),
-                _ => throw new NotSupportedException(),
-            };
-        }
-        catch (Exception ex)
-        {
-            throw new ArgumentException("GetBlobContainerClient error: ", ex);
-        }
-    }
+	internal static BlobClient GetBlobClient(Connection connection, CancellationToken cancellationToken)
+	{
+		try
+		{
+			return connection.AuthenticationMethod switch
+			{
+				AuthenticationMethod.ConnectionString => GetBlobClientWithConnectionString(connection),
+				AuthenticationMethod.SASToken => GetBlobClientWithSasToken(connection),
+				AuthenticationMethod.OAuth2 => GetBlobClientWithOAuth2(connection),
+				AuthenticationMethod.ArcManagedIdentity => GetBlobClientWithArcManagedIdentity(connection),
+				AuthenticationMethod.ArcManagedIdentityCrossTenant => GetBlobClientWithArcManagedIdentityCrossTenant(connection, cancellationToken),
+				AuthenticationMethod.DefaultManagedIdentity => GetClientWithDefaultManagedIdentity(connection),
+				_ => throw new NotSupportedException()
+			};
+		}
+		catch (Exception ex)
+		{
+			throw new ArgumentException($"GetBlobClient error: {ex.Message}", ex);
+		}
+	}
 
-    private static BlobServiceClient GetServiceBlobClientWithConnectionString(Destination destination)
-    {
-        return new BlobServiceClient(destination.ConnectionString);
-    }
+	internal static BlobContainerClient GetBlobContainerClient(Connection connection, CancellationToken cancellationToken = default)
+	{
+		try
+		{
+			var containerName = connection.ContainerName.ToLower();
+			return connection.AuthenticationMethod switch
+			{
+				AuthenticationMethod.SASToken => new BlobContainerClient(
+					new Uri($"{connection.Uri}/{containerName}?"),
+					new AzureSasCredential(connection.SasToken)),
+				_ => GetServiceClient(connection, cancellationToken).GetBlobContainerClient(containerName)
+			};
+		}
+		catch (Exception ex)
+		{
+			throw new ArgumentException($"GetBlobContainerClient error: {ex.Message}", ex);
+		}
+	}
 
-    private static BlobClient GetBlobClientWithConnectionString(Destination destination)
-    {
-        return new BlobClient(destination.ConnectionString, destination.ContainerName.ToLower(), destination.BlobName);
-    }
+	private static BlobServiceClient GetServiceClient(Connection connection, CancellationToken cancellationToken)
+	{
+		return connection.AuthenticationMethod switch
+		{
+			AuthenticationMethod.ConnectionString => GetServiceBlobClientWithConnectionString(connection),
+			AuthenticationMethod.OAuth2 => GetBlobServiceClientWithOAuth2(connection),
+			AuthenticationMethod.ArcManagedIdentity => GetBlobServiceClientWithArcManagedIdentity(connection),
+			AuthenticationMethod.ArcManagedIdentityCrossTenant => GetBlobServiceClientWithArcManagedIdentityCrossTenant(connection, cancellationToken),
+			AuthenticationMethod.DefaultManagedIdentity => GetBlobServiceClientWithDefaultManagedIdentity(connection),
+			_ => throw new NotSupportedException()
+		};
+	}
 
-    private static BlobClient GetBlobClientWithSasToken(Destination destination)
-    {
-        var blobContainerClient = new BlobContainerClient(new Uri($"{destination.Uri}/{destination.ContainerName}?"),
-            new AzureSasCredential(destination.SASToken));
+	private static BlobServiceClient GetServiceBlobClientWithConnectionString(Connection connection)
+	{
+		return new BlobServiceClient(connection.ConnectionString);
+	}
 
-        return blobContainerClient.GetBlobClient(destination.BlobName);
-    }
+	private static BlobClient GetBlobClientWithConnectionString(Connection connection)
+	{
+		return new BlobClient(connection.ConnectionString, connection.ContainerName.ToLower(), connection.BlobName);
+	}
 
-    private static BlobServiceClient GetBlobServiceClientWithOAuth2(Destination destination)
-    {
-        var serviceUri = new Uri($"{destination.Uri}");
-        var credentials = new ClientSecretCredential(destination.TenantID, destination.ApplicationID,
-            destination.ClientSecret, new ClientSecretCredentialOptions());
+	private static BlobClient GetBlobClientWithSasToken(Connection connection)
+	{
+		var blobContainerClient = new BlobContainerClient(new Uri($"{connection.Uri}/{connection.ContainerName}?"),
+			new AzureSasCredential(connection.SasToken));
 
-        return new BlobServiceClient(serviceUri, credentials);
-    }
+		return blobContainerClient.GetBlobClient(connection.BlobName);
+	}
 
-    private static BlobClient GetBlobClientWithOAuth2(Destination destination)
-    {
-        var credentials = new ClientSecretCredential(destination.TenantID, destination.ApplicationID,
-            destination.ClientSecret, new ClientSecretCredentialOptions());
-        var uri = new Uri($"{destination.Uri}/{destination.ContainerName.ToLower()}/{destination.BlobName}");
+	private static BlobServiceClient GetBlobServiceClientWithOAuth2(Connection connection)
+	{
+		var serviceUri = new Uri($"{connection.Uri}");
+		var credentials = new ClientSecretCredential(connection.TenantId, connection.ApplicationId,
+			connection.ClientSecret, new ClientSecretCredentialOptions());
 
-        return new BlobClient(uri, credentials);
-    }
+		return new BlobServiceClient(serviceUri, credentials);
+	}
 
-    [ExcludeFromCodeCoverage(Justification = "We do not have environment prepared to test this connection")]
-    private static BlobClient GetBlobClientWithArcManagedIdentity(Destination destination)
-    {
-        {
-            var credentials = new ManagedIdentityCredential();
-            var uri = new Uri($"{destination.Uri}/{destination.ContainerName.ToLower()}/{destination.BlobName}");
+	private static BlobClient GetBlobClientWithOAuth2(Connection connection)
+	{
+		var credentials = new ClientSecretCredential(connection.TenantId, connection.ApplicationId,
+			connection.ClientSecret, new ClientSecretCredentialOptions());
+		var uri = new Uri($"{connection.Uri}/{connection.ContainerName.ToLower()}/{connection.BlobName}");
+		return new BlobClient(uri, credentials);
+	}
 
-            return new BlobClient(uri, credentials);
-        }
-    }
+	[ExcludeFromCodeCoverage(Justification = "We do not have environment prepared to test this connection")]
+	private static BlobClient GetBlobClientWithArcManagedIdentity(Connection destination)
+	{
+		{
+			var credentials = new ManagedIdentityCredential(new ManagedIdentityCredentialOptions());
+			var uri = new Uri($"{destination.Uri}/{destination.ContainerName.ToLower()}/{destination.BlobName}");
 
-    [ExcludeFromCodeCoverage(Justification = "We do not have environment prepared to test this connection")]
-    private static BlobServiceClient GetBlobServiceClientWithArcManagedIdentity(Destination destination)
-    {
-        {
-            var credentials = new ManagedIdentityCredential();
-            var uri = new Uri($"{destination.Uri}/{destination.ContainerName.ToLower()}/{destination.BlobName}");
+			return new BlobClient(uri, credentials);
+		}
+	}
 
-            return new BlobServiceClient(uri, credentials);
-        }
-    }
+	[ExcludeFromCodeCoverage(Justification = "We do not have environment prepared to test this connection")]
+	private static BlobServiceClient GetBlobServiceClientWithArcManagedIdentity(Connection destination)
+	{
+		var credentials = new ManagedIdentityCredential(new ManagedIdentityCredentialOptions());
+		return new BlobServiceClient(new Uri(destination.Uri), credentials);
+	}
 
-    [ExcludeFromCodeCoverage(Justification = "We do not have environment prepared to test this connection")]
-    private static BlobClient GetBlobClientWithArcManagedIdentityCrossTenant(Destination destination,
-        CancellationToken cancellationToken)
-    {
-        {
-            var credentials = new ManagedIdentityCredential();
-            ClientAssertionCredential assertion = new(
-                destination.TargetTenantId,
-                destination.TargetClientId,
-                async _ =>
-                {
-                    var tokenRequestContext = new TokenRequestContext(destination.Scopes);
-                    var accessToken = await credentials
-                        .GetTokenAsync(tokenRequestContext, cancellationToken).ConfigureAwait(false);
+	[ExcludeFromCodeCoverage(Justification = "We do not have environment prepared to test this connection")]
+	private static BlobClient GetBlobClientWithArcManagedIdentityCrossTenant(Connection destination,
+		CancellationToken cancellationToken)
+	{
+		{
+			var credentials = new ManagedIdentityCredential(new ManagedIdentityCredentialOptions());
+			ClientAssertionCredential assertion = new(
+				destination.TargetTenantId,
+				destination.TargetClientId,
+				async _ =>
+				{
+					var tokenRequestContext = new TokenRequestContext(destination.Scopes);
+					var accessToken = await credentials
+						.GetTokenAsync(tokenRequestContext, cancellationToken).ConfigureAwait(false);
 
-                    return accessToken.Token;
-                });
-            var uri = new Uri($"{destination.Uri}/{destination.ContainerName.ToLower()}/{destination.BlobName}");
+					return accessToken.Token;
+				});
+			var uri = new Uri($"{destination.Uri}/{destination.ContainerName.ToLower()}/{destination.BlobName}");
 
 
-            return new BlobClient(uri, assertion);
-        }
-    }
+			return new BlobClient(uri, assertion);
+		}
+	}
 
-    [ExcludeFromCodeCoverage(Justification = "We do not have environment prepared to test this connection")]
-    private static BlobServiceClient GetBlobServiceClientWithArcManagedIdentityCrossTenant(Destination destination,
-        CancellationToken cancellationToken)
-    {
-        {
-            var credentials = new ManagedIdentityCredential();
-            ClientAssertionCredential assertion = new(
-                destination.TargetTenantId,
-                destination.TargetClientId,
-                async _ =>
-                {
-                    var tokenRequestContext = new TokenRequestContext(destination.Scopes);
-                    var accessToken = await credentials
-                        .GetTokenAsync(tokenRequestContext, cancellationToken).ConfigureAwait(false);
+	[ExcludeFromCodeCoverage(Justification = "We do not have environment prepared to test this connection")]
+	private static BlobServiceClient GetBlobServiceClientWithArcManagedIdentityCrossTenant(Connection destination,
+		CancellationToken cancellationToken)
+	{
+		var credentials = new ManagedIdentityCredential(new ManagedIdentityCredentialOptions());
+		ClientAssertionCredential assertion = new(
+			destination.TargetTenantId,
+			destination.TargetClientId,
+			async _ =>
+			{
+				var tokenRequestContext = new TokenRequestContext(destination.Scopes);
+				var accessToken = await credentials
+					.GetTokenAsync(tokenRequestContext, cancellationToken).ConfigureAwait(false);
+				return accessToken.Token;
+			});
+		return new BlobServiceClient(new Uri(destination.Uri), assertion);
+	}
 
-                    return accessToken.Token;
-                });
-            var uri = new Uri($"{destination.Uri}/{destination.ContainerName.ToLower()}/{destination.BlobName}");
+	private static BlobClient GetClientWithDefaultManagedIdentity(Connection connection)
+	{
+		if (string.IsNullOrWhiteSpace(connection.Uri))
+		{
+			throw new Exception("URI is required.");
+		}
 
-            return new BlobServiceClient(uri, assertion);
-        }
-    }
+		return new BlobClient(GetUri(connection.Uri, connection.ContainerName, connection.BlobName), new DefaultAzureCredential());
+	}
+
+	private static BlobServiceClient GetBlobServiceClientWithDefaultManagedIdentity(Connection connection)
+	{
+		if (string.IsNullOrWhiteSpace(connection.Uri))
+			throw new Exception("URI is required.");
+
+		return new BlobServiceClient(new Uri(connection.Uri), new DefaultAzureCredential());
+	}
 }

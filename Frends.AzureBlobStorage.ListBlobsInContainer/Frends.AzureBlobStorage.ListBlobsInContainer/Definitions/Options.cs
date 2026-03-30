@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace Frends.AzureBlobStorage.ListBlobsInContainer.Definitions;
 
@@ -21,4 +22,20 @@ public class Options
     /// </summary>
     /// <example>test</example>
     public string Prefix { get; set; }
+
+	/// <summary>
+	/// The type of query to be executed.
+	/// </summary>
+	[DefaultValue(QueryType.Default)]
+	[UIHint(nameof(ListingStructure), "", ListingStructure.Flat)]
+	public QueryType QueryType { get; set; } = QueryType.Default;
+
+	/// <summary>
+	/// The query string used to filter or search for tags.
+	/// </summary>
+	/// <example>
+	/// <![CDATA[createdUtc <= '2025-01-01']]>
+	/// </example>
+	[UIHint(nameof(QueryType), "", QueryType.Tags)]
+	public string TagQuery { get; set; } = "";
 }

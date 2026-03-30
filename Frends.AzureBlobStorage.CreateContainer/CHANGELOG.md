@@ -1,5 +1,11 @@
 ﻿# Changelog
 
+## [2.3.0] - 2026-03-24
+
+### Added
+- Added support for Default Managed Identity.
+- Added SAS Token authentication method.
+
 ## [2.2.0] - 2026-01-23
 
 ### Added

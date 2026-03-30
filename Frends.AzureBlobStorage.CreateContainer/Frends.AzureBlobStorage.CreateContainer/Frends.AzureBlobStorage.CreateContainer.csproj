@@ -2,7 +2,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
-        <Version>2.2.0</Version>
+        <Version>2.3.0</Version>
         <Authors>Frends</Authors>
         <Copyright>Frends</Copyright>
         <Company>Frends</Company>
@@ -20,15 +20,15 @@
         </AdditionalFiles>
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="Azure.Identity" Version="1.17.1"/>
-        <PackageReference Include="Azure.Storage.Blobs" Version="12.27.0"/>
-        <PackageReference Include="FrendsTaskAnalyzers" Version="1.9.0">
+        <PackageReference Include="Azure.Identity" Version="1.17.1" />
+        <PackageReference Include="Azure.Storage.Blobs" Version="12.27.0" />
+        <PackageReference Include="FrendsTaskAnalyzers" Version="1.11.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
     </ItemGroup>
     <ItemGroup>
-        <Content Include="migration.json" PackagePath="/" Pack="true"/>
-        <Content Include="../CHANGELOG.md" PackagePath="/" Pack="true"/>
+        <Content Include="migration.json" PackagePath="/" Pack="true" />
+        <Content Include="../CHANGELOG.md" PackagePath="/" Pack="true" />
     </ItemGroup>
 </Project>

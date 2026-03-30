@@ -1,5 +1,26 @@
 # Changelog
 
+## [4.0.0] - 2026-03-24
+
+### Added
+- Added support for Default Managed Identity.
+
+### Updated
+
+- Fixed missing tags upload for page blobs by calling `SetTagsAsync` after upload, since `PageBlobClient.CreateAsync` does not support tags natively.
+- Fixed `ContentType` not being applied to page blobs by calling `SetHttpHeadersAsync` after upload, since `PageBlobClient.CreateAsync` does not support HTTP headers natively.
+- InvalidCastException and NullReferenceException in AppendAny when appending to Block blobs
+
+	Problem: When uploading a Block blob with ActionOnExistingFile = Append, two bugs occurred:
+	- AppendAny attempted to directly cast the BlobBaseClient to AppendBlobClient, causing an InvalidCastException when the actual client instance was a BlobClient.
+	- For Block blobs where the existing blob on storage was of type BlobType.Append, AppendAny correctly returned null (append done inline), but the Block upload path passed that null FileInfo directly into GetStream, causing a NullReferenceException.
+
+- Fixed source files in subdirectories being incorrectly deleted after upload when using `UploadSourceType.Directory`; the temp file guard now checks whether the file resides anywhere under the source directory tree, not just the root.
+
+### Changed
+
+- [Breaking] Updated dotnet SDK to version 8.
+
 ## [3.6.0] - 2026-01-23
 
 ### Added
