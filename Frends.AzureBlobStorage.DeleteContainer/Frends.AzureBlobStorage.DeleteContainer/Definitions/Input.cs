@@ -1,4 +1,4 @@
-﻿using Frends.Common.Toolkit.Attributes;
+﻿using Frends.AzureBlobStorage.DeleteContainer.Attributes;
 
 namespace Frends.AzureBlobStorage.DeleteContainer.Definitions;
 

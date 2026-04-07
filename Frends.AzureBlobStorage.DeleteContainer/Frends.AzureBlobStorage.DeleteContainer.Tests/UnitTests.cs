@@ -6,8 +6,6 @@ using System.Threading;
 using Azure.Storage.Blobs;
 using Frends.AzureBlobStorage.DeleteContainer.Definitions;
 using Azure.Storage.Blobs.Models;
-using Frends.AzureBlobStorage.Toolkit.Definitions;
-using Frends.AzureBlobStorage.Toolkit.Handlers;
 
 namespace Frends.AzureBlobStorage.DeleteContainer.Tests;
 
@@ -19,7 +17,7 @@ public class UnitTests
     [TestInitialize]
     public void TestSetup()
     {
-        TestHandler.LoadEnvironmentVariables();
+        TestHelper.LoadEnvironmentVariables();
         // Generate unique container name to avoid conflicts when running multiple tests
         _containerName = $"test-container{DateTime.Now.ToString("mmssffffff", CultureInfo.InvariantCulture)}";
     }
@@ -34,7 +32,7 @@ public class UnitTests
 
     private BlobContainerClient GetBlobServiceClient()
     {
-        var blobServiceClient = new BlobServiceClient(TestHandler.ConnectionString);
+        var blobServiceClient = new BlobServiceClient(TestHelper.ConnectionString);
 
         return blobServiceClient.GetBlobContainerClient(_containerName);
     }
@@ -50,7 +48,7 @@ public class UnitTests
             },
             new Connection
             {
-                ConnectionString = TestHandler.ConnectionString,
+                ConnectionString = TestHelper.ConnectionString,
             },
             new Options
             {
@@ -68,7 +66,7 @@ public class UnitTests
             },
             new Connection
             {
-                ConnectionString = TestHandler.ConnectionString,
+                ConnectionString = TestHelper.ConnectionString,
             },
             new Options
             {
@@ -87,7 +85,7 @@ public class UnitTests
             },
             new Connection
             {
-                ConnectionString = TestHandler.ConnectionString,
+                ConnectionString = TestHelper.ConnectionString,
             },
             new Options
             {
@@ -105,7 +103,7 @@ public class UnitTests
             },
             new Connection
             {
-                ConnectionString = TestHandler.ConnectionString,
+                ConnectionString = TestHelper.ConnectionString,
             },
             new Options
             {
@@ -163,10 +161,10 @@ public class UnitTests
         var connection = new Connection
         {
             AuthenticationMethod = ConnectionMethod.OAuth2,
-            StorageAccountName = TestHandler.StorageAccountName,
-            ApplicationId = TestHandler.ClientId,
-            TenantId = TestHandler.TenantId,
-            ClientSecret = TestHandler.ClientSecret
+            StorageAccountName = TestHelper.StorageAccountName,
+            ApplicationId = TestHelper.ClientId,
+            TenantId = TestHelper.TenantId,
+            ClientSecret = TestHelper.ClientSecret
         };
 
         var options = new Options
