@@ -6,8 +6,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
-using Frends.AzureBlobStorage.Toolkit.Definitions;
-using Frends.AzureBlobStorage.Toolkit.Handlers;
 
 namespace Frends.AzureBlobStorage.ListBlobsInContainer.Tests;
 
@@ -20,14 +18,14 @@ public class OAuthUnitTests
     [TestInitialize]
     public async Task Init()
     {
-        TestHandler.LoadEnvironmentVariables();
-        await Helper.CreateContainerAndTestFiles(false, TestHandler.ConnectionString, _containerName);
+        TestHelper.LoadEnvironmentVariables();
+        await Helper.CreateContainerAndTestFiles(false, TestHelper.ConnectionString, _containerName);
     }
 
     [TestCleanup]
     public async Task CleanUp()
     {
-        await Helper.CreateContainerAndTestFiles(true, TestHandler.ConnectionString, _containerName);
+        await Helper.CreateContainerAndTestFiles(true, TestHelper.ConnectionString, _containerName);
     }
 
     [TestMethod]
@@ -47,10 +45,10 @@ public class OAuthUnitTests
         var connection = new Connection
         {
             AuthenticationMethod = ConnectionMethod.OAuth2,
-            ApplicationId = TestHandler.ClientId,
-            TenantId = TestHandler.TenantId,
-            ClientSecret = TestHandler.ClientSecret,
-            StorageAccountName = TestHandler.StorageAccountName,
+            ApplicationId = TestHelper.ClientId,
+            TenantId = TestHelper.TenantId,
+            ClientSecret = TestHelper.ClientSecret,
+            StorageAccountName = TestHelper.StorageAccountName,
         };
 
         foreach (var structure in listing)
@@ -102,10 +100,10 @@ public class OAuthUnitTests
         var connection = new Connection
         {
             AuthenticationMethod = ConnectionMethod.OAuth2,
-            ApplicationId = TestHandler.ClientId,
-            TenantId = TestHandler.TenantId,
-            ClientSecret = TestHandler.ClientSecret,
-            StorageAccountName = TestHandler.StorageAccountName,
+            ApplicationId = TestHelper.ClientId,
+            TenantId = TestHelper.TenantId,
+            ClientSecret = TestHelper.ClientSecret,
+            StorageAccountName = TestHelper.StorageAccountName,
         };
 
         foreach (var structure in listing)

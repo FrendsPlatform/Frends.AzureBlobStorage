@@ -1,4 +1,4 @@
-﻿using Frends.Common.Toolkit.Attributes;
+﻿using Frends.AzureBlobStorage.ListBlobsInContainer.Attributes;
 
 namespace Frends.AzureBlobStorage.ListBlobsInContainer.Definitions;
 

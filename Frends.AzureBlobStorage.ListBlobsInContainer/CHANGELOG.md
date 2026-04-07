@@ -1,10 +1,10 @@
 # Changelog
 
-## [1.4.0] - 2026-01-23
+## [2.0.0] - 2026-04-26
 
-### Added
+### Changed
 
-- Add options to support Arc Managed Identity authentication.
+- Standardized parameter names and validation across all Azure Blob Storage tasks for consistency.
 
 ## [1.3.0] - 2026-01-15
 
@@ -61,4 +61,5 @@
 ## [1.0.0] - 2022-04-14
 
 ### Added
+
 - Initial implementation

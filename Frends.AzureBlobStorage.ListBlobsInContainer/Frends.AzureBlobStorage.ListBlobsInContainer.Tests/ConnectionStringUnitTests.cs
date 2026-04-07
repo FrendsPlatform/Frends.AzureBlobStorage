@@ -7,8 +7,6 @@ using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
-using Frends.AzureBlobStorage.Toolkit.Definitions;
-using Frends.AzureBlobStorage.Toolkit.Handlers;
 
 namespace Frends.AzureBlobStorage.ListBlobsInContainer.Tests;
 
@@ -21,14 +19,14 @@ public class ConnectionStringUnitTests
     [TestInitialize]
     public async Task Init()
     {
-        TestHandler.LoadEnvironmentVariables();
-        await Helper.CreateContainerAndTestFiles(false, TestHandler.ConnectionString, _containerName);
+        TestHelper.LoadEnvironmentVariables();
+        await Helper.CreateContainerAndTestFiles(false, TestHelper.ConnectionString, _containerName);
     }
 
     [TestCleanup]
     public async Task CleanUp()
     {
-        await Helper.CreateContainerAndTestFiles(true, TestHandler.ConnectionString, _containerName);
+        await Helper.CreateContainerAndTestFiles(true, TestHelper.ConnectionString, _containerName);
     }
 
     [TestMethod]
@@ -48,7 +46,7 @@ public class ConnectionStringUnitTests
         var connection = new Connection
         {
             AuthenticationMethod = ConnectionMethod.ConnectionString,
-            ConnectionString = TestHandler.ConnectionString,
+            ConnectionString = TestHelper.ConnectionString,
         };
 
         foreach (var structure in listing)
@@ -100,7 +98,7 @@ public class ConnectionStringUnitTests
         var connection = new Connection
         {
             AuthenticationMethod = ConnectionMethod.ConnectionString,
-            ConnectionString = TestHandler.ConnectionString,
+            ConnectionString = TestHelper.ConnectionString,
         };
 
         foreach (var structure in listing)

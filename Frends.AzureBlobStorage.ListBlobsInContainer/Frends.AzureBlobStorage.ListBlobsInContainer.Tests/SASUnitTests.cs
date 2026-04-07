@@ -9,8 +9,6 @@ using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
-using Frends.AzureBlobStorage.Toolkit.Definitions;
-using Frends.AzureBlobStorage.Toolkit.Handlers;
 
 
 namespace Frends.AzureBlobStorage.ListBlobsInContainer.Tests;
@@ -24,14 +22,14 @@ public class SASUnitTests
     [TestInitialize]
     public async Task Init()
     {
-        TestHandler.LoadEnvironmentVariables();
-        await Helper.CreateContainerAndTestFiles(false, TestHandler.ConnectionString, _containerName);
+        TestHelper.LoadEnvironmentVariables();
+        await Helper.CreateContainerAndTestFiles(false, TestHelper.ConnectionString, _containerName);
     }
 
     [TestCleanup]
     public async Task CleanUp()
     {
-        await Helper.CreateContainerAndTestFiles(true, TestHandler.ConnectionString, _containerName);
+        await Helper.CreateContainerAndTestFiles(true, TestHelper.ConnectionString, _containerName);
     }
 
     [TestMethod]
@@ -46,7 +44,7 @@ public class SASUnitTests
         {
             AuthenticationMethod = ConnectionMethod.SasToken,
             SasToken = string.Empty,
-            StorageAccountName = TestHandler.StorageAccountName,
+            StorageAccountName = TestHelper.StorageAccountName,
         };
 
         var options = new Options
@@ -58,7 +56,6 @@ public class SASUnitTests
         var ex = await Assert.ThrowsExceptionAsync<ValidationException>(async () =>
             await AzureBlobStorage.ListBlobsInContainer(source, connection, options, default));
         Assert.IsTrue(ex.Message.Contains("SasToken is required."), ex.Message);
-
     }
 
     [TestMethod]
@@ -79,7 +76,7 @@ public class SASUnitTests
         {
             AuthenticationMethod = ConnectionMethod.SasToken,
             SasToken = GenerateSASToken(),
-            StorageAccountName = TestHandler.StorageAccountName,
+            StorageAccountName = TestHelper.StorageAccountName,
         };
 
         foreach (var structure in listing)
@@ -132,7 +129,7 @@ public class SASUnitTests
         {
             AuthenticationMethod = ConnectionMethod.SasToken,
             SasToken = GenerateSASToken(),
-            StorageAccountName = TestHandler.StorageAccountName,
+            StorageAccountName = TestHelper.StorageAccountName,
         };
 
 
@@ -171,7 +168,8 @@ public class SASUnitTests
         };
 
         blobSasBuilder.SetPermissions(BlobContainerSasPermissions.List);
-        var sasToken = blobSasBuilder.ToSasQueryParameters(new StorageSharedKeyCredential(TestHandler.StorageAccountName, TestHandler.AccessKey))
+        var sasToken = blobSasBuilder
+            .ToSasQueryParameters(new StorageSharedKeyCredential(TestHelper.StorageAccountName, TestHelper.AccessKey))
             .ToString();
 
         return sasToken;
