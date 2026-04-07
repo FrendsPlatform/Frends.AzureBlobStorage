@@ -13,7 +13,7 @@ namespace Frends.AzureBlobStorage.ListContainers.Tests;
 [TestFixture]
 public class ListContainersTests
 {
-    private const string storageAccount = "stataskdevelopment";
+    private const string StorageAccount = "stataskdevelopment";
 
     private Connection connection;
     private Options options;
@@ -32,7 +32,7 @@ public class ListContainersTests
             ConnectionString = TestHelper.ConnectionString,
             TenantId = TestHelper.TenantId,
             ApplicationId = TestHelper.ClientId,
-            StorageAccountName = storageAccount,
+            StorageAccountName = StorageAccount,
             SasToken = TestHelper.SasToken,
             ClientSecret = TestHelper.ClientSecret,
         };

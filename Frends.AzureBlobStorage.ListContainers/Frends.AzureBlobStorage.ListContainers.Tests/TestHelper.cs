@@ -5,11 +5,15 @@ namespace Frends.AzureBlobStorage.ListContainers.Tests;
 
 internal static class TestHelper
 {
-    internal static string ConnectionString;
-    internal static string TenantId;
-    internal static string ClientId;
-    internal static string ClientSecret;
-    internal static string SasToken;
+    internal static string ConnectionString { get; private set; }
+
+    internal static string TenantId { get; private set; }
+
+    internal static string ClientId { get; private set; }
+
+    internal static string ClientSecret { get; private set; }
+
+    internal static string SasToken { get; private set; }
 
     internal static void LoadEnvironmentVariables()
     {
