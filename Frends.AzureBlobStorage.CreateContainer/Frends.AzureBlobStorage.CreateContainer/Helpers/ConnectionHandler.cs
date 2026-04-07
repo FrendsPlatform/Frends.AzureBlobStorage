@@ -15,33 +15,6 @@ namespace Frends.AzureBlobStorage.CreateContainer.Helpers;
 public static class ConnectionHandler
 {
     /// <summary>
-    /// Get Blob Base Client.
-    /// </summary>
-    /// <param name="connection">Connection task parameters</param>
-    /// <param name="containerName">container name from input parameter</param>
-    /// <param name="blobName">blob name from input parameters</param>
-    /// <param name="blobType">blob type from options parameters</param>
-    /// <param name="cancellationToken">cancellation token</param>
-    /// <returns>BlobContainerClient object</returns>
-    public static BlobBaseClient GetBlobBaseClient(
-        Connection connection,
-        string containerName,
-        string blobName,
-        AzureBlobType blobType,
-        CancellationToken cancellationToken)
-    {
-        var containerClient = GetBlobContainerClient(connection, containerName, cancellationToken);
-
-        return blobType switch
-        {
-            AzureBlobType.Append => containerClient.GetAppendBlobClient(blobName),
-            AzureBlobType.Block => containerClient.GetBlobClient(blobName),
-            AzureBlobType.Page => containerClient.GetPageBlobClient(blobName),
-            _ => throw new NotSupportedException(),
-        };
-    }
-
-    /// <summary>
     /// Get Blob Container Client.
     /// </summary>
     /// <param name="connection">Connection task parameters</param>
@@ -59,31 +32,12 @@ public static class ConnectionHandler
     }
 
     /// <summary>
-    /// Get Blob Client.
-    /// </summary>
-    /// <param name="connection">Connection task parameters</param>
-    /// <param name="containerName">container name from input parameter</param>
-    /// <param name="blobName">blob name from input parameter</param>
-    /// <param name="cancellationToken">cancellation token</param>
-    /// <returns>BlobClient object</returns>
-    public static BlobClient GetBlobClient(
-        Connection connection,
-        string containerName,
-        string blobName,
-        CancellationToken cancellationToken)
-    {
-        var blobContainerClient = GetBlobContainerClient(connection, containerName, cancellationToken);
-
-        return blobContainerClient.GetBlobClient(blobName);
-    }
-
-    /// <summary>
     /// Get Blob Service Client.
     /// </summary>
     /// <param name="connection">Connection task parameters</param>
     /// <param name="cancellationToken">cancellation token</param>
     /// <returns>BlobServiceClient object</returns>
-    public static BlobServiceClient GetBlobServiceClient(Connection connection, CancellationToken cancellationToken)
+    private static BlobServiceClient GetBlobServiceClient(Connection connection, CancellationToken cancellationToken)
     {
         try
         {
