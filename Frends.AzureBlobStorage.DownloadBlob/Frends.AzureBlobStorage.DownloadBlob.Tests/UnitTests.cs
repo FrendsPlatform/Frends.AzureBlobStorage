@@ -48,7 +48,7 @@ public class UnitTests
             TenantId = TestHelper.TenantId,
             ApplicationId = TestHelper.ClientId,
             ClientSecret = TestHelper.ClientSecret,
-            StorageAccountName = TestHelper.StorageAccountName,
+            StorageAccountName = _storageAccountName,
             SasToken = TestHelper.SasToken,
         };
 
