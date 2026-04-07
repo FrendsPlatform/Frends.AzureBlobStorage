@@ -6,8 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Azure.Storage.Blobs;
 using Frends.AzureBlobStorage.ListContainers.Definitions;
-using Frends.AzureBlobStorage.Toolkit.Definitions;
-using Frends.AzureBlobStorage.Toolkit.Handlers;
 using NUnit.Framework;
 
 namespace Frends.AzureBlobStorage.ListContainers.Tests;
@@ -25,18 +23,18 @@ public class ListContainersTests
     [SetUp]
     public async Task Setup()
     {
-        TestHandler.LoadEnvironmentVariables();
+        TestHelper.LoadEnvironmentVariables();
         testContainerName = $"testcontainer{DateTime.Now.ToString("mmssffff", CultureInfo.InvariantCulture)}";
 
         connection = new Connection
         {
             AuthenticationMethod = ConnectionMethod.ConnectionString,
-            ConnectionString = TestHandler.ConnectionString,
-            TenantId = TestHandler.TenantId,
-            ApplicationId = TestHandler.ClientId,
+            ConnectionString = TestHelper.ConnectionString,
+            TenantId = TestHelper.TenantId,
+            ApplicationId = TestHelper.ClientId,
             StorageAccountName = storageAccount,
-            SasToken = TestHandler.SasToken,
-            ClientSecret = TestHandler.ClientSecret,
+            SasToken = TestHelper.SasToken,
+            ClientSecret = TestHelper.ClientSecret,
         };
 
         options = new Options
@@ -50,14 +48,14 @@ public class ListContainersTests
             States = ContainerStateFilter.None,
         };
 
-        var blobServiceClient = new BlobServiceClient(TestHandler.ConnectionString);
+        var blobServiceClient = new BlobServiceClient(TestHelper.ConnectionString);
         await blobServiceClient.CreateBlobContainerAsync(testContainerName);
     }
 
     [TearDown]
     public async Task Cleanup()
     {
-        var blobServiceClient = new BlobServiceClient(TestHandler.ConnectionString);
+        var blobServiceClient = new BlobServiceClient(TestHelper.ConnectionString);
         await blobServiceClient.DeleteBlobContainerAsync(testContainerName);
     }
 

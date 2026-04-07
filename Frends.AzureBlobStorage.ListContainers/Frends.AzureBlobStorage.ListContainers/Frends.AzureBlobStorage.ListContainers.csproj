@@ -3,7 +3,7 @@
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
         <LangVersion>latest</LangVersion>
-        <Version>1.2.0</Version>
+        <Version>2.0.0</Version>
         <Authors>Frends</Authors>
         <Copyright>Copyright (c) 2025 Frends EiPaaS</Copyright>
         <Company>Frends</Company>
@@ -19,9 +19,7 @@
     <ItemGroup>
         <PackageReference Include="Azure.Identity" Version="1.17.1"/>
         <PackageReference Include="Azure.Storage.Blobs" Version="12.27.0"/>
-        <PackageReference Include="Frends.AzureBlobStorage.Toolkit" Version="1.0.0" />
-        <PackageReference Include="Frends.Common.Toolkit" Version="1.0.0" />
-        <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
+        <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
