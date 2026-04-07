@@ -10,8 +10,6 @@ using System.Threading.Tasks;
 using Azure.Storage.Blobs.Models;
 using System.Collections.Generic;
 using Azure.Identity;
-using Frends.AzureBlobStorage.Toolkit.Definitions;
-using Frends.AzureBlobStorage.Toolkit.Handlers;
 
 namespace Frends.AzureBlobStorage.WriteBlob.Tests;
 
@@ -40,10 +38,10 @@ public class UnitTests
     [SetUp]
     public async Task TestSetup()
     {
-        TestHandler.LoadEnvironmentVariables();
+        TestHelper.LoadEnvironmentVariables();
         _containerName = $"test-container{DateTime.Now.ToString("mmssffffff", CultureInfo.InvariantCulture)}";
 
-        await CreateBlobContainer(TestHandler.ConnectionString, _containerName);
+        await CreateBlobContainer(TestHelper.ConnectionString, _containerName);
 
         _source = new Source
         {
@@ -66,11 +64,11 @@ public class UnitTests
         _connection = new Connection
         {
             AuthenticationMethod = ConnectionMethod.ConnectionString,
-            ConnectionString = TestHandler.ConnectionString,
-            TenantId = TestHandler.TenantId,
-            ApplicationId = TestHandler.ClientId,
+            ConnectionString = TestHelper.ConnectionString,
+            TenantId = TestHelper.TenantId,
+            ApplicationId = TestHelper.ClientId,
             StorageAccountName = _storageAccount,
-            ClientSecret = TestHandler.ClientSecret,
+            ClientSecret = TestHelper.ClientSecret,
         };
 
         _options = new Options()
@@ -235,7 +233,7 @@ public class UnitTests
     public async Task WriteBlob_SasToken()
     {
         _connection.AuthenticationMethod = ConnectionMethod.SasToken;
-        _connection.SasToken = TestHandler.SasToken;
+        _connection.SasToken = TestHelper.SasToken;
         _destination.ContainerName = _container;
 
         var result = await AzureBlobStorage.WriteBlob(_source, _destination, _connection, _options, default);
@@ -263,21 +261,21 @@ public class UnitTests
 
     private async Task DeleteBlobContainer(string containerName)
     {
-        var blobServiceClient = new BlobServiceClient(TestHandler.ConnectionString);
+        var blobServiceClient = new BlobServiceClient(TestHelper.ConnectionString);
         var container = blobServiceClient.GetBlobContainerClient(containerName);
         await container.DeleteIfExistsAsync();
     }
 
     private async Task<bool> BlobExists(string containerName, string blobName, string expected)
     {
-        var blobServiceClient = new BlobServiceClient(TestHandler.ConnectionString);
+        var blobServiceClient = new BlobServiceClient(TestHelper.ConnectionString);
         var container = blobServiceClient.GetBlobContainerClient(containerName);
         var blob = container.GetBlobClient(blobName);
 
         if (!blob.Exists())
             return false;
 
-        var blobClient = new BlobClient(TestHandler.ConnectionString, _destination.ContainerName, _destination.BlobName);
+        var blobClient = new BlobClient(TestHelper.ConnectionString, _destination.ContainerName, _destination.BlobName);
         var blobDownload = await blobClient.DownloadAsync();
 
         using var reader = new StreamReader(blobDownload.Value.Content);

@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using Frends.AzureBlobStorage.WriteBlob.Attributes;
 using Frends.AzureBlobStorage.WriteBlob.Enums;
-using Frends.Common.Toolkit.Attributes;
 
 namespace Frends.AzureBlobStorage.WriteBlob.Definitions;
 
