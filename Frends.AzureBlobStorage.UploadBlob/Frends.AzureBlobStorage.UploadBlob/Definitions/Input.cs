@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using Frends.Common.Toolkit.Attributes;
+using Frends.AzureBlobStorage.UploadBlob.Attributes;
 
 namespace Frends.AzureBlobStorage.UploadBlob.Definitions;
 

@@ -9,8 +9,6 @@ using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
-using Frends.AzureBlobStorage.Toolkit.Definitions;
-using Frends.AzureBlobStorage.Toolkit.Handlers;
 
 namespace Frends.AzureBlobStorage.UploadBlob.Tests;
 
@@ -47,7 +45,7 @@ public class UnitTests
     [SetUp]
     public void TestSetup()
     {
-        TestHandler.LoadEnvironmentVariables();
+        TestHelper.LoadEnvironmentVariables();
         CreateFiles();
         _containerName = $"test-container{DateTime.Now.ToString("mmssffffff", CultureInfo.InvariantCulture)}";
 
@@ -67,12 +65,12 @@ public class UnitTests
         _connection = new Connection
         {
             AuthenticationMethod = ConnectionMethod.ConnectionString,
-            ConnectionString = TestHandler.ConnectionString,
-            TenantId = TestHandler.TenantId,
-            ApplicationId = TestHandler.ClientId,
+            ConnectionString = TestHelper.ConnectionString,
+            TenantId = TestHelper.TenantId,
+            ApplicationId = TestHelper.ClientId,
             StorageAccountName = _storageAccount,
-            SasToken = TestHandler.SasToken,
-            ClientSecret = TestHandler.ClientSecret
+            SasToken = TestHelper.SasToken,
+            ClientSecret = TestHelper.ClientSecret
         };
 
         _options = new Options
@@ -92,10 +90,10 @@ public class UnitTests
     [TearDown]
     public async Task CleanUp()
     {
-        var container = GetBlobContainer(TestHandler.ConnectionString, _containerName);
+        var container = GetBlobContainer(TestHelper.ConnectionString, _containerName);
         await container.DeleteIfExistsAsync();
         // Empties the const container.
-        await DeleteBlobsInContainer(TestHandler.ConnectionString, _container, _input.BlobName);
+        await DeleteBlobsInContainer(TestHelper.ConnectionString, _container, _input.BlobName);
         await Task.Delay(200); // Give some time for the deletion to propagate
         DeleteFiles();
     }
@@ -103,7 +101,7 @@ public class UnitTests
     [Test]
     public async Task UploadFile_SimpleUpload()
     {
-        var container = GetBlobContainer(TestHandler.ConnectionString, _containerName);
+        var container = GetBlobContainer(TestHelper.ConnectionString, _containerName);
 
         foreach (var blobtype in _blobtypes)
         {
@@ -127,7 +125,7 @@ public class UnitTests
             // SAS token
             _connection.AuthenticationMethod = ConnectionMethod.SasToken;
             _input.ContainerName = _container;
-            container = GetBlobContainer(TestHandler.ConnectionString, _container);
+            container = GetBlobContainer(TestHelper.ConnectionString, _container);
             result = await AzureBlobStorage.UploadBlob(_input, _connection, _options, default);
             Assert.IsTrue(result.Success);
             Assert.IsTrue(result.Data.ContainsValue($"{container.Uri}/testfile.txt"));
@@ -139,7 +137,7 @@ public class UnitTests
     [Test]
     public async Task UploadBlob_RenameBlob()
     {
-        var container = GetBlobContainer(TestHandler.ConnectionString, _containerName);
+        var container = GetBlobContainer(TestHelper.ConnectionString, _containerName);
         _input.BlobName = "RenamedBlob";
 
         foreach (var blobtype in _blobtypes)
@@ -162,7 +160,7 @@ public class UnitTests
             // SAS token
             _connection.AuthenticationMethod = ConnectionMethod.SasToken;
             _input.ContainerName = _container;
-            container = GetBlobContainer(TestHandler.ConnectionString, _container);
+            container = GetBlobContainer(TestHelper.ConnectionString, _container);
             result = await AzureBlobStorage.UploadBlob(_input, _connection, _options, default);
             Assert.IsTrue(result.Success);
             Assert.IsTrue(result.Data.ContainsValue($"{container.Uri}/{_input.BlobName}"));
@@ -175,7 +173,7 @@ public class UnitTests
     {
         _input.ContentsOnly = true;
 
-        var container = GetBlobContainer(TestHandler.ConnectionString, _containerName);
+        var container = GetBlobContainer(TestHelper.ConnectionString, _containerName);
 
         foreach (var blobtype in _blobtypes)
         {
@@ -199,7 +197,7 @@ public class UnitTests
             // SAS token
             _connection.AuthenticationMethod = ConnectionMethod.SasToken;
             _input.ContainerName = _container;
-            container = GetBlobContainer(TestHandler.ConnectionString, _container);
+            container = GetBlobContainer(TestHelper.ConnectionString, _container);
             result = await AzureBlobStorage.UploadBlob(_input, _connection, _options, default);
             Assert.IsTrue(result.Success);
             Assert.IsTrue(result.Data.ContainsValue($"{container.Uri}/testfile.txt"));
@@ -218,7 +216,7 @@ public class UnitTests
             _options.BlobType = blobtype;
 
             // connection string
-            var container = GetBlobContainer(TestHandler.ConnectionString, _containerName);
+            var container = GetBlobContainer(TestHelper.ConnectionString, _containerName);
             _connection.AuthenticationMethod = ConnectionMethod.ConnectionString;
             var result = await AzureBlobStorage.UploadBlob(_input, _connection, _options, default);
             Assert.IsTrue(result.Success);
@@ -230,7 +228,7 @@ public class UnitTests
             TestSetup();
 
             // OAuth
-            container = GetBlobContainer(TestHandler.ConnectionString, _containerName);
+            container = GetBlobContainer(TestHelper.ConnectionString, _containerName);
             _connection.AuthenticationMethod = ConnectionMethod.OAuth2;
             result = await AzureBlobStorage.UploadBlob(_input, _connection, _options, default);
             Assert.IsTrue(result.Success);
@@ -248,10 +246,10 @@ public class UnitTests
             TestSetup();
 
             // SAS token
-            container = GetBlobContainer(TestHandler.ConnectionString, _container);
+            container = GetBlobContainer(TestHelper.ConnectionString, _container);
             _connection.AuthenticationMethod = ConnectionMethod.SasToken;
             _input.ContainerName = _container;
-            container = GetBlobContainer(TestHandler.ConnectionString, _container);
+            container = GetBlobContainer(TestHelper.ConnectionString, _container);
             result = await AzureBlobStorage.UploadBlob(_input, _connection, _options, default);
             Assert.IsTrue(result.Success);
             Assert.IsTrue(result.Data.ContainsValue($"{container.Uri}/testfile.txt"));
@@ -274,7 +272,7 @@ public class UnitTests
             _options.BlobType = blobtype;
             _input.ContainerName = _containerName;
 
-            var container = GetBlobContainer(TestHandler.ConnectionString, _containerName);
+            var container = GetBlobContainer(TestHelper.ConnectionString, _containerName);
 
             // Connection string
             _connection.AuthenticationMethod = ConnectionMethod.ConnectionString;
@@ -295,7 +293,7 @@ public class UnitTests
             // SAS token
             _connection.AuthenticationMethod = ConnectionMethod.SasToken;
             _input.ContainerName = _container;
-            container = GetBlobContainer(TestHandler.ConnectionString, _container);
+            container = GetBlobContainer(TestHelper.ConnectionString, _container);
             result = await AzureBlobStorage.UploadBlob(_input, _connection, _options, default);
             Assert.IsTrue(result.Success);
             Assert.IsTrue(result.Data.ContainsValue($"{container.Uri}/SomeBlob"));
@@ -314,7 +312,7 @@ public class UnitTests
         {
             _options.BlobType = blobtype;
             _input.ContainerName = _containerName;
-            var container = GetBlobContainer(TestHandler.ConnectionString, _containerName);
+            var container = GetBlobContainer(TestHelper.ConnectionString, _containerName);
 
             // connection string
             _connection.AuthenticationMethod = ConnectionMethod.ConnectionString;
@@ -359,7 +357,7 @@ public class UnitTests
             // SAS token
             _connection.AuthenticationMethod = ConnectionMethod.SasToken;
             _input.ContainerName = _container;
-            container = GetBlobContainer(TestHandler.ConnectionString, _container);
+            container = GetBlobContainer(TestHelper.ConnectionString, _container);
             result = await AzureBlobStorage.UploadBlob(_input, _connection, _options, default);
             Assert.IsTrue(result.Success);
             Assert.IsTrue(result.Data.ContainsValue($"{container.Uri}/compress.gz"));
@@ -398,7 +396,7 @@ public class UnitTests
             _input.SourceFile = _testfile;
 
             var result = await AzureBlobStorage.UploadBlob(_input, _connection, _options, default);
-            var container = GetBlobContainer(TestHandler.ConnectionString, _input.ContainerName);
+            var container = GetBlobContainer(TestHelper.ConnectionString, _input.ContainerName);
             Assert.IsTrue(result.Success);
             Assert.IsTrue(result.Data.ContainsValue($"{container.Uri}/testfile.txt"));
             Assert.IsTrue(await container.GetBlobClient("testfile.txt").ExistsAsync(),
@@ -444,7 +442,7 @@ public class UnitTests
             _input.SourceType = UploadSourceType.Directory;
             _input.SourceDirectory = _testFileDir;
             _input.SourceFile = default;
-            var container = GetBlobContainer(TestHandler.ConnectionString, _containerName);
+            var container = GetBlobContainer(TestHelper.ConnectionString, _containerName);
             var resultWithTags = await AzureBlobStorage.UploadBlob(_input, _connection, _options, default);
             Assert.IsTrue(resultWithTags.Success);
             Assert.IsTrue(resultWithTags.Data.ContainsValue($"{container.Uri}/TestFiles/testfile.txt"));
@@ -465,7 +463,7 @@ public class UnitTests
             _input.SourceType = UploadSourceType.Directory;
             _input.SourceDirectory = _testFileDir;
             _input.SourceFile = default;
-            container = GetBlobContainer(TestHandler.ConnectionString, _containerName);
+            container = GetBlobContainer(TestHelper.ConnectionString, _containerName);
             _connection.AuthenticationMethod = ConnectionMethod.OAuth2;
             resultWithTags = await AzureBlobStorage.UploadBlob(_input, _connection, _options, default);
             Assert.IsTrue(resultWithTags.Success);
@@ -487,7 +485,7 @@ public class UnitTests
             _input.SourceType = UploadSourceType.Directory;
             _input.SourceDirectory = _testFileDir;
             _input.SourceFile = default;
-            container = GetBlobContainer(TestHandler.ConnectionString, _container);
+            container = GetBlobContainer(TestHelper.ConnectionString, _container);
             _connection.AuthenticationMethod = ConnectionMethod.SasToken;
             _input.ContainerName = _container;
             resultWithTags = await AzureBlobStorage.UploadBlob(_input, _connection, _options, default);
@@ -519,7 +517,7 @@ public class UnitTests
             _input.SourceDirectory = _testFileDir;
             _input.SourceFile = default;
             _input.BlobFolderName = "RenameDir";
-            var container = GetBlobContainer(TestHandler.ConnectionString, _containerName);
+            var container = GetBlobContainer(TestHelper.ConnectionString, _containerName);
             var result = await AzureBlobStorage.UploadBlob(_input, _connection, _options, default);
             Assert.IsTrue(result.Success);
             Assert.IsTrue(result.Data.ContainsValue($"{container.Uri}/RenameDir/testfile.txt"));
@@ -537,7 +535,7 @@ public class UnitTests
             _input.SourceDirectory = _testFileDir;
             _input.SourceFile = default;
             _input.BlobFolderName = "RenameDir";
-            container = GetBlobContainer(TestHandler.ConnectionString, _containerName);
+            container = GetBlobContainer(TestHelper.ConnectionString, _containerName);
             _connection.AuthenticationMethod = ConnectionMethod.OAuth2;
             result = await AzureBlobStorage.UploadBlob(_input, _connection, _options, default);
             Assert.IsTrue(result.Success);
@@ -556,7 +554,7 @@ public class UnitTests
             _input.SourceDirectory = _testFileDir;
             _input.SourceFile = default;
             _input.BlobFolderName = "RenameDir";
-            container = GetBlobContainer(TestHandler.ConnectionString, _container);
+            container = GetBlobContainer(TestHelper.ConnectionString, _container);
             _connection.AuthenticationMethod = ConnectionMethod.SasToken;
             _input.ContainerName = _container;
             result = await AzureBlobStorage.UploadBlob(_input, _connection, _options, default);
@@ -976,14 +974,14 @@ public class UnitTests
 
     private async Task<bool> BlobExists(string containerName, string blobName, string expected)
     {
-        var blobServiceClient = new BlobServiceClient(TestHandler.ConnectionString);
+        var blobServiceClient = new BlobServiceClient(TestHelper.ConnectionString);
         var container = blobServiceClient.GetBlobContainerClient(containerName);
         var blob = container.GetBlobClient(blobName);
 
         if (!blob.Exists())
             return false;
 
-        var blobClient = new BlobClient(TestHandler.ConnectionString, _input.ContainerName, blobName);
+        var blobClient = new BlobClient(TestHelper.ConnectionString, _input.ContainerName, blobName);
         var blobDownload = await blobClient.DownloadAsync();
 
         using var reader = new StreamReader(blobDownload.Value.Content);

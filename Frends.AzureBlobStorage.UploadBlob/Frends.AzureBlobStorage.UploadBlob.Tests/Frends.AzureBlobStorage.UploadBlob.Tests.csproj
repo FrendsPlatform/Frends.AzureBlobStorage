@@ -6,6 +6,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="dotenv.net" Version="4.*"/>
         <PackageReference Include="DocumentFormat.OpenXml" Version="2.20.0"/>
         <PackageReference Include="nunit" Version="3.12.0"/>
         <PackageReference Include="NUnit3TestAdapter" Version="3.17.0"/>
