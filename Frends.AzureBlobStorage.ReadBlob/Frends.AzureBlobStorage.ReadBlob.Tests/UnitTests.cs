@@ -9,8 +9,6 @@ using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
-using Frends.AzureBlobStorage.Toolkit.Definitions;
-using Frends.AzureBlobStorage.Toolkit.Handlers;
 
 namespace Frends.AzureBlobStorage.ReadBlob.Tests;
 
@@ -30,11 +28,11 @@ public class ReadTest
     [SetUp]
     public async Task SetUp()
     {
-        TestHandler.LoadEnvironmentVariables();
+        TestHelper.LoadEnvironmentVariables();
         // Generate unique container name to avoid conflicts when running multiple tests
         _containerName = $"test-container{DateTime.Now.ToString("mmssffffff", CultureInfo.InvariantCulture)}";
 
-        var blobServiceClient = new BlobServiceClient(TestHandler.ConnectionString);
+        var blobServiceClient = new BlobServiceClient(TestHelper.ConnectionString);
         var container = blobServiceClient.GetBlobContainerClient(_containerName);
         await container.CreateIfNotExistsAsync(PublicAccessType.None, null, null);
         var blockBlob = container.GetBlobClient(_blobName);
@@ -44,7 +42,7 @@ public class ReadTest
     [TearDown]
     public async Task TearDown()
     {
-        var blobServiceClient = new BlobServiceClient(TestHandler.ConnectionString);
+        var blobServiceClient = new BlobServiceClient(TestHelper.ConnectionString);
         var container = blobServiceClient.GetBlobContainerClient(_containerName);
         await container.DeleteIfExistsAsync(null);
     }
@@ -61,7 +59,7 @@ public class ReadTest
         connection = new Connection
         {
             AuthenticationMethod = ConnectionMethod.SasToken,
-            StorageAccountName = TestHandler.StorageAccountName,
+            StorageAccountName = TestHelper.StorageAccountName,
             SasToken = GetServiceSasUriForBlob(),
         };
 
@@ -86,7 +84,7 @@ public class ReadTest
         connection = new Connection
         {
             AuthenticationMethod = ConnectionMethod.ConnectionString,
-            ConnectionString = TestHandler.ConnectionString,
+            ConnectionString = TestHelper.ConnectionString,
         };
 
         options = new Options
@@ -110,11 +108,11 @@ public class ReadTest
         connection = new Connection
         {
             AuthenticationMethod = ConnectionMethod.OAuth2,
-            ConnectionString = TestHandler.ConnectionString,
-            ApplicationId = TestHandler.ClientId,
-            StorageAccountName = TestHandler.StorageAccountName,
-            ClientSecret = TestHandler.ClientSecret,
-            TenantId = TestHandler.TenantId,
+            ConnectionString = TestHelper.ConnectionString,
+            ApplicationId = TestHelper.ClientId,
+            StorageAccountName = TestHelper.StorageAccountName,
+            ClientSecret = TestHelper.ClientSecret,
+            TenantId = TestHelper.TenantId,
         };
 
         options = new Options
@@ -141,7 +139,7 @@ public class ReadTest
         connection = new Connection
         {
             AuthenticationMethod = ConnectionMethod.SasToken,
-            StorageAccountName = TestHandler.StorageAccountName,
+            StorageAccountName = TestHelper.StorageAccountName,
             SasToken = string.Empty,
         };
 
@@ -193,7 +191,7 @@ public class ReadTest
             ExpiresOn = DateTime.UtcNow.AddMinutes(5)
         };
         blobSasBuilder.SetPermissions(BlobSasPermissions.Read);
-        var sasToken = blobSasBuilder.ToSasQueryParameters(new StorageSharedKeyCredential(TestHandler.StorageAccountName, TestHandler.AccessKey))
+        var sasToken = blobSasBuilder.ToSasQueryParameters(new StorageSharedKeyCredential(TestHelper.StorageAccountName, TestHelper.AccessKey))
             .ToString();
 
         return sasToken;

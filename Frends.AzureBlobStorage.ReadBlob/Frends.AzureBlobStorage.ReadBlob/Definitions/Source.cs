@@ -1,5 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using Frends.Common.Toolkit.Attributes;
+using Frends.AzureBlobStorage.ReadBlob.Attributes;
 
 namespace Frends.AzureBlobStorage.ReadBlob.Definitions;
 
