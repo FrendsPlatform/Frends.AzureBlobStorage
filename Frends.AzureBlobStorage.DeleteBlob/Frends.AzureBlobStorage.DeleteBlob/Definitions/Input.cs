@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using Frends.Common.Toolkit.Attributes;
+using Frends.AzureBlobStorage.DeleteBlob.Attributes;
 
 
 namespace Frends.AzureBlobStorage.DeleteBlob.Definitions;

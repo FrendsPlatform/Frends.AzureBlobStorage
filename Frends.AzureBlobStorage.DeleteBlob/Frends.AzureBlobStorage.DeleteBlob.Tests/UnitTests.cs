@@ -6,8 +6,6 @@ using System.Threading.Tasks;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Frends.AzureBlobStorage.DeleteBlob.Definitions;
-using Frends.AzureBlobStorage.Toolkit.Definitions;
-using Frends.AzureBlobStorage.Toolkit.Handlers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Frends.AzureBlobStorage.DeleteBlob.Tests;
@@ -25,9 +23,9 @@ public class DeleteTest
     {
         try
         {
-            TestHandler.LoadEnvironmentVariables();
+            TestHelper.LoadEnvironmentVariables();
             _containerName = $"test-container{DateTime.Now.ToString("mmssffffff", CultureInfo.InvariantCulture)}";
-            var container = GetBlobContainer(TestHandler.ConnectionString, _containerName);
+            var container = GetBlobContainer(TestHelper.ConnectionString, _containerName);
             await container.CreateIfNotExistsAsync(PublicAccessType.None, null, null, new CancellationToken());
             await CreateFiles();
             await UploadTestFiles(new FileInfo(_firstTestFile));
@@ -42,7 +40,7 @@ public class DeleteTest
     [TestCleanup]
     public async Task Cleanup()
     {
-        var container = GetBlobContainer(TestHandler.ConnectionString, _containerName);
+        var container = GetBlobContainer(TestHelper.ConnectionString, _containerName);
         await container.DeleteIfExistsAsync();
         Directory.Delete(_testFileDir, true);
     }
@@ -58,7 +56,7 @@ public class DeleteTest
 
         var connection = new Connection()
         {
-            ConnectionString = TestHandler.ConnectionString,
+            ConnectionString = TestHelper.ConnectionString,
         };
 
         var options = new Options()
@@ -84,7 +82,7 @@ public class DeleteTest
 
         var connection = new Connection()
         {
-            ConnectionString = TestHandler.ConnectionString,
+            ConnectionString = TestHelper.ConnectionString,
         };
 
         var options = new Options
@@ -112,7 +110,7 @@ public class DeleteTest
 
         var connection = new Connection()
         {
-            ConnectionString = TestHandler.ConnectionString,
+            ConnectionString = TestHelper.ConnectionString,
         };
 
         var options = new Options()
@@ -138,11 +136,11 @@ public class DeleteTest
 
         var connection = new Connection()
         {
-            ApplicationId = TestHandler.ClientId,
-            StorageAccountName = TestHandler.StorageAccountName,
-            ClientSecret = TestHandler.ClientSecret,
+            ApplicationId = TestHelper.ClientId,
+            StorageAccountName = TestHelper.StorageAccountName,
+            ClientSecret = TestHelper.ClientSecret,
             AuthenticationMethod = ConnectionMethod.OAuth2,
-            TenantId = TestHandler.TenantId,
+            TenantId = TestHelper.TenantId,
         };
 
         var options = new Options()
@@ -169,7 +167,7 @@ public class DeleteTest
         var connection = new Connection()
         {
             AuthenticationMethod = ConnectionMethod.ConnectionString,
-            ConnectionString = TestHandler.ConnectionString
+            ConnectionString = TestHelper.ConnectionString
         };
 
 
@@ -196,11 +194,11 @@ public class DeleteTest
 
         var connection = new Connection()
         {
-            ApplicationId = TestHandler.ClientId,
-            StorageAccountName = TestHandler.StorageAccountName,
-            ClientSecret = TestHandler.ClientSecret,
+            ApplicationId = TestHelper.ClientId,
+            StorageAccountName = TestHelper.StorageAccountName,
+            ClientSecret = TestHelper.ClientSecret,
             AuthenticationMethod = ConnectionMethod.OAuth2,
-            TenantId = TestHandler.TenantId,
+            TenantId = TestHelper.TenantId,
         };
 
         var result = await AzureBlobStorage.DeleteBlob(input, connection, new Options(), default);
@@ -219,7 +217,7 @@ public class DeleteTest
 
         var connection = new Connection()
         {
-            ConnectionString = TestHandler.ConnectionString,
+            ConnectionString = TestHelper.ConnectionString,
             AuthenticationMethod = ConnectionMethod.ConnectionString,
         };
 
@@ -239,7 +237,7 @@ public class DeleteTest
 
         var connection = new Connection()
         {
-            ConnectionString = TestHandler.ConnectionString,
+            ConnectionString = TestHelper.ConnectionString,
             AuthenticationMethod = ConnectionMethod.ConnectionString,
         };
 
@@ -275,7 +273,7 @@ public class DeleteTest
         try
         {
             using var fileStream = File.OpenRead(fileInfo.FullName);
-            var blobClient = new BlobClient(TestHandler.ConnectionString, _containerName, fileInfo.Name);
+            var blobClient = new BlobClient(TestHelper.ConnectionString, _containerName, fileInfo.Name);
             await blobClient.UploadAsync(fileStream);
         }
         catch (Exception ex)
