@@ -6,8 +6,6 @@ using NUnit.Framework;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Blobs;
 using Frends.AzureBlobStorage.DownloadBlob.Definitions;
-using Frends.AzureBlobStorage.Toolkit.Definitions;
-using Frends.AzureBlobStorage.Toolkit.Handlers;
 
 namespace Frends.AzureBlobStorage.DownloadBlob.Tests;
 
@@ -30,7 +28,7 @@ public class UnitTests
     [SetUp]
     public async Task TestSetup()
     {
-        TestHandler.LoadEnvironmentVariables();
+        TestHelper.LoadEnvironmentVariables();
         _destinationDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
         Directory.CreateDirectory(_destinationDirectory);
 
@@ -46,12 +44,12 @@ public class UnitTests
 
         _connection = new Connection()
         {
-            ConnectionString = TestHandler.ConnectionString,
-            TenantId = TestHandler.TenantId,
-            ApplicationId = TestHandler.ClientId,
-            ClientSecret = TestHandler.ClientSecret,
-            StorageAccountName = TestHandler.StorageAccountName,
-            SasToken = TestHandler.SasToken,
+            ConnectionString = TestHelper.ConnectionString,
+            TenantId = TestHelper.TenantId,
+            ApplicationId = TestHelper.ClientId,
+            ClientSecret = TestHelper.ClientSecret,
+            StorageAccountName = TestHelper.StorageAccountName,
+            SasToken = TestHelper.SasToken,
         };
 
         _destination = new Destination
@@ -69,10 +67,10 @@ public class UnitTests
     [TearDown]
     public async Task Cleanup()
     {
-        var container = GetBlobContainer(TestHandler.ConnectionString, _containerName);
+        var container = GetBlobContainer(TestHelper.ConnectionString, _containerName);
         await container.DeleteIfExistsAsync();
         // Empties the const container
-        await DeleteBlobsInContainer(TestHandler.ConnectionString, _container, _source.BlobName);
+        await DeleteBlobsInContainer(TestHelper.ConnectionString, _container, _source.BlobName);
     }
 
     [Test]
@@ -202,7 +200,7 @@ public class UnitTests
 
     private async Task UploadTestFiles(string containerName)
     {
-        var blobServiceClient = new BlobServiceClient(TestHandler.ConnectionString);
+        var blobServiceClient = new BlobServiceClient(TestHelper.ConnectionString);
         var container = blobServiceClient.GetBlobContainerClient(containerName);
         await container.CreateIfNotExistsAsync(PublicAccessType.None, null, null);
         var blockBlob = container.GetBlobClient(_testBlob);

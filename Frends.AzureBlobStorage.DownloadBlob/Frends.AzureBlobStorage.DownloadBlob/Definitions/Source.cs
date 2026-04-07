@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using Frends.Common.Toolkit.Attributes;
+using Frends.AzureBlobStorage.DownloadBlob.Attributes;
 
 namespace Frends.AzureBlobStorage.DownloadBlob.Definitions;
 
