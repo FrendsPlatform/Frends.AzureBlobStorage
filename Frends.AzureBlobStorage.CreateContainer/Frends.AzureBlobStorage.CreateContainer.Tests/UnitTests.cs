@@ -5,8 +5,6 @@ using System;
 using System.Globalization;
 using System.Threading.Tasks;
 using System.Threading;
-using Frends.AzureBlobStorage.Toolkit.Definitions;
-using Frends.AzureBlobStorage.Toolkit.Handlers;
 
 namespace Frends.AzureBlobStorage.CreateContainer.Tests;
 
@@ -21,7 +19,7 @@ public class UnitTests
     [TestInitialize]
     public void TestSetup()
     {
-        TestHandler.LoadEnvironmentVariables();
+        TestHelper.LoadEnvironmentVariables();
 
         // Generate unique container name to avoid conflicts when running multiple tests
         _containerName = $"test-container{DateTime.Now.ToString("mmssffffff", CultureInfo.InvariantCulture)}";
@@ -31,7 +29,7 @@ public class UnitTests
     public async Task Cleanup()
     {
         // delete whole container after running tests
-        var blobServiceClient = new BlobServiceClient(TestHandler.ConnectionString);
+        var blobServiceClient = new BlobServiceClient(TestHelper.ConnectionString);
         var container = blobServiceClient.GetBlobContainerClient(_containerName);
         await container.DeleteIfExistsAsync();
     }
@@ -46,7 +44,7 @@ public class UnitTests
         var connection = new Connection
         {
             AuthenticationMethod = ConnectionMethod.ConnectionString,
-            ConnectionString = TestHandler.ConnectionString
+            ConnectionString = TestHelper.ConnectionString
         };
         var options = new Options
         {
@@ -54,7 +52,7 @@ public class UnitTests
         };
         var result = await AzureBlobStorage.CreateContainer(input, connection, options, CancellationToken.None);
         Assert.IsNotNull(result);
-        Assert.AreEqual(new BlobClient(TestHandler.ConnectionString, _containerName, "").Uri.ToString(), result.Uri);
+        Assert.AreEqual(new BlobClient(TestHelper.ConnectionString, _containerName, "").Uri.ToString(), result.Uri);
         Assert.IsTrue(result.Success);
         Assert.IsNull(result.Error);
     }
@@ -116,9 +114,9 @@ public class UnitTests
         {
             AuthenticationMethod = ConnectionMethod.OAuth2,
             StorageAccountName = StorageAccount,
-            ApplicationId = TestHandler.ClientId,
-            TenantId = TestHandler.TenantId,
-            ClientSecret = TestHandler.ClientSecret,
+            ApplicationId = TestHelper.ClientId,
+            TenantId = TestHelper.TenantId,
+            ClientSecret = TestHelper.ClientSecret,
         };
 
         var options = new Options
@@ -130,7 +128,7 @@ public class UnitTests
         Assert.IsNull(result.Error);
 
         // Cleanup the container created for this test
-        var blobServiceClient = new BlobServiceClient(TestHandler.ConnectionString);
+        var blobServiceClient = new BlobServiceClient(TestHelper.ConnectionString);
         var container = blobServiceClient.GetBlobContainerClient(containerName);
         await container.DeleteIfExistsAsync();
     }

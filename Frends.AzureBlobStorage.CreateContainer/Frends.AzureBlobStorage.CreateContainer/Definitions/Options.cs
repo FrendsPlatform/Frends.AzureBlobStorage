@@ -1,12 +1,11 @@
 using System.ComponentModel;
-using Frends.Common.Toolkit.Definitions;
 
 namespace Frends.AzureBlobStorage.CreateContainer.Definitions;
 
 /// <summary>
 /// Options for the CreateContainer task.
 /// </summary>
-public class Options : ITaskOptions
+public class Options
 {
     /// <summary>
     /// Throw error on failure.

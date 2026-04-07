@@ -1,12 +1,11 @@
 ﻿using System;
-using Frends.Common.Toolkit.Definitions;
 
 namespace Frends.AzureBlobStorage.CreateContainer.Definitions;
 
 /// <summary>
 /// Error information.
 /// </summary>
-public class Error : ITaskError
+public class Error
 {
     /// <summary>
     /// Error message.

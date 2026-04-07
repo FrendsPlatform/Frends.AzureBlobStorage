@@ -1,11 +1,10 @@
-﻿using Frends.Common.Toolkit.Definitions;
-
+﻿
 namespace Frends.AzureBlobStorage.CreateContainer.Definitions;
 
 /// <summary>
 /// Task's result.
 /// </summary>
-public class Result : ITaskResult<Error>
+public class Result
 {
     /// <summary>
     /// Container created.

@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using Frends.Common.Toolkit.Attributes;
+using Frends.AzureBlobStorage.CreateContainer.Attributes;
 
 namespace Frends.AzureBlobStorage.CreateContainer.Definitions;
 
