@@ -87,7 +87,7 @@ public sealed class Connection
     /// </summary>
     /// <example>[api://AzureADTokenExchange/.default]</example>
     [UIHint(nameof(AuthenticationMethod), "", ConnectionMethod.ArcManagedIdentityCrossTenant)]
-	[RequiredIf(nameof(AuthenticationMethod), ConnectionMethod.ArcManagedIdentityCrossTenant)]
+    [RequiredIf(nameof(AuthenticationMethod), ConnectionMethod.ArcManagedIdentityCrossTenant)]
     public string[] Scopes { get; set; } = [];
 
     /// <summary>
