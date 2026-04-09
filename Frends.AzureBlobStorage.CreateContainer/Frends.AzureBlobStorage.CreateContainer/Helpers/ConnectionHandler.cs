@@ -4,7 +4,6 @@ using System.Threading;
 using Azure.Core;
 using Azure.Identity;
 using Azure.Storage.Blobs;
-using Azure.Storage.Blobs.Specialized;
 using Frends.AzureBlobStorage.CreateContainer.Definitions;
 
 namespace Frends.AzureBlobStorage.CreateContainer.Helpers;
@@ -115,8 +114,9 @@ public static class ConnectionHandler
 
     private static Uri GetUri(string storageAccountName, string sasToken = null)
     {
+        var normalizedSasToken = sasToken?.TrimStart('?');
         return sasToken is null
             ? new Uri($"https://{storageAccountName}.blob.core.windows.net")
-            : new Uri($"https://{storageAccountName}.blob.core.windows.net?{sasToken}");
+            : new Uri($"https://{storageAccountName}.blob.core.windows.net?{normalizedSasToken}");
     }
 }

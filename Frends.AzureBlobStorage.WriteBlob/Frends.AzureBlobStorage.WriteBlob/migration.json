@@ -1,0 +1,56 @@
+[
+  {
+    "Task": "Frends.AzureBlobStorage.WriteBlob",
+    "Migrations": [
+      {
+        "Version": "2.0.0",
+        "Description": "Moved authentication parameters from Destination tab to Connection tab and converted URI-based account input to storage account name.",
+        "Migration": [
+          {
+            "Type": "Map",
+            "Source": "Destination.ConnectionMethod",
+            "Target": "Connection.AuthenticationMethod",
+            "Maps": {
+              "ConnectionString": "ConnectionString",
+              "SASToken": "SasToken"
+            }
+          },
+          {
+            "Type": "Copy",
+            "Source": "Destination.ConnectionString",
+            "Target": "Connection.ConnectionString"
+          },
+          {
+            "Type": "Copy",
+            "Source": "Destination.ApplicationID",
+            "Target": "Connection.ApplicationId"
+          },
+          {
+            "Type": "Copy",
+            "Source": "Destination.TenantID",
+            "Target": "Connection.TenantId"
+          },
+          {
+            "Type": "Copy",
+            "Source": "Destination.ClientSecret",
+            "Target": "Connection.ClientSecret"
+          },
+          {
+            "Type": "Copy",
+            "Source": "Destination.SASToken",
+            "Target": "Connection.SasToken"
+          },
+          {
+            "Type": "RegexMap",
+            "Source": "Destination.Uri",
+            "Target": "Connection.StorageAccountName",
+            "Maps": {
+              "^https?://([^./?]+)\\.blob\\.core\\.windows\\.net.*$": "$1"
+            }
+          }
+        ]
+      }
+    ]
+  }
+]
+

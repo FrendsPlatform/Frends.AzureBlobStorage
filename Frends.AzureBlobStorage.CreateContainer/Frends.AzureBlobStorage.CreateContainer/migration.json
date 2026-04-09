@@ -47,6 +47,11 @@
             "Value": "\"\""
           }
         ]
+      },
+      {
+        "Version": "3.0.0",
+        "Description": "Standardized connection model and added new authentication methods.",
+        "Migration": []
       }
     ]
   }

@@ -86,6 +86,7 @@ public sealed class Connection
     /// Scopes used when authenticating with Arc Managed Identity Cross Tenant.
     /// </summary>
     /// <example>[api://AzureADTokenExchange/.default]</example>
+    [RequiredIf(nameof(AuthenticationMethod), ConnectionMethod.ArcManagedIdentityCrossTenant)]
     [UIHint(nameof(AuthenticationMethod), "", ConnectionMethod.ArcManagedIdentityCrossTenant)]
     public string[] Scopes { get; set; } = [];
 
@@ -95,7 +96,6 @@ public sealed class Connection
     /// <example>Y6b1hf2a-80e2-xyz2-abc33h-3a7c3a8as4b7f</example>
     [UIHint(nameof(AuthenticationMethod), "", ConnectionMethod.ArcManagedIdentityCrossTenant)]
     [RequiredIf(nameof(AuthenticationMethod), ConnectionMethod.ArcManagedIdentityCrossTenant)]
-
     public string TargetTenantId { get; set; }
 
     /// <summary>

@@ -1,0 +1,37 @@
+[
+  {
+    "Task": "Frends.AzureBlobStorage.UploadBlob",
+    "Migrations": [
+      {
+        "Version": "4.0.0",
+        "Description": "Moved container and create-container options to dedicated tabs and standardized connection properties.",
+        "Migration": [
+          {
+            "Type": "Copy",
+            "Source": "Connection.ConnectionMethod",
+            "Target": "Connection.AuthenticationMethod"
+          },
+          {
+            "Type": "Copy",
+            "Source": "Connection.ContainerName",
+            "Target": "Input.ContainerName"
+          },
+          {
+            "Type": "Copy",
+            "Source": "Connection.CreateContainerIfItDoesNotExist",
+            "Target": "Options.CreateContainerIfItDoesNotExist"
+          },
+          {
+            "Type": "RegexMap",
+            "Source": "Connection.Uri",
+            "Target": "Connection.StorageAccountName",
+            "Maps": {
+              "^https?://([^./?]+)\\.blob\\.core\\.windows\\.net.*$": "$1"
+            }
+          }
+        ]
+      }
+    ]
+  }
+]
+
