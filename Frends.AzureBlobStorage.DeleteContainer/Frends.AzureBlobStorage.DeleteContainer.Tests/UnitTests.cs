@@ -12,16 +12,12 @@ namespace Frends.AzureBlobStorage.DeleteContainer.Tests;
 [TestClass]
 public class UnitTests
 {
-    private readonly string _connectionString = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_ConnString");
-    private readonly string _appID = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_AppID");
-    private readonly string _clientSecret = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_ClientSecret");
-    private readonly string _tenantID = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_TenantID");
-    private readonly string _storageAccount = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_StorageAccount");
     private string _containerName;
 
     [TestInitialize]
     public void TestSetup()
     {
+        TestHelper.LoadEnvironmentVariables();
         // Generate unique container name to avoid conflicts when running multiple tests
         _containerName = $"test-container{DateTime.Now.ToString("mmssffffff", CultureInfo.InvariantCulture)}";
     }
@@ -36,7 +32,7 @@ public class UnitTests
 
     private BlobContainerClient GetBlobServiceClient()
     {
-        var blobServiceClient = new BlobServiceClient(_connectionString);
+        var blobServiceClient = new BlobServiceClient(TestHelper.ConnectionString);
 
         return blobServiceClient.GetBlobContainerClient(_containerName);
     }
@@ -46,22 +42,21 @@ public class UnitTests
     {
         // Test method returns true when container doesn't exist
         var result = await AzureBlobStorage.DeleteContainer(
-            new Input
-            {
-                ConnectionString = _connectionString,
-                ContainerName = _containerName
-            },
-            new Options
-            {
-                ThrowErrorIfContainerDoesNotExists = false
-            }, new CancellationToken());
+            new Input { ContainerName = _containerName },
+            new Connection { ConnectionString = TestHelper.ConnectionString },
+            new Options { ThrowErrorIfContainerDoesNotExists = false },
+            new CancellationToken());
 
         Assert.IsFalse(result.ContainerWasDeleted);
 
         // Test method returns true when container that exists is deleted
         var container = GetBlobServiceClient();
         await container.CreateIfNotExistsAsync(PublicAccessType.None, null, null, new CancellationToken());
-        var deleted = await AzureBlobStorage.DeleteContainer(new Input { ConnectionString = _connectionString, ContainerName = _containerName }, new Options { ThrowErrorIfContainerDoesNotExists = true }, new CancellationToken());
+        var deleted = await AzureBlobStorage.DeleteContainer(
+            new Input { ContainerName = _containerName },
+            new Connection { ConnectionString = TestHelper.ConnectionString },
+            new Options { ThrowErrorIfContainerDoesNotExists = true },
+            new CancellationToken());
         Assert.IsTrue(deleted.ContainerWasDeleted);
     }
 
@@ -69,30 +64,48 @@ public class UnitTests
     [ExpectedException(typeof(Exception))]
     public async Task TestDeleteContainer_throws_ContainerNotFound()
     {
-        await AzureBlobStorage.DeleteContainer(new Input { ConnectionString = _connectionString, ContainerName = _containerName }, new Options { ThrowErrorIfContainerDoesNotExists = true }, new CancellationToken());
-    }
-
-    [TestMethod]
-    [ExpectedException(typeof(ArgumentNullException))]
-    public async Task TestDeleteContainer_throws_ParameterEmpty()
-    {
-        await AzureBlobStorage.DeleteContainer(new Input { ConnectionString = _connectionString, ContainerName = null }, new Options { ThrowErrorIfContainerDoesNotExists = false }, new CancellationToken());
-        await AzureBlobStorage.DeleteContainer(new Input { ConnectionString = null, ContainerName = _containerName }, new Options { ThrowErrorIfContainerDoesNotExists = false }, new CancellationToken());
+        await AzureBlobStorage.DeleteContainer(
+            new Input { ContainerName = _containerName },
+            new Connection { ConnectionString = TestHelper.ConnectionString },
+            new Options { ThrowErrorIfContainerDoesNotExists = true },
+            new CancellationToken());
     }
 
     [TestMethod]
     [ExpectedException(typeof(Exception))]
-    public async Task TestDeleteContainer_throws_ParameterNotValid()
+    public async Task TestDeleteContainer_throws_ParameterEmpty()
     {
-        await AzureBlobStorage.DeleteContainer(new Input { ConnectionString = "Not valid parameter", ContainerName = "Valid name" }, new Options { ThrowErrorIfContainerDoesNotExists = false }, new CancellationToken());
-        await AzureBlobStorage.DeleteContainer(new Input { ConnectionString = "name=value", ContainerName = "Valid name" }, new Options { ThrowErrorIfContainerDoesNotExists = false }, new CancellationToken());
+        await AzureBlobStorage.DeleteContainer(
+            new Input { ContainerName = null },
+            new Connection { ConnectionString = TestHelper.ConnectionString },
+            new Options { ThrowErrorIfContainerDoesNotExists = false },
+            new CancellationToken());
+    }
+
+    [DataTestMethod]
+    [DataRow("Not valid parameter")]
+    [DataRow("name=value")]
+    [ExpectedException(typeof(Exception))]
+    public async Task TestDeleteContainer_throws_ParameterNotValid(string conString)
+    {
+        await AzureBlobStorage.DeleteContainer(
+            new Input { ContainerName = "valid" },
+            new Connection { ConnectionString = conString, },
+            new Options { ThrowErrorIfContainerDoesNotExists = false },
+            new CancellationToken());
     }
 
     [TestMethod]
     [ExpectedException(typeof(Exception))]
     public async Task TestDeleteContainer_throws_ClientNotFound()
     {
-        await AzureBlobStorage.DeleteContainer(new Input { ConnectionString = "DefaultEndpointsProtocol=https;AccountName=unitTestStorage;AccountKey=abcdefghijklmnopqrstuyxz123456789;EndpointSuffix=core.windows.net", ContainerName = _containerName },
+        await AzureBlobStorage.DeleteContainer(
+            new Input { ContainerName = _containerName },
+            new Connection
+            {
+                ConnectionString =
+                    "DefaultEndpointsProtocol=https;AccountName=unitTestStorage;AccountKey=abcdefghijklmnopqrstuyxz123456789;EndpointSuffix=core.windows.net",
+            },
             new Options { ThrowErrorIfContainerDoesNotExists = false }, new CancellationToken());
     }
 
@@ -101,12 +114,16 @@ public class UnitTests
     {
         var input = new Input
         {
-            ConnectionMethod = ConnectionMethod.OAuth2,
             ContainerName = _containerName,
-            StorageAccountName = _storageAccount,
-            ApplicationID = _appID,
-            TenantID = _tenantID,
-            ClientSecret = _clientSecret
+        };
+
+        var connection = new Connection
+        {
+            AuthenticationMethod = ConnectionMethod.OAuth2,
+            StorageAccountName = TestHelper.StorageAccountName,
+            ApplicationId = TestHelper.ClientId,
+            TenantId = TestHelper.TenantId,
+            ClientSecret = TestHelper.ClientSecret
         };
 
         var options = new Options
@@ -116,7 +133,7 @@ public class UnitTests
 
         var client = GetBlobServiceClient();
         await client.CreateIfNotExistsAsync(PublicAccessType.None, null, null, new CancellationToken());
-        var result = await AzureBlobStorage.DeleteContainer(input, options, default);
+        var result = await AzureBlobStorage.DeleteContainer(input, connection, options, default);
         Assert.IsTrue(result.ContainerWasDeleted);
     }
 }

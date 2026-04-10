@@ -5,6 +5,7 @@ using Azure.Storage.Sas;
 using Frends.AzureBlobStorage.ReadBlob.Definitions;
 using NUnit.Framework;
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
@@ -16,24 +17,22 @@ public class ReadTest
 {
     Source source;
     Options options;
+    Connection connection;
 
-    private readonly string _connectionString = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_ConnString");
-    private readonly string _accessKey = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_frendstaskstestcontainerAccessKey");
-    private readonly string _appID = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_AppID");
-    private readonly string _clientSecret = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_ClientSecret");
-    private readonly string _tenantID = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_TenantID");
-    private readonly string _storageaccount = Environment.GetEnvironmentVariable("Frends_AzureBlobStorage_StorageAccount");
     private string _containerName;
     private readonly string _blobName = "test.txt";
-    private readonly string _testFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "../../../TestFiles", "TestFile.xml");
+
+    private readonly string _testFilePath =
+        Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "../../../TestFiles", "TestFile.xml");
 
     [SetUp]
     public async Task SetUp()
     {
+        TestHelper.LoadEnvironmentVariables();
         // Generate unique container name to avoid conflicts when running multiple tests
         _containerName = $"test-container{DateTime.Now.ToString("mmssffffff", CultureInfo.InvariantCulture)}";
 
-        var blobServiceClient = new BlobServiceClient(_connectionString);
+        var blobServiceClient = new BlobServiceClient(TestHelper.ConnectionString);
         var container = blobServiceClient.GetBlobContainerClient(_containerName);
         await container.CreateIfNotExistsAsync(PublicAccessType.None, null, null);
         var blockBlob = container.GetBlobClient(_blobName);
@@ -43,7 +42,7 @@ public class ReadTest
     [TearDown]
     public async Task TearDown()
     {
-        var blobServiceClient = new BlobServiceClient(_connectionString);
+        var blobServiceClient = new BlobServiceClient(TestHelper.ConnectionString);
         var container = blobServiceClient.GetBlobContainerClient(_containerName);
         await container.DeleteIfExistsAsync(null);
     }
@@ -53,11 +52,15 @@ public class ReadTest
     {
         source = new Source
         {
-            AuthenticationMethod = AuthenticationMethod.SASToken,
-            URI = $"https://{_storageaccount}.blob.core.windows.net/{_containerName}/{_blobName}?",
-            SASToken = GetServiceSasUriForBlob(),
             ContainerName = _containerName,
             BlobName = _blobName
+        };
+
+        connection = new Connection
+        {
+            AuthenticationMethod = ConnectionMethod.SasToken,
+            StorageAccountName = TestHelper.StorageAccountName,
+            SasToken = GetServiceSasUriForBlob(),
         };
 
         options = new Options
@@ -65,7 +68,7 @@ public class ReadTest
             Encoding = Encode.ASCII
         };
 
-        var result = AzureBlobStorage.ReadBlob(source, options, default);
+        var result = AzureBlobStorage.ReadBlob(source, connection, options, default);
         Assert.IsNotEmpty(result.Result.Content);
     }
 
@@ -74,10 +77,14 @@ public class ReadTest
     {
         source = new Source
         {
-            AuthenticationMethod = AuthenticationMethod.ConnectionString,
-            ConnectionString = _connectionString,
             ContainerName = _containerName,
-            BlobName = _blobName
+            BlobName = _blobName,
+        };
+
+        connection = new Connection
+        {
+            AuthenticationMethod = ConnectionMethod.ConnectionString,
+            ConnectionString = TestHelper.ConnectionString,
         };
 
         options = new Options
@@ -85,7 +92,7 @@ public class ReadTest
             Encoding = Encode.ASCII
         };
 
-        var result = AzureBlobStorage.ReadBlob(source, options, default);
+        var result = AzureBlobStorage.ReadBlob(source, connection, options, default);
         Assert.IsNotEmpty(result.Result.Content);
     }
 
@@ -94,14 +101,18 @@ public class ReadTest
     {
         source = new Source
         {
-            AuthenticationMethod = AuthenticationMethod.OAuth2,
-            ConnectionString = _connectionString,
             ContainerName = _containerName,
             BlobName = _blobName,
-            ApplicationID = _appID,
-            StorageAccountName = _storageaccount,
-            ClientSecret = _clientSecret,
-            TenantID = _tenantID,
+        };
+
+        connection = new Connection
+        {
+            AuthenticationMethod = ConnectionMethod.OAuth2,
+            ConnectionString = TestHelper.ConnectionString,
+            ApplicationId = TestHelper.ClientId,
+            StorageAccountName = TestHelper.StorageAccountName,
+            ClientSecret = TestHelper.ClientSecret,
+            TenantId = TestHelper.TenantId,
         };
 
         options = new Options
@@ -109,7 +120,7 @@ public class ReadTest
             Encoding = Encode.ASCII
         };
 
-        var result = AzureBlobStorage.ReadBlob(source, options, default);
+        var result = AzureBlobStorage.ReadBlob(source, connection, options, default);
         Assert.IsNotEmpty(result.Result.Content);
     }
 
@@ -121,11 +132,15 @@ public class ReadTest
     {
         source = new Source
         {
-            AuthenticationMethod = AuthenticationMethod.SASToken,
-            URI = $"https://{_storageaccount}.blob.core.windows.net/{_containerName}/{_blobName}?",
-            SASToken = "",
             ContainerName = _containerName,
             BlobName = _blobName
+        };
+
+        connection = new Connection
+        {
+            AuthenticationMethod = ConnectionMethod.SasToken,
+            StorageAccountName = TestHelper.StorageAccountName,
+            SasToken = string.Empty,
         };
 
         options = new Options
@@ -133,8 +148,9 @@ public class ReadTest
             Encoding = Encode.ASCII
         };
 
-        var ex = Assert.ThrowsAsync<ArgumentException>(() => AzureBlobStorage.ReadBlob(source, options, default));
-        Assert.That(ex.Message.Contains("SAS Token and URI required."), ex.Message);
+        var ex = Assert.ThrowsAsync<ValidationException>(() =>
+            AzureBlobStorage.ReadBlob(source, connection, options, default));
+        Assert.That(ex.Message.Contains("SasToken is required."), ex.Message);
     }
 
     /// <summary>
@@ -145,18 +161,22 @@ public class ReadTest
     {
         source = new Source
         {
-            AuthenticationMethod = AuthenticationMethod.ConnectionString,
-            ConnectionString = "",
             ContainerName = _containerName,
             BlobName = _blobName
+        };
+        connection = new Connection
+        {
+            AuthenticationMethod = ConnectionMethod.ConnectionString,
+            ConnectionString = string.Empty,
         };
         options = new Options
         {
             Encoding = Encode.ASCII
         };
 
-        var ex = Assert.ThrowsAsync<ArgumentException>(() => AzureBlobStorage.ReadBlob(source, options, default));
-        Assert.That(ex.Message.Contains("Connection string required."), ex.Message);
+        var ex = Assert.ThrowsAsync<ValidationException>(() =>
+            AzureBlobStorage.ReadBlob(source, connection, options, default));
+        Assert.That(ex.Message.Contains("ConnectionString is required."), ex.Message);
     }
 
     /// <summary>
@@ -171,7 +191,9 @@ public class ReadTest
             ExpiresOn = DateTime.UtcNow.AddMinutes(5)
         };
         blobSasBuilder.SetPermissions(BlobSasPermissions.Read);
-        var sasToken = blobSasBuilder.ToSasQueryParameters(new StorageSharedKeyCredential(_storageaccount, _accessKey)).ToString();
+        var sasToken = blobSasBuilder.ToSasQueryParameters(new StorageSharedKeyCredential(TestHelper.StorageAccountName, TestHelper.AccessKey))
+            .ToString();
+
         return sasToken;
     }
 }

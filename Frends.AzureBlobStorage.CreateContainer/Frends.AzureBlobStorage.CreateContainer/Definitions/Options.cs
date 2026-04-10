@@ -17,7 +17,7 @@ public class Options
     /// <summary>
     /// Error message on failure.
     /// </summary>
-    /// <example>CreateContainer failed</example>
+    /// <example>Task failed</example>
     [DefaultValue("")]
     public string ErrorMessageOnFailure { get; set; } = string.Empty;
 }

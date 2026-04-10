@@ -24,7 +24,15 @@ public class Options
     /// </summary>
     /// <example>Block</example>
     [DefaultValue(AzureBlobType.Block)]
-    public AzureBlobType BlobType { get; set; }
+    public AzureBlobType BlobType { get; set; } = AzureBlobType.Block;
+
+    /// <summary>
+    /// Determines if the container should be created if it does not exist.
+    /// See https://docs.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata for naming rules.
+    /// </summary>
+    /// <example>false</example>
+    [DefaultValue(false)]
+    public bool CreateContainerIfItDoesNotExist { get; set; }
 
     /// <summary>
     /// Page blob size must be a multiple of 512.

@@ -1,4 +1,5 @@
-﻿namespace Frends.AzureBlobStorage.CreateContainer.Definitions;
+﻿
+namespace Frends.AzureBlobStorage.CreateContainer.Definitions;
 
 /// <summary>
 /// Task's result.

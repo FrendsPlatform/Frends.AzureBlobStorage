@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using Frends.AzureBlobStorage.CreateContainer.Attributes;
 
 namespace Frends.AzureBlobStorage.CreateContainer.Definitions;
 
@@ -16,5 +17,7 @@ public class Input
     /// <example>test-container</example>
     [DefaultValue("test-container")]
     [DisplayFormat(DataFormatString = "Text")]
+    [NotEmptyString]
     public string ContainerName { get; set; }
+
 }

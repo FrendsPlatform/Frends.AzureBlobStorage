@@ -6,6 +6,25 @@
         "Version": "1.0.0",
         "Description": "",
         "Migration": []
+      },
+      {
+        "Version": "2.0.0",
+        "Description": "Standardized connection model and converted URI-based account input to storage account name.",
+        "Migration": [
+          {
+            "Type": "Copy",
+            "Source": "Connection.ConnectionMethod",
+            "Target": "Connection.AuthenticationMethod"
+          },
+          {
+            "Type": "RegexMap",
+            "Source": "Connection.Uri",
+            "Target": "Connection.StorageAccountName",
+            "Maps": {
+              "^https?://([^./?]+)\\.blob\\.core\\.windows\\.net.*$": "$1"
+            }
+          }
+        ]
       }
     ]
   }

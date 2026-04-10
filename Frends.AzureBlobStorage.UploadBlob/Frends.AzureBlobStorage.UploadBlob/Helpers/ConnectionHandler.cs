@@ -1,7 +1,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
-using Azure;
 using Azure.Core;
 using Azure.Identity;
 using Azure.Storage.Blobs;
@@ -10,93 +9,117 @@ using Frends.AzureBlobStorage.UploadBlob.Definitions;
 
 namespace Frends.AzureBlobStorage.UploadBlob.Helpers;
 
-internal static class ConnectionHandler
+/// <summary>
+/// Connection handler to connect with Azure Blob Storage.
+/// </summary>
+public static class ConnectionHandler
 {
-    internal static BlobBaseClient GetBlobClient(Connection connection, Options options, string blobName,
+    /// <summary>
+    /// Get Blob Base Client.
+    /// </summary>
+    /// <param name="connection">Connection task parameters</param>
+    /// <param name="containerName">container name from input parameter</param>
+    /// <param name="blobName">blob name from input parameters</param>
+    /// <param name="blobType">blob type from options parameters</param>
+    /// <param name="cancellationToken">cancellation token</param>
+    /// <returns>BlobContainerClient object</returns>
+    public static BlobBaseClient GetBlobBaseClient(
+        Connection connection,
+        string containerName,
+        string blobName,
+        AzureBlobType blobType,
         CancellationToken cancellationToken)
+    {
+        var containerClient = GetBlobContainerClient(connection, containerName, cancellationToken);
+
+        return blobType switch
+        {
+            AzureBlobType.Append => containerClient.GetAppendBlobClient(blobName),
+            AzureBlobType.Block => containerClient.GetBlobClient(blobName),
+            AzureBlobType.Page => containerClient.GetPageBlobClient(blobName),
+            _ => throw new NotSupportedException(),
+        };
+    }
+
+    /// <summary>
+    /// Get Blob Container Client.
+    /// </summary>
+    /// <param name="connection">Connection task parameters</param>
+    /// <param name="containerName">container name from input parameter</param>
+    /// <param name="cancellationToken">cancellation token</param>
+    /// <returns>BlobContainerClient object</returns>
+    public static BlobContainerClient GetBlobContainerClient(
+        Connection connection,
+        string containerName,
+        CancellationToken cancellationToken)
+    {
+        var serviceClient = GetBlobServiceClient(connection, cancellationToken);
+
+        return serviceClient.GetBlobContainerClient(containerName);
+    }
+
+    /// <summary>
+    /// Get Blob Service Client.
+    /// </summary>
+    /// <param name="connection">Connection task parameters</param>
+    /// <param name="cancellationToken">cancellation token</param>
+    /// <returns>BlobServiceClient object</returns>
+    private static BlobServiceClient GetBlobServiceClient(Connection connection, CancellationToken cancellationToken)
     {
         try
         {
-            return connection.ConnectionMethod switch
+            return connection.AuthenticationMethod switch
             {
-                ConnectionMethod.ConnectionString => GetClientWithConnectionString(connection, options, blobName),
-                ConnectionMethod.SasToken => GetClientWithSasToken(connection, options, blobName),
-                ConnectionMethod.OAuth2 => GetClientWithOAuth2(connection, options, blobName),
-                ConnectionMethod.ArcManagedIdentity => GetClientWithArcManagedIdentity(connection, options, blobName),
-                ConnectionMethod.ArcManagedIdentityCrossTenant => GetClientWithArcManagedIdentityCrossTenant(connection,
-                    options, blobName,
+                ConnectionMethod.ConnectionString => GetBlobServiceClientWithConnectionString(connection),
+                ConnectionMethod.SasToken => GetBlobServiceClientWithSasToken(connection),
+                ConnectionMethod.OAuth2 => GetBlobServiceClientWithOAuth2(connection),
+                ConnectionMethod.ArcManagedIdentity => GetBlobServiceClientWithArcManagedIdentity(connection),
+                ConnectionMethod.ArcManagedIdentityCrossTenant => GetBlobServiceClientWithArcManagedIdentityCrossTenant(
+                    connection,
                     cancellationToken),
                 _ => throw new NotSupportedException(),
             };
         }
         catch (Exception ex)
         {
-            throw new ArgumentException("GetBlobContainerClient error: ", ex);
+            throw new ArgumentException($"GetBlobServiceClient error: {ex.Message}", ex);
         }
     }
 
-    private static BlobBaseClient GetClientWithConnectionString(Connection connection, Options options, string blobName)
+    private static BlobServiceClient GetBlobServiceClientWithConnectionString(Connection connection)
     {
-        var containerClient = new BlobContainerClient(connection.ConnectionString, connection.ContainerName.ToLower());
-
-        return options.BlobType switch
-        {
-            AzureBlobType.Append => containerClient.GetAppendBlobClient(blobName),
-            AzureBlobType.Block => containerClient.GetBlobClient(blobName),
-            AzureBlobType.Page => containerClient.GetPageBlobClient(blobName),
-            _ => throw new NotSupportedException(),
-        };
+        return new BlobServiceClient(connection.ConnectionString);
     }
 
-    private static BlobBaseClient GetClientWithSasToken(Connection connection, Options options, string blobName)
+    private static BlobServiceClient GetBlobServiceClientWithSasToken(Connection connection)
     {
-        var containerClient = new BlobContainerClient(new Uri($"{connection.Uri}/{connection.ContainerName}?"),
-            new AzureSasCredential(connection.SasToken));
-
-        return options.BlobType switch
-        {
-            AzureBlobType.Append => containerClient.GetAppendBlobClient(blobName),
-            AzureBlobType.Block => containerClient.GetBlobClient(blobName),
-            AzureBlobType.Page => containerClient.GetPageBlobClient(blobName),
-            _ => throw new NotSupportedException(),
-        };
+        return new BlobServiceClient(GetUri(connection.StorageAccountName, connection.SasToken));
     }
 
-    private static BlobBaseClient GetClientWithOAuth2(Connection connection, Options options, string blobName)
+    private static BlobServiceClient GetBlobServiceClientWithOAuth2(Connection connection)
     {
-        var credentials = new ClientSecretCredential(connection.TenantId, connection.ApplicationId,
-            connection.ClientSecret,
-            new ClientSecretCredentialOptions());
-        Uri uri = new($"{connection.Uri}/{connection.ContainerName.ToLower()}/{blobName}");
-
-        return options.BlobType switch
-        {
-            AzureBlobType.Append => new AppendBlobClient(uri, credentials),
-            AzureBlobType.Block => new BlobClient(uri, credentials),
-            AzureBlobType.Page => new PageBlobClient(uri, credentials),
-            _ => throw new NotSupportedException(),
-        };
+        return new BlobServiceClient(
+            GetUri(connection.StorageAccountName),
+            new ClientSecretCredential(
+                connection.TenantId,
+                connection.ApplicationId,
+                connection.ClientSecret,
+                new ClientSecretCredentialOptions()));
     }
 
     [ExcludeFromCodeCoverage(Justification = "We do not have environment prepared to test this connection")]
-    private static BlobBaseClient GetClientWithArcManagedIdentity(Connection connection, Options options,
-        string blobName)
+    private static BlobServiceClient GetBlobServiceClientWithArcManagedIdentity(Connection connection)
     {
-        var credentials = new ManagedIdentityCredential();
-        Uri uri = new($"{connection.Uri}/{connection.ContainerName.ToLower()}/{blobName}");
-
-        return options.BlobType switch
         {
-            AzureBlobType.Append => new AppendBlobClient(uri, credentials),
-            AzureBlobType.Block => new BlobClient(uri, credentials),
-            AzureBlobType.Page => new PageBlobClient(uri, credentials),
-            _ => throw new NotSupportedException(),
-        };
+            var credentials = new ManagedIdentityCredential();
+
+            return new BlobServiceClient(GetUri(connection.StorageAccountName), credentials);
+        }
     }
 
     [ExcludeFromCodeCoverage(Justification = "We do not have environment prepared to test this connection")]
-    private static BlobBaseClient GetClientWithArcManagedIdentityCrossTenant(Connection connection, Options options,
-        string blobName,
+    private static BlobServiceClient GetBlobServiceClientWithArcManagedIdentityCrossTenant(
+        Connection connection,
         CancellationToken cancellationToken)
     {
         {
@@ -112,16 +135,16 @@ internal static class ConnectionHandler
 
                     return accessToken.Token;
                 });
-            Uri uri = new($"{connection.Uri}/{connection.ContainerName.ToLower()}/{blobName}");
 
-            return options.BlobType switch
-            {
-                AzureBlobType.Append => new AppendBlobClient(uri, assertion),
-                AzureBlobType.Block => new BlobClient(uri, assertion),
-                AzureBlobType.Page => new PageBlobClient(uri, assertion),
-                _ => throw new NotSupportedException(),
-            };
+            return new BlobServiceClient(GetUri(connection.StorageAccountName), assertion);
         }
     }
 
+    private static Uri GetUri(string storageAccountName, string sasToken = null)
+    {
+        var normalizedSasToken = sasToken?.TrimStart('?');
+        return sasToken is null
+            ? new Uri($"https://{storageAccountName}.blob.core.windows.net")
+            : new Uri($"https://{storageAccountName}.blob.core.windows.net?{normalizedSasToken}");
+    }
 }

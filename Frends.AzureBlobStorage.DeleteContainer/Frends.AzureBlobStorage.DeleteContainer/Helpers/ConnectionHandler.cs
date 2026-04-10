@@ -8,79 +8,116 @@ using Frends.AzureBlobStorage.DeleteContainer.Definitions;
 
 namespace Frends.AzureBlobStorage.DeleteContainer.Helpers;
 
-internal static class ConnectionHandler
+/// <summary>
+/// Connection handler to connect with Azure Blob Storage.
+/// </summary>
+public static class ConnectionHandler
 {
-    internal static BlobContainerClient GetBlobContainerClient(Input input, CancellationToken cancellationToken)
+    /// <summary>
+    /// Get Blob Container Client.
+    /// </summary>
+    /// <param name="connection">Connection task parameters</param>
+    /// <param name="containerName">container name from input parameter</param>
+    /// <param name="cancellationToken">cancellation token</param>
+    /// <returns>BlobContainerClient object</returns>
+    public static BlobContainerClient GetBlobContainerClient(
+        Connection connection,
+        string containerName,
+        CancellationToken cancellationToken)
+    {
+        var serviceClient = GetBlobServiceClient(connection, cancellationToken);
+
+        return serviceClient.GetBlobContainerClient(containerName);
+    }
+
+
+    /// <summary>
+    /// Get Blob Service Client.
+    /// </summary>
+    /// <param name="connection">Connection task parameters</param>
+    /// <param name="cancellationToken">cancellation token</param>
+    /// <returns>BlobServiceClient object</returns>
+    private static BlobServiceClient GetBlobServiceClient(Connection connection, CancellationToken cancellationToken)
     {
         try
         {
-            return input.ConnectionMethod switch
+            return connection.AuthenticationMethod switch
             {
-                ConnectionMethod.ConnectionString => GetClientWithConnectionString(input),
-                ConnectionMethod.OAuth2 => GetClientWithOAuth2(input),
-                ConnectionMethod.ArcManagedIdentity => GetClientWithArcManagedIdentity(input),
-                ConnectionMethod.ArcManagedIdentityCrossTenant => GetClientWithArcManagedIdentityCrossTenant(input,
+                ConnectionMethod.ConnectionString => GetBlobServiceClientWithConnectionString(connection),
+                ConnectionMethod.SasToken => GetBlobServiceClientWithSasToken(connection),
+                ConnectionMethod.OAuth2 => GetBlobServiceClientWithOAuth2(connection),
+                ConnectionMethod.ArcManagedIdentity => GetBlobServiceClientWithArcManagedIdentity(connection),
+                ConnectionMethod.ArcManagedIdentityCrossTenant => GetBlobServiceClientWithArcManagedIdentityCrossTenant(
+                    connection,
                     cancellationToken),
                 _ => throw new NotSupportedException(),
             };
         }
         catch (Exception ex)
         {
-            throw new ArgumentException("GetBlobContainerClient error: ", ex);
+            throw new ArgumentException($"GetBlobServiceClient error: {ex.Message}", ex);
         }
     }
 
-    private static Uri GetUri(string storageAccountName) => new($"https://{storageAccountName}.blob.core.windows.net");
-
-    private static BlobContainerClient GetClientWithConnectionString(Input input)
+    private static BlobServiceClient GetBlobServiceClientWithConnectionString(Connection connection)
     {
-        var client = new BlobServiceClient(input.ConnectionString);
-
-        return client.GetBlobContainerClient(input.ContainerName);
+        return new BlobServiceClient(connection.ConnectionString);
     }
 
-    private static BlobContainerClient GetClientWithOAuth2(Input input)
+    private static BlobServiceClient GetBlobServiceClientWithSasToken(Connection connection)
     {
-        var credentials = new ClientSecretCredential(input.TenantID, input.ApplicationID, input.ClientSecret,
-            new ClientSecretCredentialOptions());
-        var client = new BlobServiceClient(GetUri(input.StorageAccountName), credentials);
+        return new BlobServiceClient(GetUri(connection.StorageAccountName, connection.SasToken));
+    }
 
-        return client.GetBlobContainerClient(input.ContainerName);
+    private static BlobServiceClient GetBlobServiceClientWithOAuth2(Connection connection)
+    {
+        return new BlobServiceClient(
+            GetUri(connection.StorageAccountName),
+            new ClientSecretCredential(
+                connection.TenantId,
+                connection.ApplicationId,
+                connection.ClientSecret,
+                new ClientSecretCredentialOptions()));
     }
 
     [ExcludeFromCodeCoverage(Justification = "We do not have environment prepared to test this connection")]
-    private static BlobContainerClient GetClientWithArcManagedIdentity(Input input)
+    private static BlobServiceClient GetBlobServiceClientWithArcManagedIdentity(Connection connection)
     {
         {
             var credentials = new ManagedIdentityCredential();
-            var blobServiceClient = new BlobServiceClient(GetUri(input.StorageAccountName), credentials);
 
-            return blobServiceClient.GetBlobContainerClient(input.ContainerName);
+            return new BlobServiceClient(GetUri(connection.StorageAccountName), credentials);
         }
     }
 
     [ExcludeFromCodeCoverage(Justification = "We do not have environment prepared to test this connection")]
-    private static BlobContainerClient GetClientWithArcManagedIdentityCrossTenant(Input input,
+    private static BlobServiceClient GetBlobServiceClientWithArcManagedIdentityCrossTenant(
+        Connection connection,
         CancellationToken cancellationToken)
     {
         {
             var credentials = new ManagedIdentityCredential();
             ClientAssertionCredential assertion = new(
-                input.TargetTenantId,
-                input.TargetClientId,
+                connection.TargetTenantId,
+                connection.TargetClientId,
                 async _ =>
                 {
-                    var tokenRequestContext = new TokenRequestContext(input.Scopes);
+                    var tokenRequestContext = new TokenRequestContext(connection.Scopes);
                     var accessToken = await credentials
                         .GetTokenAsync(tokenRequestContext, cancellationToken).ConfigureAwait(false);
 
                     return accessToken.Token;
                 });
 
-            var blobServiceClient = new BlobServiceClient(GetUri(input.StorageAccountName), assertion);
-
-            return blobServiceClient.GetBlobContainerClient(input.ContainerName);
+            return new BlobServiceClient(GetUri(connection.StorageAccountName), assertion);
         }
     }
 
+    private static Uri GetUri(string storageAccountName, string sasToken = null)
+    {
+        var normalizedSasToken = sasToken?.TrimStart('?');
+        return sasToken is null
+            ? new Uri($"https://{storageAccountName}.blob.core.windows.net")
+            : new Uri($"https://{storageAccountName}.blob.core.windows.net?{normalizedSasToken}");
+    }
 }

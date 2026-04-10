@@ -1,0 +1,44 @@
+[
+  {
+    "Task": "Frends.AzureBlobStorage.DeleteContainer",
+    "Migrations": [
+      {
+        "Version": "2.0.0",
+        "Description": "Moved authentication parameters from Input tab to Connection tab and standardized property names.",
+        "Migration": [
+          {
+            "Type": "Copy",
+            "Source": "Input.ConnectionMethod",
+            "Target": "Connection.AuthenticationMethod"
+          },
+          {
+            "Type": "Copy",
+            "Source": "Input.ConnectionString",
+            "Target": "Connection.ConnectionString"
+          },
+          {
+            "Type": "Copy",
+            "Source": "Input.ApplicationID",
+            "Target": "Connection.ApplicationId"
+          },
+          {
+            "Type": "Copy",
+            "Source": "Input.TenantID",
+            "Target": "Connection.TenantId"
+          },
+          {
+            "Type": "Copy",
+            "Source": "Input.ClientSecret",
+            "Target": "Connection.ClientSecret"
+          },
+          {
+            "Type": "Copy",
+            "Source": "Input.StorageAccountName",
+            "Target": "Connection.StorageAccountName"
+          }
+        ]
+      }
+    ]
+  }
+]
+

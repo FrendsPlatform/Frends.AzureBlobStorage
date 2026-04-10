@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.0.0] - 2026-04-26
+
+### Changed
+
+- Standardized parameter names and validation across all Azure Blob Storage tasks for consistency.
+
 ## [1.5.0] - 2026-01-26
 
 ### Added
