@@ -1,5 +1,19 @@
 # Changelog
 
+## [3.0.0] - 2026-04-17
+
+### Changed
+
+- [Breaking] Renamed `ThrowErrorIfBlobDoesNotExists` to `FailOnBlobNotFound` in Options tab.
+  - To upgrade: set `FailOnBlobNotFound` to the same value as the old `ThrowErrorIfBlobDoesNotExists`.
+- [Breaking] Removed `Info` from result; replaced with `Error { Message, AdditionalInfo }`.
+  - To upgrade: update any process steps reading `result.Info` to use `result.Error.Message` instead.
+
+### Added
+
+- Added `ThrowErrorOnFailure` (default: `true`) to Options tab for standardised error handling.
+- Added `ErrorMessageOnFailure` to Options tab for a custom error message prefix on failure.
+
 ## [2.0.0] - 2026-04-26
 
 ### Changed
