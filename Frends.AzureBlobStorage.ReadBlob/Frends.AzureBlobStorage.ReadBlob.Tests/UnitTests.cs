@@ -1,4 +1,4 @@
-﻿using Azure.Storage;
+using Azure.Storage;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Sas;
@@ -15,7 +15,7 @@ namespace Frends.AzureBlobStorage.ReadBlob.Tests;
 [TestFixture]
 public class ReadTest
 {
-    Source source;
+    Input input;
     Options options;
     Connection connection;
 
@@ -50,7 +50,7 @@ public class ReadTest
     [Test]
     public void ReadBlobSAS()
     {
-        source = new Source
+        input = new Input
         {
             ContainerName = _containerName,
             BlobName = _blobName
@@ -68,14 +68,16 @@ public class ReadTest
             Encoding = Encode.ASCII
         };
 
-        var result = AzureBlobStorage.ReadBlob(source, connection, options, default);
+        var result = AzureBlobStorage.ReadBlob(input, connection, options, default);
+        Assert.That(result.Result.Success, Is.True);
         Assert.IsNotEmpty(result.Result.Content);
+        Assert.IsNull(result.Result.Error);
     }
 
     [Test]
     public void ReadBlobConnectionString()
     {
-        source = new Source
+        input = new Input
         {
             ContainerName = _containerName,
             BlobName = _blobName,
@@ -92,14 +94,16 @@ public class ReadTest
             Encoding = Encode.ASCII
         };
 
-        var result = AzureBlobStorage.ReadBlob(source, connection, options, default);
+        var result = AzureBlobStorage.ReadBlob(input, connection, options, default);
+        Assert.That(result.Result.Success, Is.True);
         Assert.IsNotEmpty(result.Result.Content);
+        Assert.IsNull(result.Result.Error);
     }
 
     [Test]
     public void ReadBlobOAuth()
     {
-        source = new Source
+        input = new Input
         {
             ContainerName = _containerName,
             BlobName = _blobName,
@@ -120,8 +124,10 @@ public class ReadTest
             Encoding = Encode.ASCII
         };
 
-        var result = AzureBlobStorage.ReadBlob(source, connection, options, default);
+        var result = AzureBlobStorage.ReadBlob(input, connection, options, default);
+        Assert.That(result.Result.Success, Is.True);
         Assert.IsNotEmpty(result.Result.Content);
+        Assert.IsNull(result.Result.Error);
     }
 
     /// <summary>
@@ -130,7 +136,7 @@ public class ReadTest
     [Test]
     public void ReadBlobSasMissing()
     {
-        source = new Source
+        input = new Input
         {
             ContainerName = _containerName,
             BlobName = _blobName
@@ -148,8 +154,8 @@ public class ReadTest
             Encoding = Encode.ASCII
         };
 
-        var ex = Assert.ThrowsAsync<ValidationException>(() =>
-            AzureBlobStorage.ReadBlob(source, connection, options, default));
+        var ex = Assert.ThrowsAsync<Exception>(() =>
+            AzureBlobStorage.ReadBlob(input, connection, options, default));
         Assert.That(ex.Message.Contains("SasToken is required."), ex.Message);
     }
 
@@ -159,7 +165,7 @@ public class ReadTest
     [Test]
     public void ReadBlobConnectionStringMissing()
     {
-        source = new Source
+        input = new Input
         {
             ContainerName = _containerName,
             BlobName = _blobName
@@ -174,9 +180,96 @@ public class ReadTest
             Encoding = Encode.ASCII
         };
 
-        var ex = Assert.ThrowsAsync<ValidationException>(() =>
-            AzureBlobStorage.ReadBlob(source, connection, options, default));
+        var ex = Assert.ThrowsAsync<Exception>(() =>
+            AzureBlobStorage.ReadBlob(input, connection, options, default));
         Assert.That(ex.Message.Contains("ConnectionString is required."), ex.Message);
+    }
+
+    /// <summary>
+    /// ThrowErrorOnFailure = false returns error in result instead of throwing.
+    /// </summary>
+    [Test]
+    public async Task ReadBlob_ThrowErrorOnFailure_False_ReturnsErrorInResult()
+    {
+        input = new Input
+        {
+            ContainerName = _containerName,
+            BlobName = _blobName
+        };
+        connection = new Connection
+        {
+            AuthenticationMethod = ConnectionMethod.ConnectionString,
+            ConnectionString = string.Empty,
+        };
+        options = new Options
+        {
+            Encoding = Encode.ASCII,
+            ThrowErrorOnFailure = false,
+            ErrorMessageOnFailure = string.Empty,
+        };
+
+        var result = await AzureBlobStorage.ReadBlob(input, connection, options, default);
+        Assert.That(result.Success, Is.False);
+        Assert.IsNotNull(result.Error);
+        Assert.IsNotEmpty(result.Error.Message);
+        Assert.IsNotNull(result.Error.AdditionalInfo);
+    }
+
+    /// <summary>
+    /// ThrowErrorOnFailure = false with custom error message prefix uses that prefix.
+    /// </summary>
+    [Test]
+    public async Task ReadBlob_ThrowErrorOnFailure_False_CustomMessage_ReturnsErrorWithPrefix()
+    {
+        input = new Input
+        {
+            ContainerName = _containerName,
+            BlobName = _blobName
+        };
+        connection = new Connection
+        {
+            AuthenticationMethod = ConnectionMethod.ConnectionString,
+            ConnectionString = string.Empty,
+        };
+        options = new Options
+        {
+            Encoding = Encode.ASCII,
+            ThrowErrorOnFailure = false,
+            ErrorMessageOnFailure = "Custom error prefix",
+        };
+
+        var result = await AzureBlobStorage.ReadBlob(input, connection, options, default);
+        Assert.That(result.Success, Is.False);
+        Assert.IsNotNull(result.Error);
+        Assert.That(result.Error.Message, Does.StartWith("Custom error prefix"));
+    }
+
+    /// <summary>
+    /// ThrowErrorOnFailure = true with custom error message throws exception with that message.
+    /// </summary>
+    [Test]
+    public void ReadBlob_ThrowErrorOnFailure_True_CustomMessage_ThrowsWithCustomMessage()
+    {
+        input = new Input
+        {
+            ContainerName = _containerName,
+            BlobName = _blobName
+        };
+        connection = new Connection
+        {
+            AuthenticationMethod = ConnectionMethod.ConnectionString,
+            ConnectionString = string.Empty,
+        };
+        options = new Options
+        {
+            Encoding = Encode.ASCII,
+            ThrowErrorOnFailure = true,
+            ErrorMessageOnFailure = "My custom error message",
+        };
+
+        var ex = Assert.ThrowsAsync<Exception>(() =>
+            AzureBlobStorage.ReadBlob(input, connection, options, default));
+        Assert.That(ex.Message, Is.EqualTo("My custom error message"));
     }
 
     /// <summary>

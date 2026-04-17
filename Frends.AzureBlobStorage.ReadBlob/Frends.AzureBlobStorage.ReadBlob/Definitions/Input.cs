@@ -1,12 +1,12 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using Frends.AzureBlobStorage.ReadBlob.Attributes;
 
 namespace Frends.AzureBlobStorage.ReadBlob.Definitions;
 
 /// <summary>
-/// Source parameters.
+/// Input parameters.
 /// </summary>
-public class Source
+public class Input
 {
     /// <summary>
     /// Azure storage container's name.

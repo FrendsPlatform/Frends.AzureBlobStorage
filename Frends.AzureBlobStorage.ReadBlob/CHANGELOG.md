@@ -1,5 +1,19 @@
 # Changelog
 
+## [3.0.0] - 2026-04-17
+
+### Changed
+
+- [Breaking] Renamed `Source` tab to `Input` tab; move task parameter references from `Source` to `Input` when upgrading.
+- Added `Options.ThrowErrorOnFailure` (default: `true`) — when `false`, errors are returned in the result instead of thrown.
+- Added `Options.ErrorMessageOnFailure` — custom error message prefix for thrown exceptions or returned errors.
+- Added `Result.Success` (bool) — `true` on success, `false` on failure.
+- Added `Result.Error` (object `{ string Message, object AdditionalInfo }`) — populated on failure when `ThrowErrorOnFailure` is `false`.
+
+#### Upgrade instructions
+
+- Replace any usage of the `Source` tab/class with `Input`. The properties `ContainerName` and `BlobName` remain unchanged.
+
 ## [2.0.0] - 2026-04-26
 
 ### Changed
