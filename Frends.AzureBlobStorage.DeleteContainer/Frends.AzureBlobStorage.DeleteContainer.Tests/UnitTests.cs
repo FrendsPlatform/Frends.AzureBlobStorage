@@ -1,4 +1,4 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Globalization;
 using System.Threading.Tasks;
@@ -38,37 +38,94 @@ public class UnitTests
     }
 
     [TestMethod]
-    public async Task TestDeleteContainer()
+    public async Task TestDeleteContainer_ContainerNotFound_ReturnsSuccessFalse()
     {
-        // Test method returns true when container doesn't exist
         var result = await AzureBlobStorage.DeleteContainer(
             new Input { ContainerName = _containerName },
             new Connection { ConnectionString = TestHelper.ConnectionString },
-            new Options { ThrowErrorIfContainerDoesNotExists = false },
+            new Options { FailOnContainerNotFound = false, ThrowErrorOnFailure = true },
             new CancellationToken());
 
-        Assert.IsFalse(result.ContainerWasDeleted);
+        Assert.IsFalse(result.Success);
+        Assert.IsNull(result.Error);
+    }
 
-        // Test method returns true when container that exists is deleted
+    [TestMethod]
+    public async Task TestDeleteContainer_DeletesExistingContainer_ReturnsSuccessTrue()
+    {
         var container = GetBlobServiceClient();
         await container.CreateIfNotExistsAsync(PublicAccessType.None, null, null, new CancellationToken());
-        var deleted = await AzureBlobStorage.DeleteContainer(
+
+        var result = await AzureBlobStorage.DeleteContainer(
             new Input { ContainerName = _containerName },
             new Connection { ConnectionString = TestHelper.ConnectionString },
-            new Options { ThrowErrorIfContainerDoesNotExists = true },
+            new Options { FailOnContainerNotFound = true, ThrowErrorOnFailure = true },
             new CancellationToken());
-        Assert.IsTrue(deleted.ContainerWasDeleted);
+
+        Assert.IsTrue(result.Success);
+        Assert.IsNull(result.Error);
     }
 
     [TestMethod]
     [ExpectedException(typeof(Exception))]
-    public async Task TestDeleteContainer_throws_ContainerNotFound()
+    public async Task TestDeleteContainer_FailOnContainerNotFound_Throws()
     {
         await AzureBlobStorage.DeleteContainer(
             new Input { ContainerName = _containerName },
             new Connection { ConnectionString = TestHelper.ConnectionString },
-            new Options { ThrowErrorIfContainerDoesNotExists = true },
+            new Options { FailOnContainerNotFound = true, ThrowErrorOnFailure = true },
             new CancellationToken());
+    }
+
+    [TestMethod]
+    public async Task TestDeleteContainer_ThrowErrorOnFailureFalse_ReturnsErrorResult()
+    {
+        var result = await AzureBlobStorage.DeleteContainer(
+            new Input { ContainerName = _containerName },
+            new Connection { ConnectionString = TestHelper.ConnectionString },
+            new Options { FailOnContainerNotFound = true, ThrowErrorOnFailure = false },
+            new CancellationToken());
+
+        Assert.IsFalse(result.Success);
+        Assert.IsNotNull(result.Error);
+        Assert.IsFalse(string.IsNullOrEmpty(result.Error.Message));
+    }
+
+    [TestMethod]
+    public async Task TestDeleteContainer_ErrorMessageOnFailure_IncludedInErrorMessage()
+    {
+        const string customMessage = "Custom error message";
+
+        var result = await AzureBlobStorage.DeleteContainer(
+            new Input { ContainerName = _containerName },
+            new Connection { ConnectionString = TestHelper.ConnectionString },
+            new Options { FailOnContainerNotFound = true, ThrowErrorOnFailure = false, ErrorMessageOnFailure = customMessage },
+            new CancellationToken());
+
+        Assert.IsFalse(result.Success);
+        Assert.IsNotNull(result.Error);
+        StringAssert.Contains(result.Error.Message, customMessage);
+    }
+
+    [TestMethod]
+    [ExpectedException(typeof(Exception))]
+    public async Task TestDeleteContainer_ErrorMessageOnFailure_IncludedInException()
+    {
+        const string customMessage = "Custom error message";
+
+        try
+        {
+            await AzureBlobStorage.DeleteContainer(
+                new Input { ContainerName = _containerName },
+                new Connection { ConnectionString = TestHelper.ConnectionString },
+                new Options { FailOnContainerNotFound = true, ThrowErrorOnFailure = true, ErrorMessageOnFailure = customMessage },
+                new CancellationToken());
+        }
+        catch (Exception ex)
+        {
+            StringAssert.Contains(ex.Message, customMessage);
+            throw;
+        }
     }
 
     [TestMethod]
@@ -78,7 +135,7 @@ public class UnitTests
         await AzureBlobStorage.DeleteContainer(
             new Input { ContainerName = null },
             new Connection { ConnectionString = TestHelper.ConnectionString },
-            new Options { ThrowErrorIfContainerDoesNotExists = false },
+            new Options { FailOnContainerNotFound = false, ThrowErrorOnFailure = true },
             new CancellationToken());
     }
 
@@ -91,7 +148,7 @@ public class UnitTests
         await AzureBlobStorage.DeleteContainer(
             new Input { ContainerName = "valid" },
             new Connection { ConnectionString = conString, },
-            new Options { ThrowErrorIfContainerDoesNotExists = false },
+            new Options { FailOnContainerNotFound = false, ThrowErrorOnFailure = true },
             new CancellationToken());
     }
 
@@ -106,7 +163,7 @@ public class UnitTests
                 ConnectionString =
                     "DefaultEndpointsProtocol=https;AccountName=unitTestStorage;AccountKey=abcdefghijklmnopqrstuyxz123456789;EndpointSuffix=core.windows.net",
             },
-            new Options { ThrowErrorIfContainerDoesNotExists = false }, new CancellationToken());
+            new Options { FailOnContainerNotFound = false, ThrowErrorOnFailure = true }, new CancellationToken());
     }
 
     [TestMethod]
@@ -128,12 +185,13 @@ public class UnitTests
 
         var options = new Options
         {
-            ThrowErrorIfContainerDoesNotExists = false
+            FailOnContainerNotFound = false,
+            ThrowErrorOnFailure = true
         };
 
         var client = GetBlobServiceClient();
         await client.CreateIfNotExistsAsync(PublicAccessType.None, null, null, new CancellationToken());
         var result = await AzureBlobStorage.DeleteContainer(input, connection, options, default);
-        Assert.IsTrue(result.ContainerWasDeleted);
+        Assert.IsTrue(result.Success);
     }
 }
