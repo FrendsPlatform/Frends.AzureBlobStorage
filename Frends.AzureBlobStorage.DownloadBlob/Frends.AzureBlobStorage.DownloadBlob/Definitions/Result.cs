@@ -1,32 +1,27 @@
-﻿namespace Frends.AzureBlobStorage.DownloadBlob.Definitions;
+namespace Frends.AzureBlobStorage.DownloadBlob.Definitions;
 
 /// <summary>
-/// Result-class for DownloadBlob-task.
+/// Result returned by the DownloadBlob task.
 /// </summary>
 public class Result
 {
     /// <summary>
-    /// Name of the downloaded file.
+    /// Indicates whether the download completed successfully.
     /// </summary>
-    /// <example>sample.txt</example>
-    public string FileName { get; private set; }
+    /// <example>true</example>
+    public bool Success { get; internal set; }
 
     /// <summary>
-    /// Directory where the file was downloaded.
-    /// </summary>
-    /// <example>c:\temp</example>
-    public string Directory { get; private set; }
-
-    /// <summary>
-    /// Full path to the downloaded file.
+    /// Full path to the downloaded file on the local file system.
+    /// <c>null</c> when the task fails and <see cref="Options.ThrowErrorOnFailure"/> is <c>false</c>.
     /// </summary>
     /// <example>c:\temp\sample.txt</example>
-    public string FullPath { get; private set; }
+    public string FilePath { get; internal set; }
 
-    internal Result(string fileName, string directory, string fullPath)
-    {
-        FileName = fileName;
-        Directory = directory;
-        FullPath = fullPath;
-    }
+    /// <summary>
+    /// Error details when the task fails and <see cref="Options.ThrowErrorOnFailure"/> is <c>false</c>.
+    /// <c>null</c> on success.
+    /// </summary>
+    /// <example>null</example>
+    public Error Error { get; internal set; }
 }
