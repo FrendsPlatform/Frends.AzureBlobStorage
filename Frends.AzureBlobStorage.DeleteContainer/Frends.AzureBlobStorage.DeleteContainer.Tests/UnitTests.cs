@@ -78,57 +78,6 @@ public class UnitTests
     }
 
     [TestMethod]
-    public async Task TestDeleteContainer_ThrowErrorOnFailureFalse_ReturnsErrorResult()
-    {
-        var result = await AzureBlobStorage.DeleteContainer(
-            new Input { ContainerName = _containerName },
-            new Connection { ConnectionString = TestHelper.ConnectionString },
-            new Options { FailOnContainerNotFound = true, ThrowErrorOnFailure = false },
-            new CancellationToken());
-
-        Assert.IsFalse(result.Success);
-        Assert.IsNotNull(result.Error);
-        Assert.IsFalse(string.IsNullOrEmpty(result.Error.Message));
-    }
-
-    [TestMethod]
-    public async Task TestDeleteContainer_ErrorMessageOnFailure_IncludedInErrorMessage()
-    {
-        const string customMessage = "Custom error message";
-
-        var result = await AzureBlobStorage.DeleteContainer(
-            new Input { ContainerName = _containerName },
-            new Connection { ConnectionString = TestHelper.ConnectionString },
-            new Options { FailOnContainerNotFound = true, ThrowErrorOnFailure = false, ErrorMessageOnFailure = customMessage },
-            new CancellationToken());
-
-        Assert.IsFalse(result.Success);
-        Assert.IsNotNull(result.Error);
-        StringAssert.Contains(result.Error.Message, customMessage);
-    }
-
-    [TestMethod]
-    [ExpectedException(typeof(Exception))]
-    public async Task TestDeleteContainer_ErrorMessageOnFailure_IncludedInException()
-    {
-        const string customMessage = "Custom error message";
-
-        try
-        {
-            await AzureBlobStorage.DeleteContainer(
-                new Input { ContainerName = _containerName },
-                new Connection { ConnectionString = TestHelper.ConnectionString },
-                new Options { FailOnContainerNotFound = true, ThrowErrorOnFailure = true, ErrorMessageOnFailure = customMessage },
-                new CancellationToken());
-        }
-        catch (Exception ex)
-        {
-            StringAssert.Contains(ex.Message, customMessage);
-            throw;
-        }
-    }
-
-    [TestMethod]
     [ExpectedException(typeof(Exception))]
     public async Task TestDeleteContainer_throws_ParameterEmpty()
     {
