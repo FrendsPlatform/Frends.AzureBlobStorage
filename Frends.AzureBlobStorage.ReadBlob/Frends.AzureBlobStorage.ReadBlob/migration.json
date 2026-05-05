@@ -54,6 +54,32 @@
             }
           }
         ]
+      },
+      {
+        "Version": "3.0.0",
+        "Description": "Renamed Source tab to Input and added standardized error handling options.",
+        "Migration": [
+          {
+            "Type": "Copy",
+            "Source": "Source.ContainerName",
+            "Target": "Input.ContainerName"
+          },
+          {
+            "Type": "Copy",
+            "Source": "Source.BlobName",
+            "Target": "Input.BlobName"
+          },
+          {
+            "Type": "Set",
+            "Target": "Options.ThrowErrorOnFailure",
+            "Value": "true"
+          },
+          {
+            "Type": "Set",
+            "Target": "Options.ErrorMessageOnFailure",
+            "Value": ""
+          }
+        ]
       }
     ]
   }
