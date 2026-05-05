@@ -46,3 +46,4 @@ namespace Frends.AzureBlobStorage.ReadBlob.Tests
         private static Options DefaultOptions() =>
             new() { ThrowErrorOnFailure = true, ErrorMessageOnFailure = string.Empty, };
     }
+}
