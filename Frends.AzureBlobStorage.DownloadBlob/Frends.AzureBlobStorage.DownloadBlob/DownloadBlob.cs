@@ -83,30 +83,44 @@ public static class AzureBlobStorage
     }
 
     private static void CheckAndFixFileEncoding(string fullPath, string directory, string fileExtension,
-        Encoding targetEncoding)
+    Encoding targetEncoding)
     {
-        string encoding;
+        var targetPreamble = targetEncoding.GetPreamble();
+        bool preambleMatches = true;
 
-        using (var reader = new StreamReader(fullPath, true))
+        if (targetPreamble.Length > 0)
         {
-            reader.Read();
-            encoding = reader.CurrentEncoding.BodyName;
+            var headerBytes = new byte[targetPreamble.Length];
+            using (var fs = new FileStream(fullPath, FileMode.Open, FileAccess.Read))
+            {
+                fs.Read(headerBytes, 0, targetPreamble.Length);
+            }
+            preambleMatches = headerBytes.SequenceEqual(targetPreamble);
         }
 
-        if (targetEncoding.BodyName != encoding)
+        Encoding detectedEncoding;
+        using (var reader = new StreamReader(fullPath, detectEncodingFromByteOrderMarks: true))
+        {
+            reader.Read();
+            detectedEncoding = reader.CurrentEncoding;
+        }
+
+        bool encodingMatches = detectedEncoding.BodyName == targetEncoding.BodyName;
+
+        if (!encodingMatches || !preambleMatches)
         {
             var tempFilePath = Path.Combine(directory, "encodingTemp" + fileExtension);
 
-            using (var sr = new StreamReader(fullPath, true))
+            using (var sr = new StreamReader(fullPath, detectEncodingFromByteOrderMarks: true))
             using (var sw = new StreamWriter(tempFilePath, false, targetEncoding))
             {
-                var line = string.Empty;
+                string line;
                 while ((line = sr.ReadLine()) != null)
                     sw.WriteLine(line);
             }
 
             File.Delete(fullPath);
-            File.Copy(tempFilePath, fullPath);
+            File.Copy(tempFilePath, fullPath, overwrite: true);
             File.Delete(tempFilePath);
         }
     }

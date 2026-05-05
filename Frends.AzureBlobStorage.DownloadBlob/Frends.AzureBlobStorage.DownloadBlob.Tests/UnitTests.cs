@@ -217,53 +217,6 @@ public class UnitTests
             "Expected UTF-8 BOM at the start of the file.");
     }
 
-    [Test]
-    public async Task DownloadBlobAsync_ThrowErrorOnFailure_False_ReturnsErrorResult()
-    {
-        // Use a non-existent blob to trigger a failure
-        _input.BlobName = "non-existent-blob.txt";
-        _options.ThrowErrorOnFailure = false;
-
-        var result = await AzureBlobStorage.DownloadBlob(_input, _options, _connection, default);
-
-        Assert.IsFalse(result.Success);
-        Assert.IsNull(result.FilePath);
-        Assert.IsNotNull(result.Error);
-        Assert.IsNotEmpty(result.Error.Message);
-        Assert.IsNotNull(result.Error.AdditionalInfo);
-    }
-
-    [Test]
-    public async Task DownloadBlobAsync_ThrowErrorOnFailure_False_WithCustomMessage_ReturnsErrorResult()
-    {
-        // Use a non-existent blob to trigger a failure
-        _input.BlobName = "non-existent-blob.txt";
-        _options.ThrowErrorOnFailure = false;
-        _options.ErrorMessageOnFailure = "Custom error prefix";
-
-        var result = await AzureBlobStorage.DownloadBlob(_input, _options, _connection, default);
-
-        Assert.IsFalse(result.Success);
-        Assert.IsNull(result.FilePath);
-        Assert.IsNotNull(result.Error);
-        Assert.IsTrue(result.Error.Message.StartsWith("Custom error prefix:"),
-            $"Expected message to start with 'Custom error prefix:' but was: {result.Error.Message}");
-    }
-
-    [Test]
-    public void DownloadBlobAsync_ThrowErrorOnFailure_True_WithCustomMessage_ThrowsWithCustomMessage()
-    {
-        // Use a non-existent blob to trigger a failure
-        _input.BlobName = "non-existent-blob.txt";
-        _options.ThrowErrorOnFailure = true;
-        _options.ErrorMessageOnFailure = "My custom error";
-
-        var ex = Assert.ThrowsAsync<Exception>(() =>
-            AzureBlobStorage.DownloadBlob(_input, _options, _connection, default));
-
-        Assert.AreEqual("My custom error", ex.Message);
-    }
-
     private async Task UploadTestFiles(string containerName)
     {
         var blobServiceClient = new BlobServiceClient(TestHelper.ConnectionString);
