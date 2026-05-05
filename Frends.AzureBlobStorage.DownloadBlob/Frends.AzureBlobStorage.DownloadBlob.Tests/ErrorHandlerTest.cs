@@ -34,7 +34,7 @@ namespace Frends.AzureBlobStorage.DownloadBlob.Tests
             var options = DefaultOptions();
             options.ErrorMessageOnFailure = CustomErrorMessage;
             var ex = Assert.ThrowsAsync<Exception>(() =>
-                AzureBlobStorage.DownloadBlob(DefaultInput(), options, DefaultConnection() , CancellationToken.None));
+                AzureBlobStorage.DownloadBlob(DefaultInput(), options, DefaultConnection(), CancellationToken.None));
             Assert.That(ex, Is.Not.Null);
             Assert.That(ex.Message, Contains.Substring(CustomErrorMessage));
         }
