@@ -109,19 +109,23 @@ public static class AzureBlobStorage
 
         if (!encodingMatches || !preambleMatches)
         {
-            var tempFilePath = Path.Combine(directory, "encodingTemp" + fileExtension);
+            var tempFilePath = Path.Combine(Path.GetTempPath(), $"encodingTemp_{Guid.NewGuid()}{fileExtension}");
 
-            using (var sr = new StreamReader(fullPath, detectEncodingFromByteOrderMarks: true))
-            using (var sw = new StreamWriter(tempFilePath, false, targetEncoding))
+            try
             {
-                string line;
-                while ((line = sr.ReadLine()) != null)
-                    sw.WriteLine(line);
-            }
+                using (var sr = new StreamReader(fullPath, detectEncodingFromByteOrderMarks: true))
+                using (var sw = new StreamWriter(tempFilePath, false, targetEncoding))
+                {
+                    sw.Write(sr.ReadToEnd());
+                }
 
-            File.Delete(fullPath);
-            File.Copy(tempFilePath, fullPath, overwrite: true);
-            File.Delete(tempFilePath);
+                File.Copy(tempFilePath, fullPath, overwrite: true);
+            }
+            finally
+            {
+                if (File.Exists(tempFilePath))
+                    File.Delete(tempFilePath);
+            }
         }
     }
 
