@@ -627,7 +627,15 @@ public static class AzureBlobStorage
     {
         if (string.IsNullOrEmpty(tempDirectory) || !Directory.Exists(tempDirectory))
             return;
-        Directory.Delete(tempDirectory, recursive: true);
+
+        try
+        {
+            Directory.Delete(tempDirectory, recursive: true);
+        }
+        catch
+        {
+            // best-effort
+        }
     }
 
     private static Encoding CreateStrictEncoding(Encoding encoding)
