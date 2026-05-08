@@ -1,5 +1,11 @@
 # Changelog
 
+## [4.1.0] - 2026-05-07
+
+### Fix
+
+- Clean up temp files.
+
 ## [4.0.0] - 2026-04-26
 
 ### Changed
