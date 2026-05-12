@@ -30,6 +30,14 @@ public static class AzureBlobStorage
             var container =
                 ConnectionHandler.GetBlobContainerClient(connection, input.ContainerName, cancellationToken);
 
+            if (!await container.ExistsAsync(cancellationToken))
+            {
+                if (!options.FailOnContainerNotFound)
+                    return new Result(false, null);
+
+                throw new Exception("DeleteContainer error: Container not found.");
+            }
+
             var result = await container.DeleteIfExistsAsync(null, cancellationToken);
 
             return new Result(result, null);

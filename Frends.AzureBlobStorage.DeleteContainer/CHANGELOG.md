@@ -4,7 +4,7 @@
 
 ### Breaking changes
 
-- Removed `Options.ThrowErrorIfContainerDoesNotExists`.
+- `Options.ThrowErrorIfContainerDoesNotExists` renamed to `FailOnContainerNotFound`.
 - `Result.ContainerWasDeleted` renamed to `Success`.
 - `Result.Message` removed; error information is now in `Result.Error.Message`.
 

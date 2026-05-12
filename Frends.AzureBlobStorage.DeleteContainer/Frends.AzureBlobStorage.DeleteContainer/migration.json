@@ -43,6 +43,11 @@
         "Description": "Renamed container existence check and added standardized error handling options.",
         "Migration": [
           {
+            "Type": "Copy",
+            "Source": "Options.ThrowErrorIfContainerDoesNotExists",
+            "Target": "Options.FailOnContainerNotFound"
+          },
+          {
             "Type": "Set",
             "Target": "Options.ThrowErrorOnFailure",
             "Value": "true"
