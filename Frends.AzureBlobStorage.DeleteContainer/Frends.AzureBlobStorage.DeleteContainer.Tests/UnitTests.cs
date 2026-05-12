@@ -43,7 +43,7 @@ public class UnitTests
         var result = await AzureBlobStorage.DeleteContainer(
             new Input { ContainerName = _containerName },
             new Connection { ConnectionString = TestHelper.ConnectionString },
-            new Options { FailOnContainerNotFound = false, ThrowErrorOnFailure = true },
+            new Options { ThrowErrorOnFailure = true },
             new CancellationToken());
 
         Assert.IsFalse(result.Success);
@@ -59,7 +59,7 @@ public class UnitTests
         var result = await AzureBlobStorage.DeleteContainer(
             new Input { ContainerName = _containerName },
             new Connection { ConnectionString = TestHelper.ConnectionString },
-            new Options { FailOnContainerNotFound = true, ThrowErrorOnFailure = true },
+            new Options { ThrowErrorOnFailure = true },
             new CancellationToken());
 
         Assert.IsTrue(result.Success);
@@ -73,7 +73,7 @@ public class UnitTests
         await AzureBlobStorage.DeleteContainer(
             new Input { ContainerName = _containerName },
             new Connection { ConnectionString = TestHelper.ConnectionString },
-            new Options { FailOnContainerNotFound = true, ThrowErrorOnFailure = true },
+            new Options { ThrowErrorOnFailure = true },
             new CancellationToken());
     }
 
@@ -84,7 +84,7 @@ public class UnitTests
         await AzureBlobStorage.DeleteContainer(
             new Input { ContainerName = null },
             new Connection { ConnectionString = TestHelper.ConnectionString },
-            new Options { FailOnContainerNotFound = false, ThrowErrorOnFailure = true },
+            new Options { ThrowErrorOnFailure = true },
             new CancellationToken());
     }
 
@@ -97,7 +97,7 @@ public class UnitTests
         await AzureBlobStorage.DeleteContainer(
             new Input { ContainerName = "valid" },
             new Connection { ConnectionString = conString, },
-            new Options { FailOnContainerNotFound = false, ThrowErrorOnFailure = true },
+            new Options { ThrowErrorOnFailure = true },
             new CancellationToken());
     }
 
@@ -112,7 +112,7 @@ public class UnitTests
                 ConnectionString =
                     "DefaultEndpointsProtocol=https;AccountName=unitTestStorage;AccountKey=abcdefghijklmnopqrstuyxz123456789;EndpointSuffix=core.windows.net",
             },
-            new Options { FailOnContainerNotFound = false, ThrowErrorOnFailure = true }, new CancellationToken());
+            new Options { ThrowErrorOnFailure = true }, new CancellationToken());
     }
 
     [TestMethod]
@@ -134,7 +134,6 @@ public class UnitTests
 
         var options = new Options
         {
-            FailOnContainerNotFound = false,
             ThrowErrorOnFailure = true
         };
 

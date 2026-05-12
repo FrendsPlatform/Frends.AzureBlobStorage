@@ -7,14 +7,6 @@ namespace Frends.AzureBlobStorage.DeleteContainer.Definitions;
 public class Options
 {
     /// <summary>
-    /// If true, throw an error if the container to be deleted doesn't exist.
-    /// If false, the task will return Success = false without throwing.
-    /// </summary>
-    /// <example>false</example>
-    [DefaultValue(false)]
-    public bool FailOnContainerNotFound { get; set; }
-
-    /// <summary>
     /// If true, throws an exception on task failure.
     /// If false, returns a result object with Success = false and Error details.
     /// </summary>
