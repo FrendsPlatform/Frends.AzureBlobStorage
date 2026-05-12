@@ -32,14 +32,6 @@ public static class AzureBlobStorage
             var blob = ConnectionHandler.GetBlobClient(connection, input.ContainerName, input.BlobName,
                 cancellationToken);
 
-            if (!await blob.ExistsAsync(cancellationToken))
-            {
-                var notFoundMessage = $"Blob {input.BlobName} doesn't exist in container {input.ContainerName}.";
-                if (options.FailOnBlobNotFound)
-                    throw new Exception(notFoundMessage);
-                return new Result(false, new DeleteBlobError { Message = notFoundMessage });
-            }
-
             var accessCondition = !string.IsNullOrWhiteSpace(options.VerifyETagWhenDeleting)
                 ? new BlobRequestConditions
                 {
