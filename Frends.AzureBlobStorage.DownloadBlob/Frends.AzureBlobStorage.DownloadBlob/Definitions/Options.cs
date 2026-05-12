@@ -14,7 +14,7 @@ public class Options
     /// </summary>
     /// <example>FileEncoding.UTF8WithBOM</example>
     [DefaultValue(FileEncoding.UTF8WithBOM)]
-    public FileEncoding Encoding { get; set; }
+    public FileEncoding Encoding { get; set; } = FileEncoding.UTF8WithBOM;
 
     /// <summary>
     /// Encoding name used when <see cref="Encoding"/> is set to <c>Other</c>.
@@ -23,7 +23,7 @@ public class Options
     /// <example>windows-1251</example>
     [UIHint(nameof(Encoding), "", FileEncoding.Other)]
     [DisplayFormat(DataFormatString = "Text")]
-    public string OtherEncoding { get; set; }
+    public string OtherEncoding { get; set; } = string.Empty;
 
     /// <summary>
     /// When <c>true</c> (default) any error causes an exception to be thrown.

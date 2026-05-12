@@ -29,6 +29,7 @@ public class Input
     /// Local directory where the downloaded file will be saved.
     /// </summary>
     /// <example>c:\temp</example>
+    [NotEmptyString]
     [DisplayFormat(DataFormatString = "Text")]
     public string TargetDirectory { get; set; }
 
@@ -45,5 +46,5 @@ public class Input
     /// </summary>
     /// <example>FileExistsAction.Throw</example>
     [DefaultValue(FileExistsAction.Throw)]
-    public FileExistsAction ActionOnExistingFile { get; set; }
+    public FileExistsAction ActionOnExistingFile { get; set; } = FileExistsAction.Throw;
 }

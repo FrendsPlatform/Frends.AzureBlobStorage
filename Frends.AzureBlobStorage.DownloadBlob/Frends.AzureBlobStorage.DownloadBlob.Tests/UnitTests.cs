@@ -223,7 +223,7 @@ public class UnitTests
         var container = blobServiceClient.GetBlobContainerClient(containerName);
         await container.CreateIfNotExistsAsync(PublicAccessType.None, null, null);
         var blockBlob = container.GetBlobClient(_testBlob);
-        await blockBlob.UploadAsync(_testFilePath, default);
+        await blockBlob.UploadAsync(_testFilePath, overwrite: true);
     }
 
     private async Task DeleteBlobsInContainer(string connectionString, string containerName, string blobName)
