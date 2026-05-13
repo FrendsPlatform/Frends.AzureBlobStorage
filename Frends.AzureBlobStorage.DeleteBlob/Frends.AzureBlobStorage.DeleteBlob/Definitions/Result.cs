@@ -7,7 +7,8 @@ namespace Frends.AzureBlobStorage.DeleteBlob.Definitions;
 public class Result
 {
     /// <summary>
-    /// Returns true if the blob was successfully deleted.
+    /// True if the blob was successfully deleted. 
+    /// False if the blob did not exist or if an error occurred (and 'ThrowErrorOnFailure' is false).
     /// </summary>
     /// <example>true</example>
     public bool Success { get; private set; }

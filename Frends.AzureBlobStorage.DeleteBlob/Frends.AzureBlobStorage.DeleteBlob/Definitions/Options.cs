@@ -23,8 +23,8 @@ public class Options
     public string VerifyETagWhenDeleting { get; set; }
 
     /// <summary>
-    /// If true, throw an error if the blob to be deleted doesn't exist.
-    /// If false, the task returns Success = false with an error message.
+    /// If true, the absence of the blob is treated as a failure that triggers the 'ThrowErrorOnFailure' policy (potentially throwing an exception).
+    /// If false, the method returns Success = false with a 'DeleteBlobError' object, but wont't throw an exception for this reason, regardless of the 'ThrowErrorOnFailure' setting.
     /// </summary>
     /// <example>false</example>
     [DefaultValue(false)]

@@ -63,6 +63,7 @@ public class DeleteTest
         {
             SnapshotDeleteOption = default,
             VerifyETagWhenDeleting = default,
+            FailOnBlobNotFound = false,
             ThrowErrorOnFailure = false,
         };
 
@@ -90,6 +91,7 @@ public class DeleteTest
         {
             SnapshotDeleteOption = default,
             VerifyETagWhenDeleting = default,
+            FailOnBlobNotFound = true,
             ThrowErrorOnFailure = true,
         };
 
@@ -97,6 +99,7 @@ public class DeleteTest
             AzureBlobStorage.DeleteBlob(input, connection, options, CancellationToken.None));
 
         Assert.IsNotNull(exception);
+        Assert.IsTrue(exception.Message.Contains("doesn't exist in container"), exception.Message);
     }
 
     [TestMethod]
@@ -121,12 +124,14 @@ public class DeleteTest
         {
             SnapshotDeleteOption = default,
             VerifyETagWhenDeleting = default,
+            FailOnBlobNotFound = false,
             ThrowErrorOnFailure = false,
         };
 
         var result = await AzureBlobStorage.DeleteBlob(input, connection, options, default);
         Assert.IsFalse(result.Success);
         Assert.IsNotNull(result.Error);
+        Assert.IsTrue(result.Error.Message.Contains("doesn't exist in container"));
     }
 
     [TestMethod]
@@ -148,6 +153,7 @@ public class DeleteTest
         {
             SnapshotDeleteOption = default,
             VerifyETagWhenDeleting = default,
+            FailOnBlobNotFound = true,
             ThrowErrorOnFailure = true,
         };
 
@@ -197,11 +203,13 @@ public class DeleteTest
         var options = new Options()
         {
             ThrowErrorOnFailure = false,
+            FailOnBlobNotFound = false,
         };
 
         var result = await AzureBlobStorage.DeleteBlob(input, connection, options, default);
         Assert.IsFalse(result.Success);
         Assert.IsNotNull(result.Error);
+        Assert.IsTrue(result.Error.Message.Contains("doesn't exist in container"));
     }
 
     [TestMethod]
@@ -221,12 +229,14 @@ public class DeleteTest
 
         var options = new Options()
         {
+            FailOnBlobNotFound = false,
             ThrowErrorOnFailure = false,
         };
 
         var result = await AzureBlobStorage.DeleteBlob(input, connection, options, default);
         Assert.IsFalse(result.Success);
         Assert.IsNotNull(result.Error);
+        Assert.IsTrue(result.Error.Message.Contains("doesn't exist in container"));
     }
 
     private static BlobContainerClient GetBlobContainer(string connectionString, string containerName)
