@@ -1,28 +1,56 @@
-﻿namespace Frends.AzureBlobStorage.DownloadBlob.Definitions;
+namespace Frends.AzureBlobStorage.DownloadBlob.Definitions;
 
 /// <summary>
-/// Possible operations if file already exists.
+/// Possible operations if the destination file already exists.
 /// </summary>
 public enum FileExistsAction
 {
-#pragma warning disable CS1591 // self explanatory
-    Error,
+    /// <summary>
+    /// Throw an exception if the destination file already exists.
+    /// </summary>
+    Throw,
+
+    /// <summary>
+    /// Rename the downloaded file by appending an incrementing number, e.g. file(1).txt.
+    /// </summary>
     Rename,
-    Overwrite
-#pragma warning restore CS1591 // self explanatory
+
+    /// <summary>
+    /// Overwrite the existing destination file.
+    /// </summary>
+    Overwrite,
 }
 
 /// <summary>
-/// Content encoding.
+/// Content encoding used when writing the downloaded file.
 /// </summary>
 public enum FileEncoding
 {
-#pragma warning disable CS1591 // self explanatory
+    /// <summary>
+    /// UTF-8 with byte-order mark (BOM).
+    /// </summary>
+    UTF8WithBOM,
+
+    /// <summary>
+    /// UTF-8 without byte-order mark.
+    /// </summary>
     UTF8,
+
+    /// <summary>
+    /// System default encoding.
+    /// </summary>
     Default,
+
+    /// <summary>
+    /// ASCII encoding.
+    /// </summary>
     ASCII,
-    WINDOWS1252,
-#pragma warning restore CS1591 // self explanatory
+
+    /// <summary>
+    /// Windows-1252 (Western European) code page.
+    /// </summary>
+    Windows1252,
+
     /// <summary>
     /// Other enables users to add other encoding options as string.
     /// </summary>

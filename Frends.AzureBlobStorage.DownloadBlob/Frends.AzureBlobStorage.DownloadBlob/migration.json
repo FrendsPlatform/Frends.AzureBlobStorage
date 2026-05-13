@@ -48,6 +48,69 @@
             }
           }
         ]
+      },
+      {
+        "Version": "3.0.0",
+        "Description": "Major refactor: Unified tabs to Input/Options, renamed properties, and updated Enums.",
+        "Migration": [
+          {
+            "Type": "Copy",
+            "Source": "Source.ContainerName",
+            "Target": "Input.ContainerName"
+          },
+          {
+            "Type": "Copy",
+            "Source": "Source.BlobName",
+            "Target": "Input.BlobName"
+          },
+          {
+            "Type": "Copy",
+            "Source": "Destination.Directory",
+            "Target": "Input.TargetDirectory"
+          },
+          {
+            "Type": "Copy",
+            "Source": "Destination.TargetFileName",
+            "Target": "Input.TargetFileName"
+          },
+          {
+            "Type": "Map",
+            "Source": "Destination.FileExistsOperation",
+            "Target": "Input.ActionOnExistingFile",
+            "Maps": {
+              "Error": "Throw",
+              "Overwrite": "Overwrite",
+              "Rename": "Rename"
+            }
+          },
+          {
+            "Type": "Map",
+            "Source": "Source.Encoding",
+            "Target": "Options.Encoding",
+            "Maps": {
+              "UTF8": "UTF8",
+              "Default": "Default",
+              "ASCII": "ASCII",
+              "WINDOWS1252": "Windows1252",
+              "Other": "Other"
+            }
+          },
+          {
+            "Type": "Copy",
+            "Source": "Source.FileEncodingString",
+            "Target": "Options.OtherEncoding"
+          },
+          {
+            "Type": "Set",
+            "Target": "Options.ThrowErrorOnFailure",
+            "Value": "true"
+          },
+          {
+            "Type": "Set",
+            "Target": "Options.ErrorMessageOnFailure",
+            "Value": ""
+          }
+        ]
       }
     ]
   }
