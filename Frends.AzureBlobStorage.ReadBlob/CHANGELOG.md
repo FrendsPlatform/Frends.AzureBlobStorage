@@ -5,6 +5,9 @@
 ### Changed
 
 - [Breaking] Renamed `Source` tab to `Input` tab; move task parameter references from `Source` to `Input` when upgrading.
+
+### Added
+
 - Added `Options.ThrowErrorOnFailure` (default: `true`) — when `false`, errors are returned in the result instead of thrown.
 - Added `Options.ErrorMessageOnFailure` — custom error message prefix for thrown exceptions or returned errors.
 - Added `Result.Success` (bool) — `true` on success, `false` on failure.
