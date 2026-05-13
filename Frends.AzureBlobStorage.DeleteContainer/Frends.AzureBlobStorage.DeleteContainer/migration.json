@@ -37,6 +37,27 @@
             "Target": "Connection.StorageAccountName"
           }
         ]
+      },
+      {
+        "Version": "3.0.0",
+        "Description": "Renamed container existence check and added standardized error handling options.",
+        "Migration": [
+          {
+            "Type": "Copy",
+            "Source": "Options.ThrowErrorIfContainerDoesNotExists",
+            "Target": "Options.FailOnContainerNotFound"
+          },
+          {
+            "Type": "Set",
+            "Target": "Options.ThrowErrorOnFailure",
+            "Value": "true"
+          },
+          {
+            "Type": "Set",
+            "Target": "Options.ErrorMessageOnFailure",
+            "Value": ""
+          }
+        ]
       }
     ]
   }

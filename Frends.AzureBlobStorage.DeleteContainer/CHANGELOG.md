@@ -1,5 +1,22 @@
 # Changelog
 
+## [3.0.0] - 2026-05-04
+
+### Breaking changes
+
+- `Options.ThrowErrorIfContainerDoesNotExists` renamed to `FailOnContainerNotFound`.
+  To upgrade: update your process to use `FailOnContainerNotFound` instead of `ThrowErrorIfContainerDoesNotExists`. 
+- `Result.ContainerWasDeleted` renamed to `Success`.
+  To upgrade: update your process to reference `Success` instead of `ContainerWasDeleted`.
+- `Result.Message` removed; error information is now in `Result.Error.Message`.
+  To upgrade: check `Result.Error` for error details on failure.
+
+### Added
+
+- `Options.ThrowErrorOnFailure` (default: `true`) to control whether the task throws on failure or returns an error result.
+- `Options.ErrorMessageOnFailure` to provide a custom error message included in the exception or `Result.Error.Message`.
+- `Result.Error` structured error object with `Message` and `AdditionalInfo` fields.
+
 ## [2.0.0] - 2026-04-26
 
 ### Changed
