@@ -1,4 +1,4 @@
-# Changelog
+﻿# Changelog
 
 ## [3.0.0] - 2026-05-04
 
@@ -15,6 +15,17 @@
 
 - Added `Result.Success` (bool) and `Result.Error` properties.
 - Added `Options.ThrowErrorOnFailure` (default `true`) and `Options.ErrorMessageOnFailure` for non-throwing error handling.
+
+### Upgrade instructions (2.x → 3.0) 
+
+1. Replace `Source` + `Destination` parameter tabs with `Input` + `Options`.
+2. Move `Source.ContainerName` → `Input.ContainerName`, `Source.BlobName` → `Input.BlobName`.
+3. Move `Destination.Directory` → `Input.TargetDirectory`, `Destination.TargetFileName` → `Input.TargetFileName`.
+4. Move `Destination.FileExistsOperation` → `Input.ActionOnExistingFile`; change `FileExistsAction.Error` → `FileExistsAction.Throw`.
+5. Move `Source.Encoding` → `Options.Encoding`; change `FileEncoding.WINDOWS1252` → `FileEncoding.Windows1252`; replace `EnableBOM = true` with `FileEncoding.UTF8WithBOM`.
+6. Move `Source.FileEncodingString` → `Options.OtherEncoding`.
+7. Replace `Result.FullPath` → `Result.FilePath`; remove usages of `Result.FileName` / `Result.Directory`.
+8. Optionally set `Options.ThrowErrorOnFailure = false` and check `Result.Success` / `Result.Error` instead of catching exceptions.
 
 ## [2.0.0] - 2026-04-26
 
