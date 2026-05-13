@@ -7,8 +7,8 @@ namespace Frends.AzureBlobStorage.DeleteContainer.Definitions;
 public class Result
 {
     /// <summary>
-    /// Returns true when the container was successfully deleted or did not exist (when FailOnContainerNotFound is false).
-    /// Returns false when the container was not found and FailOnContainerNotFound is false, or when ThrowErrorOnFailure is false.
+    /// Returns true when the container was successfully deleted.
+    /// Returns false when the container was not found and FailOnContainerNotFound is false, or when any failure occurs and ThrowErrorOnFailure is false.
     /// </summary>
     /// <example>true</example>
     public bool Success { get; private set; }
