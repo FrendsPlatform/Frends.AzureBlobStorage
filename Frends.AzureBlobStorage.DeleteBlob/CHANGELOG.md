@@ -6,7 +6,6 @@
 
 - [Breaking] Renamed `ThrowErrorIfBlobDoesNotExists` to `FailOnBlobNotFound` in Options tab.
 - [Breaking] Removed `Info` from result; replaced with `Error { Message, AdditionalInfo }`.
-- Removed 'Options.FailOnBlobNotFound'
 
 ### Added
 

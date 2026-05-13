@@ -43,6 +43,11 @@
         "Description": "Renamed error handling property and added standardized error options.",
         "Migration": [
           {
+            "Type": "Copy",
+            "Source": "Options.ThrowErrorIfBlobDoesNotExists",
+            "Target": "Options.FailOnBlobNotFound"
+          },
+          {
             "Type": "Set",
             "Target": "Options.ThrowErrorOnFailure",
             "Value": "true"
