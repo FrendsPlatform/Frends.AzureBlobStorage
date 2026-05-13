@@ -5,8 +5,11 @@
 ### Breaking changes
 
 - `Options.ThrowErrorIfContainerDoesNotExists` renamed to `FailOnContainerNotFound`.
+  To upgrade: update your process to use `FailOnContainerNotFound` instead of `ThrowErrorIfContainerDoesNotExists`. 
 - `Result.ContainerWasDeleted` renamed to `Success`.
+  To upgrade: update your process to reference `Success` instead of `ContainerWasDeleted`.
 - `Result.Message` removed; error information is now in `Result.Error.Message`.
+  To upgrade: check `Result.Error` for error details on failure.
 
 ### Added
 
