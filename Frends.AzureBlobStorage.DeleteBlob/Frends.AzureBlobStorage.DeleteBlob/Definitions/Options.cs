@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
 namespace Frends.AzureBlobStorage.DeleteBlob.Definitions;
@@ -23,10 +23,26 @@ public class Options
     public string VerifyETagWhenDeleting { get; set; }
 
     /// <summary>
-    /// If true, throw an error if blob to be deleted doesn't exist.
-    /// If false, Task will return Success = true.
+    /// If true, the absence of the blob is treated as a failure that triggers the 'ThrowErrorOnFailure' policy (potentially throwing an exception).
+    /// If false, the method returns Success = false with a 'DeleteBlobError' object, but wont't throw an exception for this reason, regardless of the 'ThrowErrorOnFailure' setting.
     /// </summary>
     /// <example>false</example>
     [DefaultValue(false)]
-    public bool ThrowErrorIfBlobDoesNotExists { get; set; }
+    public bool FailOnBlobNotFound { get; set; }
+
+    /// <summary>
+    /// If true, the task throws an exception on failure.
+    /// If false, the task returns Success = false with error details in the Error property.
+    /// </summary>
+    /// <example>true</example>
+    [DefaultValue(true)]
+    public bool ThrowErrorOnFailure { get; set; } = true;
+
+    /// <summary>
+    /// Optional custom error message prefix included in the exception or result Error.Message on failure.
+    /// If left empty, the original error message is used.
+    /// </summary>
+    /// <example>DeleteBlob failed for my-container/my-blob.txt</example>
+    [DisplayFormat(DataFormatString = "Text")]
+    public string ErrorMessageOnFailure { get; set; }
 }
