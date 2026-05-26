@@ -95,4 +95,13 @@ public class Options
     /// <example>64</example>
     [DefaultValue(64)]
     public int ParallelOperations { get; set; }
+
+    /// <summary>
+    /// When uploading a directory, preserve the source directory structure in the destination.
+    /// True: Creates subdirectories in blob storage to match the source structure.
+    /// False: Uploads all files with only their parent directory name (legacy behavior).
+    /// </summary>
+    /// <example>false</example>
+    [DefaultValue(false)]
+    public bool PreserveDirectoryStructure { get; set; }
 }
