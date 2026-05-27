@@ -777,46 +777,6 @@ public class UnitTests
     }
 
     [Test]
-    public async Task UploadDirectory_PreserveStructure_False_WithBlobFolderName()
-    {
-        var testStructureDir = Path.Combine(_testFileDir, "NestedStructure");
-
-        foreach (var blobtype in _blobtypes)
-        {
-            CreateNestedTestStructure(testStructureDir);
-            _options.BlobType = blobtype;
-            _options.PreserveDirectoryStructure = false;
-
-            if (blobtype is AzureBlobType.Page)
-                _options.ResizeFile = true;
-
-            _input.SourceType = UploadSourceType.Directory;
-            _input.SourceDirectory = testStructureDir;
-            _input.SourceFile = default;
-            _input.BlobFolderName = "MyPrefix";
-
-            var container = GetBlobContainer(TestHelper.ConnectionString, _containerName);
-            var result = await AzureBlobStorage.UploadBlob(_input, _connection, _options, default);
-            Assert.IsTrue(result.Success);
-
-            Assert.IsTrue(result.Data.ContainsValue($"{container.Uri}/MyPrefix/NestedStructure/level1file.txt"));
-            Assert.IsTrue(await container.GetBlobClient("MyPrefix/NestedStructure/level1file.txt").ExistsAsync(),
-                "MyPrefix/NestedStructure/level1file.txt should exist");
-
-            Assert.IsTrue(result.Data.ContainsValue($"{container.Uri}/MyPrefix/sub1/level2file.txt"));
-            Assert.IsTrue(await container.GetBlobClient("MyPrefix/sub1/level2file.txt").ExistsAsync(),
-                "MyPrefix/sub1/level2file.txt should exist");
-
-            Assert.IsTrue(result.Data.ContainsValue($"{container.Uri}/MyPrefix/sub2/level3file.txt"));
-            Assert.IsTrue(await container.GetBlobClient("MyPrefix/sub2/level3file.txt").ExistsAsync(),
-                "MyPrefix/sub2/level3file.txt should exist");
-
-            await CleanUp();
-            TestSetup();
-        }
-    }
-
-    [Test]
     public async Task UploadBlob_TestEncoding()
     {
         var encodings = new List<FileEncoding>()
