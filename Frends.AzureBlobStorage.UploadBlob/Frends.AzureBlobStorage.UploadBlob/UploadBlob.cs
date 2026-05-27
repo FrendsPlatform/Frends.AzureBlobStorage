@@ -92,10 +92,10 @@ public static class AzureBlobStorage
                         }
                         else
                         {
-                            var parentDirectory = Path.GetFileName(Path.GetDirectoryName(file.ToString()));
-                            relativeBlobPath = string.IsNullOrEmpty(input.BlobFolderName)
-                                ? Path.Combine(parentDirectory, fileName)
-                                : fileName;
+                            var parentDirectory = Path.GetFileName(file.DirectoryName);
+                            relativeBlobPath = string.IsNullOrEmpty(parentDirectory)
+                                ? fileName
+                                : Path.Combine(parentDirectory, fileName);
                         }
 
                         var withDir = string.IsNullOrEmpty(input.BlobFolderName)
