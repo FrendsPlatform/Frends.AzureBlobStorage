@@ -572,6 +572,211 @@ public class UnitTests
     }
 
     [Test]
+    public async Task UploadDirectory_PreserveStructure_True()
+    {
+        var testStructureDir = Path.Combine(_testFileDir, "NestedStructure");
+        CreateNestedTestStructure(testStructureDir);
+
+        foreach (var blobtype in _blobtypes)
+        {
+            _options.BlobType = blobtype;
+            _options.PreserveDirectoryStructure = true;
+
+            if (blobtype is AzureBlobType.Page)
+                _options.ResizeFile = true;
+
+            _input.SourceType = UploadSourceType.Directory;
+            _input.SourceDirectory = testStructureDir;
+            var container = GetBlobContainer(TestHelper.ConnectionString, _containerName);
+            var result = await AzureBlobStorage.UploadBlob(_input, _connection, _options, default);
+            Assert.IsTrue(result.Success);
+
+            // Verify nested structure is preserved
+            Assert.IsTrue(result.Data.ContainsValue($"{container.Uri}/level1file.txt"));
+            Assert.IsTrue(await container.GetBlobClient("level1file.txt").ExistsAsync(),
+                "level1file.txt should exist at root");
+
+            Assert.IsTrue(result.Data.ContainsValue($"{container.Uri}/sub1/level2file.txt"));
+            Assert.IsTrue(await container.GetBlobClient("sub1/level2file.txt").ExistsAsync(),
+                "sub1/level2file.txt should exist with subdirectory");
+
+            Assert.IsTrue(result.Data.ContainsValue($"{container.Uri}/sub1/sub2/level3file.txt"));
+            Assert.IsTrue(await container.GetBlobClient("sub1/sub2/level3file.txt").ExistsAsync(),
+                "sub1/sub2/level3file.txt should exist with nested subdirectories");
+
+            await CleanUp();
+            TestSetup();
+            CreateNestedTestStructure(testStructureDir);
+
+            if (blobtype is AzureBlobType.Page)
+                _options.ResizeFile = true;
+
+            // OAuth
+            _input.SourceType = UploadSourceType.Directory;
+            _input.SourceDirectory = testStructureDir;
+            _input.SourceFile = default;
+            _connection.AuthenticationMethod = ConnectionMethod.OAuth2;
+            container = GetBlobContainer(TestHelper.ConnectionString, _containerName);
+            _options.PreserveDirectoryStructure = true;
+            result = await AzureBlobStorage.UploadBlob(_input, _connection, _options, default);
+            Assert.IsTrue(result.Success);
+            Assert.IsTrue(await container.GetBlobClient("level1file.txt").ExistsAsync(), "OAuth");
+            Assert.IsTrue(await container.GetBlobClient("sub1/level2file.txt").ExistsAsync(), "OAuth");
+            Assert.IsTrue(await container.GetBlobClient("sub1/sub2/level3file.txt").ExistsAsync(), "OAuth");
+
+            await CleanUp();
+            TestSetup();
+            CreateNestedTestStructure(testStructureDir);
+
+            if (blobtype is AzureBlobType.Page)
+                _options.ResizeFile = true;
+
+            // SAS token
+            _input.SourceType = UploadSourceType.Directory;
+            _input.SourceDirectory = testStructureDir;
+            _input.SourceFile = default;
+            _connection.AuthenticationMethod = ConnectionMethod.SasToken;
+            _input.ContainerName = _container;
+            container = GetBlobContainer(TestHelper.ConnectionString, _container);
+            _options.PreserveDirectoryStructure = true;
+            result = await AzureBlobStorage.UploadBlob(_input, _connection, _options, default);
+            Assert.IsTrue(result.Success);
+            Assert.IsTrue(await container.GetBlobClient("level1file.txt").ExistsAsync(), "SAS token");
+            Assert.IsTrue(await container.GetBlobClient("sub1/level2file.txt").ExistsAsync(), "SAS token");
+            Assert.IsTrue(await container.GetBlobClient("sub1/sub2/level3file.txt").ExistsAsync(), "SAS token");
+
+            await CleanUp();
+            TestSetup();
+            CreateNestedTestStructure(testStructureDir);
+        }
+    }
+
+    [Test]
+    public async Task UploadDirectory_PreserveStructure_False()
+    {
+        var testStructureDir = Path.Combine(_testFileDir, "NestedStructure");
+        CreateNestedTestStructure(testStructureDir);
+
+        foreach (var blobtype in _blobtypes)
+        {
+            _options.BlobType = blobtype;
+            _options.PreserveDirectoryStructure = false;
+
+            if (blobtype is AzureBlobType.Page)
+                _options.ResizeFile = true;
+
+            // Connection string
+            _input.SourceType = UploadSourceType.Directory;
+            _input.SourceDirectory = testStructureDir;
+            _input.SourceFile = default;
+            _input.BlobFolderName = null;
+            var container = GetBlobContainer(TestHelper.ConnectionString, _containerName);
+            var result = await AzureBlobStorage.UploadBlob(_input, _connection, _options, default);
+            Assert.IsTrue(result.Success);
+
+            Assert.IsTrue(result.Data.ContainsValue($"{container.Uri}/NestedStructure/level1file.txt"));
+            Assert.IsTrue(await container.GetBlobClient("NestedStructure/level1file.txt").ExistsAsync(),
+                "level1file.txt should exist under NestedStructure only");
+
+            Assert.IsTrue(result.Data.ContainsValue($"{container.Uri}/sub1/level2file.txt"));
+            Assert.IsTrue(await container.GetBlobClient("sub1/level2file.txt").ExistsAsync(),
+                "level2file.txt should exist under sub1 only (parent dir, not nested)");
+
+            Assert.IsTrue(result.Data.ContainsValue($"{container.Uri}/sub2/level3file.txt"));
+            Assert.IsTrue(await container.GetBlobClient("sub2/level3file.txt").ExistsAsync(),
+                "level3file.txt should exist under sub2 only (direct parent, not nested)");
+
+            await CleanUp();
+            TestSetup();
+            CreateNestedTestStructure(testStructureDir);
+
+            if (blobtype is AzureBlobType.Page)
+                _options.ResizeFile = true;
+
+            // OAuth
+            _input.SourceType = UploadSourceType.Directory;
+            _input.SourceDirectory = testStructureDir;
+            _input.SourceFile = default;
+            _connection.AuthenticationMethod = ConnectionMethod.OAuth2;
+            container = GetBlobContainer(TestHelper.ConnectionString, _containerName);
+            _options.PreserveDirectoryStructure = false;
+            result = await AzureBlobStorage.UploadBlob(_input, _connection, _options, default);
+            Assert.IsTrue(result.Success, "OAuth");
+            Assert.IsTrue(await container.GetBlobClient("NestedStructure/level1file.txt").ExistsAsync(), "OAuth");
+            Assert.IsTrue(await container.GetBlobClient("sub1/level2file.txt").ExistsAsync(), "OAuth");
+            Assert.IsTrue(await container.GetBlobClient("sub2/level3file.txt").ExistsAsync(), "OAuth");
+
+            await CleanUp();
+            TestSetup();
+            CreateNestedTestStructure(testStructureDir);
+
+            if (blobtype is AzureBlobType.Page)
+                _options.ResizeFile = true;
+
+            // SAS token
+            _input.SourceType = UploadSourceType.Directory;
+            _input.SourceDirectory = testStructureDir;
+            _input.SourceFile = default;
+            _connection.AuthenticationMethod = ConnectionMethod.SasToken;
+            _input.ContainerName = _container;
+            container = GetBlobContainer(TestHelper.ConnectionString, _container);
+            _options.PreserveDirectoryStructure = false;
+            result = await AzureBlobStorage.UploadBlob(_input, _connection, _options, default);
+            Assert.IsTrue(result.Success, "SAS token");
+            Assert.IsTrue(await container.GetBlobClient("NestedStructure/level1file.txt").ExistsAsync(), "SAS token");
+            Assert.IsTrue(await container.GetBlobClient("sub1/level2file.txt").ExistsAsync(), "SAS token");
+            Assert.IsTrue(await container.GetBlobClient("sub2/level3file.txt").ExistsAsync(), "SAS token");
+
+            await CleanUp();
+            TestSetup();
+            CreateNestedTestStructure(testStructureDir);
+        }
+    }
+
+    [Test]
+    public async Task UploadDirectory_PreserveStructure_True_WithBlobFolderName()
+    {
+        // Tests PreserveDirectoryStructure=true with BlobFolderName prefix
+        var testStructureDir = Path.Combine(_testFileDir, "NestedStructure");
+        CreateNestedTestStructure(testStructureDir);
+
+        foreach (var blobtype in _blobtypes)
+        {
+            _options.BlobType = blobtype;
+            _options.PreserveDirectoryStructure = true;
+
+            if (blobtype is AzureBlobType.Page)
+                _options.ResizeFile = true;
+
+            // Connection string
+            _input.SourceType = UploadSourceType.Directory;
+            _input.SourceDirectory = testStructureDir;
+            _input.SourceFile = default;
+            _input.BlobFolderName = "MyPrefix";
+            var container = GetBlobContainer(TestHelper.ConnectionString, _containerName);
+            var result = await AzureBlobStorage.UploadBlob(_input, _connection, _options, default);
+            Assert.IsTrue(result.Success);
+
+            // Verify structure is preserved with prefix
+            Assert.IsTrue(result.Data.ContainsValue($"{container.Uri}/MyPrefix/level1file.txt"));
+            Assert.IsTrue(await container.GetBlobClient("MyPrefix/level1file.txt").ExistsAsync(),
+                "MyPrefix/level1file.txt should exist");
+
+            Assert.IsTrue(result.Data.ContainsValue($"{container.Uri}/MyPrefix/sub1/level2file.txt"));
+            Assert.IsTrue(await container.GetBlobClient("MyPrefix/sub1/level2file.txt").ExistsAsync(),
+                "MyPrefix/sub1/level2file.txt should exist");
+
+            Assert.IsTrue(result.Data.ContainsValue($"{container.Uri}/MyPrefix/sub1/sub2/level3file.txt"));
+            Assert.IsTrue(await container.GetBlobClient("MyPrefix/sub1/sub2/level3file.txt").ExistsAsync(),
+                "MyPrefix/sub1/sub2/level3file.txt should exist");
+
+            await CleanUp();
+            TestSetup();
+            CreateNestedTestStructure(testStructureDir);
+        }
+    }
+
+    [Test]
     public async Task UploadBlob_TestEncoding()
     {
         var encodings = new List<FileEncoding>()
@@ -988,5 +1193,24 @@ public class UnitTests
         var content = await reader.ReadToEndAsync();
 
         return content == expected;
+    }
+
+    private void CreateNestedTestStructure(string baseDir)
+    {
+        // Create nested directory structure for testing
+        Directory.CreateDirectory(baseDir);
+
+        // Level 1: file at base
+        File.WriteAllText(Path.Combine(baseDir, "level1file.txt"), "Level 1 content");
+
+        // Level 2: file in sub1
+        var sub1Dir = Path.Combine(baseDir, "sub1");
+        Directory.CreateDirectory(sub1Dir);
+        File.WriteAllText(Path.Combine(sub1Dir, "level2file.txt"), "Level 2 content");
+
+        // Level 3: file in sub1/sub2
+        var sub2Dir = Path.Combine(sub1Dir, "sub2");
+        Directory.CreateDirectory(sub2Dir);
+        File.WriteAllText(Path.Combine(sub2Dir, "level3file.txt"), "Level 3 content");
     }
 }

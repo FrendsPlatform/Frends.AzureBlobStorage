@@ -13,6 +13,8 @@ public enum UploadSourceType
 
 /// <summary>
 /// Action taken when a blob already exists.
+/// NOTE: If Options.PreserveDirectoryStructure is false, there can occur file collisions resolved by this option during upload.
+/// It can happen when files with the same name exist in different subdirectories.
 /// </summary>
 public enum OnExistingFile
 {

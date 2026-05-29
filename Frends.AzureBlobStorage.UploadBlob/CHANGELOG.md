@@ -1,5 +1,11 @@
 # Changelog
 
+## [4.2.0] - 2026-05-26
+
+### Added
+
+- New option to preserve directory structure when uploading a directory to Azure Blob Storage.
+
 ## [4.1.0] - 2026-05-07
 
 ### Fix

@@ -80,10 +80,27 @@ public static class AzureBlobStorage
                         if (input.Compress)
                             fileName = RenameFile(fileName, input.Compress, file);
 
-                        var parentDirectory = Path.GetFileName(Path.GetDirectoryName(file.ToString()));
+                        string relativeBlobPath;
+
+                        if (options.PreserveDirectoryStructure)
+                        {
+                            var relativePath = Path.GetRelativePath(dir, file.FullName);
+                            var relativeDirectory = Path.GetDirectoryName(relativePath);
+                            relativeBlobPath = string.IsNullOrEmpty(relativeDirectory) || relativeDirectory == "."
+                                ? fileName
+                                : Path.Combine(relativeDirectory, fileName);
+                        }
+                        else
+                        {
+                            var parentDirectory = Path.GetFileName(Path.GetDirectoryName(file.ToString()));
+                            relativeBlobPath = string.IsNullOrEmpty(input.BlobFolderName)
+                                ? Path.Combine(parentDirectory, fileName)
+                                : fileName;
+                        }
+
                         var withDir = string.IsNullOrEmpty(input.BlobFolderName)
-                            ? Path.Combine(parentDirectory, fileName)
-                            : Path.Combine(input.BlobFolderName, fileName);
+                            ? relativeBlobPath
+                            : Path.Combine(input.BlobFolderName, relativeBlobPath);
 
                         blobName = withDir.Replace("\\", "/");
 
