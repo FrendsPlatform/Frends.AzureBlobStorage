@@ -12,6 +12,7 @@ public class Options
     /// an exception will be thrown if 'ThrowErrorOnFailure' is true, or a Result object with Error details will be returned if false.
     /// If false, a missing container is treated as a valid "no-action" scenario, returning Success = false and Error = null, regardless of the 'ThrowErrorOnFailure' setting.
     /// </summary>
+    /// <example>false</example>
     [DefaultValue(false)]
     public bool FailOnContainerNotFound { get; set; }
 

@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.1.0] - 2026-07-20
+
+### Fixed
+
+- Added missing example value for the `FailOnContainerNotFound` option to improve task documentation.
+
 ## [3.0.0] - 2026-05-04
 
 ### Breaking changes
