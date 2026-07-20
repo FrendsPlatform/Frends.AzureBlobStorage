@@ -11,7 +11,7 @@ namespace Frends.AzureBlobStorage.ReadBlob;
 /// <summary>
 /// Azure Storage task.
 /// </summary>
-public class AzureBlobStorage
+public static class AzureBlobStorage
 {
     /// <summary>
     /// Frends Task for encoding and reading a single blob from Azure Storage.

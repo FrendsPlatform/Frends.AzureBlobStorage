@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.1.0] - 2026-07-20
+
+### Changed
+
+- The task class is now correctly marked as static, improving compatibility with the Frends platform task scanner.
+
 ## [3.0.0] - 2026-05-04
 
 ### Changed
