@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.1.0] - 2026-07-20
+
+### Changed
+
+- Updated task to follow Frends task best practices.
+
 ## [3.0.0] - 2026-05-04
 
 ### Changed
