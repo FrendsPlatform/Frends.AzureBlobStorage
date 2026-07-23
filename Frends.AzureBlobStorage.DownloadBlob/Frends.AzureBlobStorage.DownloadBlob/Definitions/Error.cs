@@ -1,7 +1,7 @@
 namespace Frends.AzureBlobStorage.DownloadBlob.Definitions;
 
 /// <summary>
-/// Error information returned when <see cref="Options.ThrowErrorOnFailure"/> is <c>false</c>
+/// Error information returned when Options.ThrowErrorOnFailure is <c>false</c>
 /// and the task encounters an error.
 /// </summary>
 public class Error

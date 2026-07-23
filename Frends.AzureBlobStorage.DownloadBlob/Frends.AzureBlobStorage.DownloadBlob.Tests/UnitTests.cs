@@ -78,7 +78,7 @@ public class UnitTests
     public async Task DownloadBlobAsync_WritesBlobToFile()
     {
         // Connection string
-        var result = await AzureBlobStorage.DownloadBlob(_input, _options, _connection, default);
+        var result = await AzureBlobStorage.DownloadBlob(_input, _connection, _options, default);
         Assert.IsTrue(result.Success);
         Assert.IsTrue(File.Exists(result.FilePath));
         var fileContent = File.ReadAllText(result.FilePath);
@@ -89,7 +89,7 @@ public class UnitTests
 
         // OAuth
         _connection.AuthenticationMethod = ConnectionMethod.OAuth2;
-        result = await AzureBlobStorage.DownloadBlob(_input, _options, _connection, default);
+        result = await AzureBlobStorage.DownloadBlob(_input, _connection, _options, default);
         Assert.IsTrue(result.Success);
         Assert.IsTrue(File.Exists(result.FilePath));
         fileContent = File.ReadAllText(result.FilePath);
@@ -101,7 +101,7 @@ public class UnitTests
         // SAS Token
         _connection.AuthenticationMethod = ConnectionMethod.SasToken;
         _input.ContainerName = _container;
-        result = await AzureBlobStorage.DownloadBlob(_input, _options, _connection, default);
+        result = await AzureBlobStorage.DownloadBlob(_input, _connection, _options, default);
         Assert.IsTrue(result.Success);
         Assert.IsTrue(File.Exists(result.FilePath));
         fileContent = File.ReadAllText(result.FilePath);
@@ -111,18 +111,18 @@ public class UnitTests
     [Test]
     public async Task DownloadBlobAsync_ThrowsExceptionIfDestinationFileExists()
     {
-        await AzureBlobStorage.DownloadBlob(_input, _options, _connection, default);
+        await AzureBlobStorage.DownloadBlob(_input, _connection, _options, default);
         _input.ActionOnExistingFile = FileExistsAction.Throw;
-        Assert.ThrowsAsync<Exception>(() => AzureBlobStorage.DownloadBlob(_input, _options, _connection, default));
+        Assert.ThrowsAsync<Exception>(() => AzureBlobStorage.DownloadBlob(_input, _connection, _options, default));
     }
 
     [Test]
     public async Task DownloadBlobAsync_RenamesFileIfExists()
     {
         // Connection string
-        await AzureBlobStorage.DownloadBlob(_input, _options, _connection, default);
+        await AzureBlobStorage.DownloadBlob(_input, _connection, _options, default);
         _input.ActionOnExistingFile = FileExistsAction.Rename;
-        var result = await AzureBlobStorage.DownloadBlob(_input, _options, _connection, default);
+        var result = await AzureBlobStorage.DownloadBlob(_input, _connection, _options, default);
         Assert.AreEqual(Path.GetFileName(result.FilePath), "test-blob(1).txt");
 
         await Cleanup();
@@ -130,9 +130,9 @@ public class UnitTests
 
         // OAuth
         _connection.AuthenticationMethod = ConnectionMethod.OAuth2;
-        await AzureBlobStorage.DownloadBlob(_input, _options, _connection, default);
+        await AzureBlobStorage.DownloadBlob(_input, _connection, _options, default);
         _input.ActionOnExistingFile = FileExistsAction.Rename;
-        result = await AzureBlobStorage.DownloadBlob(_input, _options, _connection, default);
+        result = await AzureBlobStorage.DownloadBlob(_input, _connection, _options, default);
         Assert.AreEqual(Path.GetFileName(result.FilePath), "test-blob(1).txt");
 
         await Cleanup();
@@ -141,31 +141,31 @@ public class UnitTests
         // SAS Token
         _connection.AuthenticationMethod = ConnectionMethod.SasToken;
         _input.ContainerName = _container;
-        await AzureBlobStorage.DownloadBlob(_input, _options, _connection, default);
+        await AzureBlobStorage.DownloadBlob(_input, _connection, _options, default);
         _input.ActionOnExistingFile = FileExistsAction.Rename;
-        result = await AzureBlobStorage.DownloadBlob(_input, _options, _connection, default);
+        result = await AzureBlobStorage.DownloadBlob(_input, _connection, _options, default);
         Assert.AreEqual(Path.GetFileName(result.FilePath), "test-blob(1).txt");
     }
 
     [Test]
     public async Task DownloadBlobAsync_OverwritesFileIfExists()
     {
-        await AzureBlobStorage.DownloadBlob(_input, _options, _connection, default);
+        await AzureBlobStorage.DownloadBlob(_input, _connection, _options, default);
         _input.ActionOnExistingFile = FileExistsAction.Overwrite;
 
         // Connection string
-        await AzureBlobStorage.DownloadBlob(_input, _options, _connection, default);
+        await AzureBlobStorage.DownloadBlob(_input, _connection, _options, default);
         Assert.AreEqual(1, Directory.GetFiles(_destinationDirectory).Length);
 
         // OAuth
         _connection.AuthenticationMethod = ConnectionMethod.OAuth2;
-        await AzureBlobStorage.DownloadBlob(_input, _options, _connection, default);
+        await AzureBlobStorage.DownloadBlob(_input, _connection, _options, default);
         Assert.AreEqual(1, Directory.GetFiles(_destinationDirectory).Length);
 
         // SAS Token
         _connection.AuthenticationMethod = ConnectionMethod.SasToken;
         _input.ContainerName = _container;
-        await AzureBlobStorage.DownloadBlob(_input, _options, _connection, default);
+        await AzureBlobStorage.DownloadBlob(_input, _connection, _options, default);
         Assert.AreEqual(1, Directory.GetFiles(_destinationDirectory).Length);
     }
 
@@ -183,7 +183,7 @@ public class UnitTests
         foreach (var encoding in encodings)
         {
             _options.Encoding = encoding;
-            await AzureBlobStorage.DownloadBlob(_input, _options, _connection, default);
+            await AzureBlobStorage.DownloadBlob(_input, _connection, _options, default);
             Assert.AreEqual(1, Directory.GetFiles(_destinationDirectory).Length);
         }
     }
@@ -193,7 +193,7 @@ public class UnitTests
     {
         _input.TargetFileName = "custom-name.txt";
 
-        var result = await AzureBlobStorage.DownloadBlob(_input, _options, _connection, default);
+        var result = await AzureBlobStorage.DownloadBlob(_input, _connection, _options, default);
 
         Assert.IsTrue(result.Success);
         Assert.AreEqual("custom-name.txt", Path.GetFileName(result.FilePath));
@@ -206,7 +206,7 @@ public class UnitTests
     public async Task DownloadBlobAsync_UTF8WithBOM_Encoding()
     {
         _options.Encoding = FileEncoding.UTF8WithBOM;
-        var result = await AzureBlobStorage.DownloadBlob(_input, _options, _connection, default);
+        var result = await AzureBlobStorage.DownloadBlob(_input, _connection, _options, default);
 
         Assert.IsTrue(result.Success);
         Assert.IsTrue(File.Exists(result.FilePath));

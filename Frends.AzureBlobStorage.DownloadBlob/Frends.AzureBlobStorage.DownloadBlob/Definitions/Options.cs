@@ -17,7 +17,7 @@ public class Options
     public FileEncoding Encoding { get; set; } = FileEncoding.UTF8WithBOM;
 
     /// <summary>
-    /// Encoding name used when <see cref="Encoding"/> is set to <c>Other</c>.
+    /// Encoding name used when Encoding is set to <c>Other</c>.
     /// A partial list of possible values: https://en.wikipedia.org/wiki/Windows_code_page#List.
     /// </summary>
     /// <example>windows-1251</example>

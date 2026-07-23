@@ -15,7 +15,7 @@ namespace Frends.AzureBlobStorage.DownloadBlob.Tests
         public void Should_Throw_Error_When_ThrowErrorOnFailure_Is_True()
         {
             var ex = Assert.ThrowsAsync<Exception>(() =>
-                AzureBlobStorage.DownloadBlob(DefaultInput(), DefaultOptions(), DefaultConnection(), CancellationToken.None));
+                AzureBlobStorage.DownloadBlob(DefaultInput(), DefaultConnection(), DefaultOptions(), CancellationToken.None));
             Assert.That(ex, Is.Not.Null);
         }
 
@@ -24,7 +24,7 @@ namespace Frends.AzureBlobStorage.DownloadBlob.Tests
         {
             var options = DefaultOptions();
             options.ThrowErrorOnFailure = false;
-            var result = await AzureBlobStorage.DownloadBlob(DefaultInput(), options, DefaultConnection(), CancellationToken.None);
+            var result = await AzureBlobStorage.DownloadBlob(DefaultInput(), DefaultConnection(), options, CancellationToken.None);
             Assert.That(result.Success, Is.False);
         }
 
@@ -34,7 +34,7 @@ namespace Frends.AzureBlobStorage.DownloadBlob.Tests
             var options = DefaultOptions();
             options.ErrorMessageOnFailure = CustomErrorMessage;
             var ex = Assert.ThrowsAsync<Exception>(() =>
-                AzureBlobStorage.DownloadBlob(DefaultInput(), options, DefaultConnection(), CancellationToken.None));
+                AzureBlobStorage.DownloadBlob(DefaultInput(), DefaultConnection(), options, CancellationToken.None));
             Assert.That(ex, Is.Not.Null);
             Assert.That(ex.Message, Contains.Substring(CustomErrorMessage));
         }

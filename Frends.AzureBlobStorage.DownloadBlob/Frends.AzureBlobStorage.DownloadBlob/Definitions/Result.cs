@@ -13,13 +13,13 @@ public class Result
 
     /// <summary>
     /// Full path to the downloaded file on the local file system.
-    /// <c>null</c> when the task fails and <see cref="Options.ThrowErrorOnFailure"/> is <c>false</c>.
+    /// <c>null</c> when the task fails and Options.ThrowErrorOnFailure is <c>false</c>.
     /// </summary>
     /// <example>c:\temp\sample.txt</example>
     public string FilePath { get; internal set; }
 
     /// <summary>
-    /// Error details when the task fails and <see cref="Options.ThrowErrorOnFailure"/> is <c>false</c>.
+    /// Error details when the task fails and Options.ThrowErrorOnFailure is <c>false</c>.
     /// <c>null</c> on success.
     /// </summary>
     /// <example>null</example>
