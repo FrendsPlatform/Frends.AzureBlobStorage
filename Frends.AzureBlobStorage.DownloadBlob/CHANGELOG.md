@@ -1,5 +1,19 @@
 ﻿# Changelog
 
+## [4.0.0] - 2026-07-23
+
+### Changed
+
+- [Breaking] The `Connection` parameter tab now appears before `Options` in the task signature, matching the standard parameter order used across all Frends Azure Blob Storage tasks.
+
+### Fixed
+
+- Removed unsupported XML documentation tags to improve compatibility with the Frends task documentation system.
+
+### Upgrade instructions (3.x → 4.0)
+
+1. In any process using this task, re-map the `Connection` and `Options` parameter tabs — their order in the task configuration UI has swapped. No property values need to change; only the tab order is different.
+
 ## [3.0.0] - 2026-05-04
 
 ### Changed
