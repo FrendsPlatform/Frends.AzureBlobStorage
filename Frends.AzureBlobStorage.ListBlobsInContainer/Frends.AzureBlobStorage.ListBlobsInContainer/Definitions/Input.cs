@@ -1,11 +1,11 @@
-﻿using Frends.AzureBlobStorage.ListBlobsInContainer.Attributes;
+using Frends.AzureBlobStorage.ListBlobsInContainer.Attributes;
 
 namespace Frends.AzureBlobStorage.ListBlobsInContainer.Definitions;
 
 /// <summary>
-/// Source parameters.
+/// Input parameters.
 /// </summary>
-public class Source
+public class Input
 {
     /// <summary>
     /// The name of the blob container in the storage account.

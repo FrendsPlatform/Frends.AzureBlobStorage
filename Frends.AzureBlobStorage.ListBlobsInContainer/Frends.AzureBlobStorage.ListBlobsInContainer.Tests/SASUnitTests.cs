@@ -35,7 +35,7 @@ public class SASUnitTests
     [TestMethod]
     public async Task ListBlob_SAS_MissingToken()
     {
-        var source = new Source
+        var input = new Input
         {
             ContainerName = _containerName,
         };
@@ -54,7 +54,7 @@ public class SASUnitTests
         };
 
         var ex = await Assert.ThrowsExceptionAsync<ValidationException>(async () =>
-            await AzureBlobStorage.ListBlobsInContainer(source, connection, options, default));
+            await AzureBlobStorage.ListBlobsInContainer(input, connection, options, default));
         Assert.IsTrue(ex.Message.Contains("SasToken is required."), ex.Message);
     }
 
@@ -67,7 +67,7 @@ public class SASUnitTests
             ListingStructure.Hierarchical
         };
 
-        var source = new Source
+        var input = new Input
         {
             ContainerName = _containerName
         };
@@ -87,7 +87,7 @@ public class SASUnitTests
                 ListingStructure = structure
             };
 
-            var result = await AzureBlobStorage.ListBlobsInContainer(source, connection, options, default);
+            var result = await AzureBlobStorage.ListBlobsInContainer(input, connection, options, default);
 
             if (structure is ListingStructure.Flat)
             {
@@ -120,7 +120,7 @@ public class SASUnitTests
             ListingStructure.Hierarchical
         };
 
-        var source = new Source
+        var input = new Input
         {
             ContainerName = _containerName,
         };
@@ -141,7 +141,7 @@ public class SASUnitTests
                 ListingStructure = structure
             };
 
-            var result = await AzureBlobStorage.ListBlobsInContainer(source, connection, options, default);
+            var result = await AzureBlobStorage.ListBlobsInContainer(input, connection, options, default);
 
             Assert.IsFalse(result.BlobList.Any(x => x.Name == "Temp/SubFolderFile"));
             Assert.IsFalse(result.BlobList.Any(x => x.Name == "Temp/SubFolderFile2"));

@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.1.0] - 2026-08-06
+
+### Changed
+
+- The task now returns a result with `Success` and `Error` fields, making it easier to handle failures gracefully.
+- Added `ThrowErrorOnFailure` and `ErrorMessageOnFailure` options so you can choose whether the task throws an error or returns an error result when something goes wrong.
+- Renamed the input parameter group from `Source` to `Input` to align with Frends task conventions.
+
 ## [2.0.0] - 2026-04-26
 
 ### Changed
