@@ -6,36 +6,53 @@ namespace Frends.AzureBlobStorage.ListBlobsInContainer.Helpers;
 /// <summary>
 /// Provides centralized error handling functionality for Azure Blob Storage operations.
 /// </summary>
-public static class ErrorHandler
+internal static class ErrorHandler
 {
     /// <summary>
-    /// Handles exceptions.
+    /// Handles the exception according to the task options.
     /// </summary>
-    /// <param name="ex">The exception that occurred during task execution.</param>
-    /// <param name="options">Configuration options that determine how errors should be handled.</param>
-    /// <returns>A Result object containing error information when ThrowErrorOnFailure is false.</returns>
-    public static Result Handle(Exception ex, Options options)
+    /// <param name="exception">The exception to handle.</param>
+    /// <param name="options">Task options that control whether failures are returned as a Result object or thrown.</param>
+    /// <param name="throwCanceled">
+    /// When true, an OperationCanceledException is rethrown immediately.
+    /// When false, cancellation is handled like any other failure.
+    /// </param>
+    internal static Result Handle(this Exception exception, Options options, bool throwCanceled = true)
     {
-        if (options.ThrowErrorOnFailure)
+        ThrowIfCanceled(exception, throwCanceled);
+        if (options.ThrowErrorOnFailure) ThrowBaseException(exception, options.ErrorMessageOnFailure);
+
+        return ReturnResult(exception, options.ErrorMessageOnFailure);
+    }
+
+    private static void ThrowIfCanceled(Exception exception, bool throwCanceled = true)
+    {
+        if (throwCanceled && exception is OperationCanceledException) throw exception;
+    }
+
+    private static void ThrowBaseException(Exception exception, string customMessage = null)
+    {
+        if (string.IsNullOrEmpty(customMessage))
+            throw new Exception(exception.Message, exception);
+
+        throw new Exception(customMessage, exception);
+    }
+
+    private static Result ReturnResult(Exception exception, string customMessage = null)
+    {
+        var errorMessage = string.IsNullOrEmpty(customMessage)
+            ? exception.Message
+            : $"{customMessage}: {exception.Message}";
+
+        return new Result
         {
-            if (!string.IsNullOrEmpty(options.ErrorMessageOnFailure))
+            Success = false,
+            BlobList = null,
+            Error = new Error
             {
-                throw new Exception(options.ErrorMessageOnFailure, ex);
-            }
-
-            throw ex;
-        }
-
-        var errorMessage = string.IsNullOrEmpty(options.ErrorMessageOnFailure)
-            ? ex.Message
-            : $"{options.ErrorMessageOnFailure}: {ex.Message}";
-
-        var error = new Error
-        {
-            Message = errorMessage,
-            AdditionalInfo = ex,
+                Message = errorMessage,
+                AdditionalInfo = exception,
+            },
         };
-
-        return new Result { Success = false, BlobList = null, Error = error };
     }
 }

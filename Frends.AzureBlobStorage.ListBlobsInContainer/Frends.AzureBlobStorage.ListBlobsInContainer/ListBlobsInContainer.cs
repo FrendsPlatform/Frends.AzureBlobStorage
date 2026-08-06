@@ -33,7 +33,7 @@ public static class AzureBlobStorage
         }
         catch (Exception ex)
         {
-            return ErrorHandler.Handle(ex, options);
+            return ex.Handle(options);
         }
     }
 
