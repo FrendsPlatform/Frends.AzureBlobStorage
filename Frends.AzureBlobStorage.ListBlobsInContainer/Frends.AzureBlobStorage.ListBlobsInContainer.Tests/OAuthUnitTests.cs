@@ -37,7 +37,7 @@ public class OAuthUnitTests
             ListingStructure.Hierarchical
         };
 
-        var source = new Source
+        var input = new Input
         {
             ContainerName = _containerName,
         };
@@ -59,7 +59,7 @@ public class OAuthUnitTests
                 ListingStructure = structure
             };
 
-            var result = await AzureBlobStorage.ListBlobsInContainer(source, connection, options, default);
+            var result = await AzureBlobStorage.ListBlobsInContainer(input, connection, options, default);
 
             if (structure is ListingStructure.Flat)
             {
@@ -92,7 +92,7 @@ public class OAuthUnitTests
             ListingStructure.Hierarchical
         };
 
-        var source = new Source
+        var input = new Input
         {
             ContainerName = _containerName,
         };
@@ -114,7 +114,7 @@ public class OAuthUnitTests
                 ListingStructure = structure
             };
 
-            var result = await AzureBlobStorage.ListBlobsInContainer(source, connection, options, default);
+            var result = await AzureBlobStorage.ListBlobsInContainer(input, connection, options, default);
 
             Assert.IsFalse(result.BlobList.Any(x => x.Name == "Temp/SubFolderFile"));
             Assert.IsFalse(result.BlobList.Any(x => x.Name == "Temp/SubFolderFile2"));

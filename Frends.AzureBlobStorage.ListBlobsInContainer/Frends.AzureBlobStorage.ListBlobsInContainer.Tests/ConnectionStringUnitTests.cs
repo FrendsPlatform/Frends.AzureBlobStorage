@@ -38,7 +38,7 @@ public class ConnectionStringUnitTests
             ListingStructure.Hierarchical
         };
 
-        var source = new Source
+        var input = new Input
         {
             ContainerName = _containerName
         };
@@ -57,7 +57,7 @@ public class ConnectionStringUnitTests
                 ListingStructure = structure
             };
 
-            var result = await AzureBlobStorage.ListBlobsInContainer(source, connection, options, default);
+            var result = await AzureBlobStorage.ListBlobsInContainer(input, connection, options, default);
 
             if (structure is ListingStructure.Flat)
             {
@@ -90,7 +90,7 @@ public class ConnectionStringUnitTests
             ListingStructure.Hierarchical
         };
 
-        var source = new Source
+        var input = new Input
         {
             ContainerName = _containerName
         };
@@ -109,7 +109,7 @@ public class ConnectionStringUnitTests
                 ListingStructure = structure
             };
 
-            var result = await AzureBlobStorage.ListBlobsInContainer(source, connection, options, default);
+            var result = await AzureBlobStorage.ListBlobsInContainer(input, connection, options, default);
 
             Assert.IsFalse(result.BlobList.Any(x => x.Name == "Temp/SubFolderFile"));
             Assert.IsFalse(result.BlobList.Any(x => x.Name == "Temp/SubFolderFile2"));
@@ -130,7 +130,7 @@ public class ConnectionStringUnitTests
     [TestMethod]
     public async Task ListBlob_ConnectionString_ConnectionStringMissing()
     {
-        var source = new Source
+        var input = new Input
         {
             ContainerName = _containerName,
         };
@@ -148,7 +148,7 @@ public class ConnectionStringUnitTests
         };
 
         var ex = await Assert.ThrowsExceptionAsync<ValidationException>(async () =>
-            await AzureBlobStorage.ListBlobsInContainer(source, connection, options, default));
+            await AzureBlobStorage.ListBlobsInContainer(input, connection, options, default));
         Assert.IsTrue(ex.Message.Contains("ConnectionString is required."), ex.Message);
     }
 }
