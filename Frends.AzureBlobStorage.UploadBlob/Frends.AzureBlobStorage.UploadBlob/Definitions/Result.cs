@@ -21,9 +21,16 @@ public class Result
     /// <example>{ { c:\temp\examplefile.txt, https://storage.blob.core.windows.net/container/examplefile.txt }, { c:\temp\examplefile2.txt, Blob examplefile2 already exists. } }</example>
     public Dictionary<string, string> Data { get; private set; }
 
-    internal Result(bool success, Dictionary<string, string> data)
+    /// <summary>
+    /// Error details. Null when Success is true.
+    /// </summary>
+    /// <example>null</example>
+    public Error Error { get; private set; }
+
+    internal Result(bool success, Dictionary<string, string> data = null, Error error = null)
     {
         Success = success;
         Data = data;
+        Error = error;
     }
 }

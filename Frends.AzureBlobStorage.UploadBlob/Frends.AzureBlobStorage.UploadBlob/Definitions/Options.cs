@@ -17,6 +17,14 @@ public class Options
     public bool ThrowErrorOnFailure { get; set; }
 
     /// <summary>
+    /// Overrides the error message on failure.
+    /// </summary>
+    /// <example>Upload failed: check container name and connection string</example>
+    [DisplayFormat(DataFormatString = "Text")]
+    [DefaultValue("")]
+    public string ErrorMessageOnFailure { get; set; } = string.Empty;
+
+    /// <summary>
     /// Azure blob type to upload.
     /// Append: Made up of blocks like block blobs, but are optimized for append operations. Append blobs are ideal for scenarios such as logging data from virtual machines.
     /// Block: Store text and binary data. Block blobs are made up of blocks of data that can be managed individually. Block blobs can store up to about 190.7 TiB.
@@ -78,6 +86,7 @@ public class Options
     /// <summary>
     /// Enables BOM for UTF-8.
     /// </summary>
+    /// <example>true</example>
     [UIHint(nameof(Encoding), "", FileEncoding.UTF8)]
     [DefaultValue(true)]
     public bool EnableBom { get; set; }

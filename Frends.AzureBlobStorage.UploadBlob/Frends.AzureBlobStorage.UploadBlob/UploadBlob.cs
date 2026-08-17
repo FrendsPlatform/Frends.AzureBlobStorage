@@ -125,35 +125,7 @@ public static class AzureBlobStorage
         }
         catch (Exception ex)
         {
-            var error = new Dictionary<string, string>();
-
-            if (input.SourceType is UploadSourceType.File)
-            {
-                if (options.ThrowErrorOnFailure)
-                    throw new Exception("An exception occured.", ex);
-                else
-                {
-                    if (fi == null)
-                        error.Add(string.Empty, $@"An exception occured. {ex}");
-                    else
-                        error.Add(fi.FullName, $@"An exception occured. {ex}");
-
-                    return new Result(false, error);
-                }
-            }
-            else
-            {
-                if (options.ThrowErrorOnFailure)
-                    throw new Exception(
-                        $@"An exception occured while uploading directory. Last handled file: {handledFile}", ex);
-                else
-                {
-                    error.Add(string.Empty,
-                        $@"An exception occured while uploading directory. Last handled file: {handledFile}. {ex}");
-
-                    return new Result(false, error);
-                }
-            }
+            return ex.Handle(options);
         }
         finally
         {

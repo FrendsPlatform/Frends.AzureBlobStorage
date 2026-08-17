@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.3.0] - 2026-08-17
+
+### Added
+
+- Added `ErrorMessageOnFailure` option to customize the error message when the Task fails and `ThrowErrorOnFailure` is false.
+- The result now includes an `Error` property with details when the Task fails and `ThrowErrorOnFailure` is false.
+
 ## [4.2.0] - 2026-05-26
 
 ### Added
