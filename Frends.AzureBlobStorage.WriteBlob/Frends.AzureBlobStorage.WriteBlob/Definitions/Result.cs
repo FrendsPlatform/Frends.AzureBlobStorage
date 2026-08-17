@@ -22,12 +22,20 @@ public class Result
     /// <summary>
     /// URI of uploaded file.
     /// </summary>
+    /// <example>https://mystorageaccount.blob.core.windows.net/mycontainer/myblob.txt</example>
     public string Uri { get; private set; }
 
-    internal Result(bool success, string info, string uri)
+    /// <summary>
+    /// Error details. Null when Success is true.
+    /// </summary>
+    /// <example>null</example>
+    public Error Error { get; private set; }
+
+    internal Result(bool success, string info, string uri, Error error = null)
     {
         Success = success;
         Info = info;
         Uri = uri;
+        Error = error;
     }
 }

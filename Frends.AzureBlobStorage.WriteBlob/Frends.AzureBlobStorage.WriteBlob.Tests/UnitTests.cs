@@ -29,8 +29,7 @@ public class UnitTests
     };
 
     private readonly string _container = "const-test-container";
-    private Destination _destination;
-    private Source _source;
+    private Input _input;
     private Options _options;
     private Connection _connection;
     private readonly string _testContent = "This is test data";
@@ -43,16 +42,12 @@ public class UnitTests
 
         await CreateBlobContainer(TestHelper.ConnectionString, _containerName);
 
-        _source = new Source
+        _input = new Input
         {
             SourceType = SourceType.String,
             ContentString = _testContent,
             ContentBytes = Encoding.UTF8.GetBytes(_testContent),
-            Encoding = FileEncoding.UTF8
-        };
-
-        _destination = new Destination
-        {
+            Encoding = FileEncoding.UTF8,
             ContainerName = _containerName,
             CreateContainerIfItDoesNotExist = false,
             BlobName = $"testblob_{Guid.NewGuid()}",
@@ -87,48 +82,48 @@ public class UnitTests
     public async Task WriteBlob_TestWriteFromString()
     {
         // Connection string
-        var result = await AzureBlobStorage.WriteBlob(_source, _destination, _connection, _options, default);
+        var result = await AzureBlobStorage.WriteBlob(_input, _connection, _options, default);
         Assert.IsTrue(result.Success);
 
         // OAuth
-        _destination.BlobName = $"testblob_{Guid.NewGuid()}";
+        _input.BlobName = $"testblob_{Guid.NewGuid()}";
         _connection.AuthenticationMethod = ConnectionMethod.OAuth2;
-        result = await AzureBlobStorage.WriteBlob(_source, _destination, _connection, _options, default);
+        result = await AzureBlobStorage.WriteBlob(_input, _connection, _options, default);
         Assert.IsTrue(result.Success);
-        Assert.IsTrue(await BlobExists(_destination.ContainerName, _destination.BlobName, _testContent));
+        Assert.IsTrue(await BlobExists(_input.ContainerName, _input.BlobName, _testContent));
     }
 
     [Test]
     public async Task WriteBlob_TestWriteFromByteArray()
     {
-        _source.SourceType = SourceType.Bytes;
+        _input.SourceType = SourceType.Bytes;
 
         // Connection string
-        var result = await AzureBlobStorage.WriteBlob(_source, _destination, _connection, _options, default);
+        var result = await AzureBlobStorage.WriteBlob(_input, _connection, _options, default);
         Assert.IsTrue(result.Success);
 
         // OAuth
-        _destination.BlobName = $"testblob_{Guid.NewGuid()}";
+        _input.BlobName = $"testblob_{Guid.NewGuid()}";
         _connection.AuthenticationMethod = ConnectionMethod.OAuth2;
-        result = await AzureBlobStorage.WriteBlob(_source, _destination, _connection, _options, default);
+        result = await AzureBlobStorage.WriteBlob(_input, _connection, _options, default);
         Assert.IsTrue(result.Success);
-        Assert.IsTrue(await BlobExists(_destination.ContainerName, _destination.BlobName, _testContent));
+        Assert.IsTrue(await BlobExists(_input.ContainerName, _input.BlobName, _testContent));
     }
 
     [Test]
     public async Task WriteBlob_TestFolderBlobName()
     {
         // Connection string
-        _destination.BlobName = $"C:\\folder\\testBlob_{Guid.NewGuid()}";
-        var result = await AzureBlobStorage.WriteBlob(_source, _destination, _connection, _options, default);
+        _input.BlobName = $"C:\\folder\\testBlob_{Guid.NewGuid()}";
+        var result = await AzureBlobStorage.WriteBlob(_input, _connection, _options, default);
         Assert.IsTrue(result.Success);
 
         // OAuth
-        _destination.BlobName = $"C:\\folder\\testBlob_{Guid.NewGuid()}";
+        _input.BlobName = $"C:\\folder\\testBlob_{Guid.NewGuid()}";
         _connection.AuthenticationMethod = ConnectionMethod.OAuth2;
-        result = await AzureBlobStorage.WriteBlob(_source, _destination, _connection, _options, default);
+        result = await AzureBlobStorage.WriteBlob(_input, _connection, _options, default);
         Assert.IsTrue(result.Success);
-        Assert.IsTrue(await BlobExists(_destination.ContainerName, _destination.BlobName, _testContent));
+        Assert.IsTrue(await BlobExists(_input.ContainerName, _input.BlobName, _testContent));
     }
 
     [Test]
@@ -143,57 +138,57 @@ public class UnitTests
             FileEncoding.Other
         };
 
-        _source.FileEncodingString = "windows-1251";
+        _input.FileEncodingString = "windows-1251";
 
         foreach (var encoding in encodings)
         {
-            _source.Encoding = encoding;
+            _input.Encoding = encoding;
 
             // Connection string
-            var result = await AzureBlobStorage.WriteBlob(_source, _destination, _connection, _options, default);
+            var result = await AzureBlobStorage.WriteBlob(_input, _connection, _options, default);
             Assert.IsTrue(result.Success, $"Encoding: {encoding}");
-            Assert.IsTrue(await BlobExists(_destination.ContainerName, _destination.BlobName, _testContent));
+            Assert.IsTrue(await BlobExists(_input.ContainerName, _input.BlobName, _testContent));
 
             // OAuth
-            _destination.BlobName = $"testblob_{Guid.NewGuid()}";
+            _input.BlobName = $"testblob_{Guid.NewGuid()}";
             _connection.AuthenticationMethod = ConnectionMethod.OAuth2;
-            result = await AzureBlobStorage.WriteBlob(_source, _destination, _connection, _options, default);
+            result = await AzureBlobStorage.WriteBlob(_input, _connection, _options, default);
             Assert.IsTrue(result.Success, $"Encoding: {encoding}");
-            Assert.IsTrue(await BlobExists(_destination.ContainerName, _destination.BlobName, _testContent));
+            Assert.IsTrue(await BlobExists(_input.ContainerName, _input.BlobName, _testContent));
         }
     }
 
     [Test]
     public async Task WriteBlob_TestCreateContainer()
     {
-        _destination.CreateContainerIfItDoesNotExist = true;
+        _input.CreateContainerIfItDoesNotExist = true;
 
         // Connection string
-        _destination.ContainerName =
+        _input.ContainerName =
             $"test-container{DateTime.Now.ToString("mmssffffff", CultureInfo.InvariantCulture)}";
-        var result = await AzureBlobStorage.WriteBlob(_source, _destination, _connection, _options, default);
+        var result = await AzureBlobStorage.WriteBlob(_input, _connection, _options, default);
         Assert.IsTrue(result.Success);
 
         var blobServiceClient = new BlobServiceClient(_connection.ConnectionString);
-        var containerClient = blobServiceClient.GetBlobContainerClient(_destination.ContainerName);
+        var containerClient = blobServiceClient.GetBlobContainerClient(_input.ContainerName);
         Assert.IsTrue(containerClient.Exists());
 
-        await DeleteBlobContainer(_destination.ContainerName);
+        await DeleteBlobContainer(_input.ContainerName);
 
         // OAuth
         _connection.ConnectionString = null;
-        _destination.ContainerName =
+        _input.ContainerName =
             $"test-container{DateTime.Now.ToString("mmssffffff", CultureInfo.InvariantCulture)}";
-        _destination.BlobName = $"testblob_{Guid.NewGuid()}";
+        _input.BlobName = $"testblob_{Guid.NewGuid()}";
         _connection.AuthenticationMethod = ConnectionMethod.OAuth2;
-        result = await AzureBlobStorage.WriteBlob(_source, _destination, _connection, _options, default);
+        result = await AzureBlobStorage.WriteBlob(_input, _connection, _options, default);
         Assert.IsTrue(result.Success);
-        Assert.IsTrue(await BlobExists(_destination.ContainerName, _destination.BlobName, _testContent));
+        Assert.IsTrue(await BlobExists(_input.ContainerName, _input.BlobName, _testContent));
 
-        containerClient = blobServiceClient.GetBlobContainerClient(_destination.ContainerName);
+        containerClient = blobServiceClient.GetBlobContainerClient(_input.ContainerName);
         Assert.IsTrue(containerClient.Exists());
 
-        await DeleteBlobContainer(_destination.ContainerName);
+        await DeleteBlobContainer(_input.ContainerName);
     }
 
     [Test]
@@ -203,7 +198,7 @@ public class UnitTests
             "DefaultEndpointsProtocol=https;AccountName=invalid;AccountKey=InvalidAccountKey;EndpointSuffix=core.windows.net"; // Simulate an invalid connection string
 
         var ex = Assert.ThrowsAsync<ArgumentException>(async () =>
-            await AzureBlobStorage.WriteBlob(_source, _destination, _connection, _options, default));
+            await AzureBlobStorage.WriteBlob(_input, _connection, _options, default));
         Assert.That(ex.Message.Contains("GetBlobServiceClient error:"), ex.Message);
     }
 
@@ -214,19 +209,19 @@ public class UnitTests
         _connection.ClientSecret = "InvalidClientSecret";
 
         var ex = Assert.ThrowsAsync<AuthenticationFailedException>(async () =>
-            await AzureBlobStorage.WriteBlob(_source, _destination, _connection, _options, default));
+            await AzureBlobStorage.WriteBlob(_input, _connection, _options, default));
         Assert.IsTrue(ex.Message.Contains("ClientSecretCredential authentication failed"));
     }
 
     [Test]
     public async Task WriteBlob_Tags()
     {
-        _destination.Tags = _tags;
+        _input.Tags = _tags;
 
         // Connection string
-        var result = await AzureBlobStorage.WriteBlob(_source, _destination, _connection, _options, default);
+        var result = await AzureBlobStorage.WriteBlob(_input, _connection, _options, default);
         Assert.IsTrue(result.Success);
-        Assert.IsTrue(await BlobExists(_destination.ContainerName, _destination.BlobName, _testContent));
+        Assert.IsTrue(await BlobExists(_input.ContainerName, _input.BlobName, _testContent));
     }
 
     [Test]
@@ -234,21 +229,21 @@ public class UnitTests
     {
         _connection.AuthenticationMethod = ConnectionMethod.SasToken;
         _connection.SasToken = TestHelper.SasToken;
-        _destination.ContainerName = _container;
+        _input.ContainerName = _container;
 
-        var result = await AzureBlobStorage.WriteBlob(_source, _destination, _connection, _options, default);
+        var result = await AzureBlobStorage.WriteBlob(_input, _connection, _options, default);
         Assert.IsTrue(result.Success);
-        Assert.IsTrue(await BlobExists(_destination.ContainerName, _destination.BlobName, _testContent));
+        Assert.IsTrue(await BlobExists(_input.ContainerName, _input.BlobName, _testContent));
     }
 
     [Test]
     public async Task WriteBlob_Compress()
     {
-        _destination.Compress = true;
-        var result = await AzureBlobStorage.WriteBlob(_source, _destination, _connection, _options, default);
+        _input.Compress = true;
+        var result = await AzureBlobStorage.WriteBlob(_input, _connection, _options, default);
         Assert.IsTrue(result.Success);
         Assert.AreEqual(
-            $"https://stataskdevelopment.blob.core.windows.net/{_destination.ContainerName}/{_destination.BlobName}",
+            $"https://stataskdevelopment.blob.core.windows.net/{_input.ContainerName}/{_input.BlobName}",
             result.Uri);
     }
 
@@ -275,7 +270,7 @@ public class UnitTests
         if (!blob.Exists())
             return false;
 
-        var blobClient = new BlobClient(TestHelper.ConnectionString, _destination.ContainerName, _destination.BlobName);
+        var blobClient = new BlobClient(TestHelper.ConnectionString, _input.ContainerName, _input.BlobName);
         var blobDownload = await blobClient.DownloadAsync();
 
         using var reader = new StreamReader(blobDownload.Value.Content);
@@ -284,3 +279,4 @@ public class UnitTests
         return content == expected;
     }
 }
+

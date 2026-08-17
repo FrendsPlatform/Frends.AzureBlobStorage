@@ -42,6 +42,7 @@ public class Source
     /// <summary>
     /// Enables BOM for UTF-8.
     /// </summary>
+    /// <example>true</example>
     [UIHint(nameof(Encoding), "", FileEncoding.UTF8)]
     [DefaultValue(true)]
     public bool EnableBOM { get; set; }
