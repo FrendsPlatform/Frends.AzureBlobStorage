@@ -197,9 +197,10 @@ public class UnitTests
         _connection.ConnectionString =
             "DefaultEndpointsProtocol=https;AccountName=invalid;AccountKey=InvalidAccountKey;EndpointSuffix=core.windows.net"; // Simulate an invalid connection string
 
-        var ex = Assert.ThrowsAsync<ArgumentException>(async () =>
+        var ex = Assert.ThrowsAsync<Exception>(async () =>
             await AzureBlobStorage.WriteBlob(_input, _connection, _options, default));
-        Assert.That(ex.Message.Contains("GetBlobServiceClient error:"), ex.Message);
+        Assert.That(ex.InnerException, Is.TypeOf<ArgumentException>());
+        Assert.That(ex.Message, Does.Contain("GetBlobServiceClient error:"));
     }
 
     [Test]
@@ -208,9 +209,10 @@ public class UnitTests
         _connection.AuthenticationMethod = ConnectionMethod.OAuth2;
         _connection.ClientSecret = "InvalidClientSecret";
 
-        var ex = Assert.ThrowsAsync<AuthenticationFailedException>(async () =>
+        var ex = Assert.ThrowsAsync<Exception>(async () =>
             await AzureBlobStorage.WriteBlob(_input, _connection, _options, default));
-        Assert.IsTrue(ex.Message.Contains("ClientSecretCredential authentication failed"));
+        Assert.That(ex.InnerException, Is.TypeOf<AuthenticationFailedException>());
+        Assert.That(ex.Message, Does.Contain("ClientSecretCredential authentication failed"));
     }
 
     [Test]
@@ -279,4 +281,3 @@ public class UnitTests
         return content == expected;
     }
 }
-
