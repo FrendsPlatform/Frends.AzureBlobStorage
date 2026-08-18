@@ -1,3 +1,5 @@
+using System;
+
 namespace Frends.AzureBlobStorage.UploadBlob.Definitions;
 
 /// <summary>
@@ -15,5 +17,5 @@ public class Error
     /// The exception that caused the failure.
     /// </summary>
     /// <example>null</example>
-    public object AdditionalInfo { get; internal set; }
+    public Exception AdditionalInfo { get; internal set; }
 }
