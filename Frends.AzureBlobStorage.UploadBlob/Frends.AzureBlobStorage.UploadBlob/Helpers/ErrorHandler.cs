@@ -18,27 +18,30 @@ internal static class ErrorHandler
     internal static Result Handle(this Exception exception, Options options, bool throwCanceled = true)
     {
         ThrowIfCanceled(exception, throwCanceled);
-        if (options.ThrowErrorOnFailure) ThrowBaseException(exception, options.ErrorMessageOnFailure);
+        if (options.ThrowErrorOnFailure)
+        {
+            ThrowBaseException(exception, options.ErrorMessageOnFailure);
+        }
 
         return ReturnResult(exception, options.ErrorMessageOnFailure);
     }
 
     private static void ThrowIfCanceled(Exception exception, bool throwCanceled = true)
     {
-        if (throwCanceled && exception is OperationCanceledException) throw exception;
+        if (throwCanceled && exception is OperationCanceledException)
+        {
+            throw exception;
+        }
     }
 
     private static void ThrowBaseException(Exception exception, string customMessage = null)
     {
-        var innerException = exception is AggregateException aggregateException &&
-                             aggregateException.InnerExceptions.Count == 1
-            ? aggregateException.InnerException
-            : exception;
-
         if (string.IsNullOrEmpty(customMessage))
-            throw new Exception(innerException.Message, innerException);
+        {
+            throw new Exception(exception.Message, exception);
+        }
 
-        throw new Exception(customMessage, innerException);
+        throw new Exception(customMessage, exception);
     }
 
     private static Result ReturnResult(Exception exception, string customMessage = null)
