@@ -421,7 +421,7 @@ public class UnitTests
                     {
                         var ex = Assert.ThrowsAsync<Exception>(async () =>
                             await AzureBlobStorage.UploadBlob(_input, _connection, _options, default));
-                        Assert.IsTrue(ex.InnerException.InnerException.Message.Contains("already exists"));
+                        Assert.IsTrue(ex.InnerException.InnerException.InnerException.Message.Contains("already exists"));
 
                         break;
                     }
@@ -821,7 +821,7 @@ public class UnitTests
 
         var ex =
             Assert.ThrowsAsync<Exception>(() => AzureBlobStorage.UploadBlob(_input, _connection, _options, default));
-        Assert.AreEqual("Input.SourceDirectory value is empty.", ex.InnerException.Message);
+        Assert.AreEqual("Input.SourceDirectory value is empty.", ex.InnerException.InnerException.Message);
     }
 
     [Test]
@@ -833,7 +833,7 @@ public class UnitTests
 
         var ex =
             Assert.ThrowsAsync<Exception>(() => AzureBlobStorage.UploadBlob(_input, _connection, _options, default));
-        Assert.AreEqual(@"Source directory C:\\doesnt\\exist doesn't exists.", ex.InnerException.Message);
+        Assert.AreEqual(@"Source directory C:\\doesnt\\exist doesn't exists.", ex.InnerException.InnerException.Message);
     }
 
     [Test]
@@ -844,7 +844,7 @@ public class UnitTests
 
         var ex =
             Assert.ThrowsAsync<Exception>(() => AzureBlobStorage.UploadBlob(_input, _connection, _options, default));
-        Assert.AreEqual("Input.SourceFile value is empty.", ex.InnerException.Message);
+        Assert.AreEqual("Input.SourceFile value is empty.", ex.InnerException.InnerException.Message);
     }
 
     [Test]
@@ -855,7 +855,7 @@ public class UnitTests
 
         var ex =
             Assert.ThrowsAsync<Exception>(() => AzureBlobStorage.UploadBlob(_input, _connection, _options, default));
-        Assert.AreEqual("Input.SourceFile not found.", ex.InnerException.Message);
+        Assert.AreEqual("Input.SourceFile not found.", ex.InnerException.InnerException.Message);
     }
 
     [Test]
@@ -869,10 +869,10 @@ public class UnitTests
 
         var ex =
             Assert.ThrowsAsync<Exception>(() => AzureBlobStorage.UploadBlob(_input, _connection, _options, default));
-        Assert.That(ex.InnerException.Message, Does.Contain("ApplicationId is required"));
-        Assert.That(ex.InnerException.Message, Does.Contain("TenantId is required"));
-        Assert.That(ex.InnerException.Message, Does.Contain("ClientSecret is required"));
-        Assert.That(ex.InnerException.Message, Does.Contain("StorageAccountName is required"));
+        Assert.That(ex.InnerException.InnerException.Message, Does.Contain("ApplicationId is required"));
+        Assert.That(ex.InnerException.InnerException.Message, Does.Contain("TenantId is required"));
+        Assert.That(ex.InnerException.InnerException.Message, Does.Contain("ClientSecret is required"));
+        Assert.That(ex.InnerException.InnerException.Message, Does.Contain("StorageAccountName is required"));
     }
 
     [Test]
@@ -882,7 +882,7 @@ public class UnitTests
         _connection.ConnectionString = "";
         var ex =
             Assert.ThrowsAsync<Exception>(() => AzureBlobStorage.UploadBlob(_input, _connection, _options, default));
-        Assert.That(ex.InnerException.Message, Does.Contain("ConnectionString is required."));
+        Assert.That(ex.InnerException.InnerException.Message, Does.Contain("ConnectionString is required."));
     }
 
     [Test]
@@ -892,7 +892,7 @@ public class UnitTests
         _connection.StorageAccountName = "";
         var ex =
             Assert.ThrowsAsync<Exception>(() => AzureBlobStorage.UploadBlob(_input, _connection, _options, default));
-        Assert.That(ex.InnerException.Message, Does.Contain("StorageAccountName is required"));
+        Assert.That(ex.InnerException.InnerException.Message, Does.Contain("StorageAccountName is required"));
     }
 
     [Test]
@@ -902,7 +902,7 @@ public class UnitTests
         _input.ContainerName = "";
         var ex =
             Assert.ThrowsAsync<Exception>(() => AzureBlobStorage.UploadBlob(_input, _connection, _options, default));
-        Assert.That(ex.InnerException.Message, Does.Contain("ContainerName is required and cannot be empty"));
+        Assert.That(ex.InnerException.InnerException.Message, Does.Contain("ContainerName is required and cannot be empty"));
     }
 
     [Test]
@@ -912,7 +912,7 @@ public class UnitTests
         _connection.SasToken = "";
         var ex =
             Assert.ThrowsAsync<Exception>(() => AzureBlobStorage.UploadBlob(_input, _connection, _options, default));
-        Assert.That(ex.InnerException.Message, Does.Contain("SasToken is required"));
+        Assert.That(ex.InnerException.InnerException.Message, Does.Contain("SasToken is required"));
     }
 
     [Test]
