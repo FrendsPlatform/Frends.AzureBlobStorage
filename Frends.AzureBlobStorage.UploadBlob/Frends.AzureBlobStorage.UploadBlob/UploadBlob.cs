@@ -129,15 +129,7 @@ public static class AzureBlobStorage
             }
             catch (Exception ex)
             {
-                if (input.SourceType is UploadSourceType.File)
-                {
-                    errors.Add(new Exception(fi == null ? string.Empty : fi.FullName, ex));
-                }
-                else
-                {
-                    errors.Add(new Exception(
-                        $"An exception occured while uploading directory. Last handled file: {handledFile}.", ex));
-                }
+                errors.Add(ex);
             }
             finally
             {

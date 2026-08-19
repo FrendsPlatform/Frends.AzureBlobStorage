@@ -30,10 +30,15 @@ internal static class ErrorHandler
 
     private static void ThrowBaseException(Exception exception, string customMessage = null)
     {
-        if (string.IsNullOrEmpty(customMessage))
-            throw new Exception(exception.Message, exception);
+        var innerException = exception is AggregateException aggregateException &&
+                             aggregateException.InnerExceptions.Count == 1
+            ? aggregateException.InnerException
+            : exception;
 
-        throw new Exception(customMessage, exception);
+        if (string.IsNullOrEmpty(customMessage))
+            throw new Exception(innerException.Message, innerException);
+
+        throw new Exception(customMessage, innerException);
     }
 
     private static Result ReturnResult(Exception exception, string customMessage = null)
