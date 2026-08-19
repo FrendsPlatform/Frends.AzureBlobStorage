@@ -1,5 +1,13 @@
 # Changelog
 
+## [3.0.0] - 2026-08-17
+
+### Changed
+
+- [Breaking Change] Combined `Source` and `Destination` parameters into a single `Input` parameter to align with Frends Task platform standards.
+- Added `ErrorMessageOnFailure` to `Options` to allow customizing the error message when the Task fails.
+- When `ThrowErrorOnFailure` is `false`, the returned `Result` now includes an `Error` property with details about what went wrong instead of silently returning a failed result.
+
 ## [2.0.0] - 2026-04-26
 
 ### Changed
