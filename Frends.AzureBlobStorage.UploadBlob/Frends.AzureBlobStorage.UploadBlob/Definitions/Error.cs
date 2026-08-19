@@ -16,6 +16,6 @@ public class Error
     /// <summary>
     /// The exception that caused the failure.
     /// </summary>
-    /// <example>null</example>
+    /// <example>ValidationException.</example>
     public Exception AdditionalInfo { get; internal set; }
 }

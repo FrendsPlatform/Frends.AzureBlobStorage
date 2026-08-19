@@ -37,102 +37,119 @@ public static class AzureBlobStorage
     public static async Task<Result> UploadBlob([PropertyTab] Input input, [PropertyTab] Connection connection,
         [PropertyTab] Options options, CancellationToken cancellationToken)
     {
-        var results = new Dictionary<string, string>();
-        var tempDirectory = CreateTempDirectory();
-
-        var fi = string.IsNullOrEmpty(input.SourceFile) ? null : new FileInfo(input.SourceFile);
-        var handledFile = string.Empty;
-
         try
         {
-            ValidationHandler.Run(input, connection);
-            CheckParameters(input);
-            var blobName = string.Empty;
+            var errors = new List<Exception>();
+            var results = new Dictionary<string, string>();
+            var tempDirectory = CreateTempDirectory();
 
-            if (options.CreateContainerIfItDoesNotExist &&
-                connection.AuthenticationMethod is ConnectionMethod.ConnectionString or ConnectionMethod.OAuth2
-                    or ConnectionMethod.SasToken)
-                await CreateContainerIfItDoesNotExist(connection, input.ContainerName.ToLower(),
-                    cancellationToken);
+            var fi = string.IsNullOrEmpty(input.SourceFile) ? null : new FileInfo(input.SourceFile);
+            var handledFile = string.Empty;
 
-            switch (input.SourceType)
+            try
             {
-                case UploadSourceType.File:
-                    if (fi == null)
-                        throw new FileNotFoundException($"Source file '{input.SourceFile}' was empty.");
-                    blobName = fi.Name;
-                    if (!string.IsNullOrWhiteSpace(input.BlobName) || input.Compress)
-                        blobName = RenameFile(!string.IsNullOrEmpty(input.BlobName) ? input.BlobName : fi.Name,
-                            input.Compress, fi);
-                    results.Add(input.SourceFile,
-                        await HandleUpload(input, connection, options, fi, blobName, tempDirectory, cancellationToken));
+                ValidationHandler.Run(input, connection);
+                CheckParameters(input);
+                var blobName = string.Empty;
 
-                    break;
-                case UploadSourceType.Directory:
-                    var dir = string.IsNullOrEmpty(input.SourceDirectory) ? null : input.SourceDirectory;
+                if (options.CreateContainerIfItDoesNotExist &&
+                    connection.AuthenticationMethod is ConnectionMethod.ConnectionString or ConnectionMethod.OAuth2
+                        or ConnectionMethod.SasToken)
+                    await CreateContainerIfItDoesNotExist(connection, input.ContainerName.ToLower(),
+                        cancellationToken);
 
-                    foreach (var file in Directory.GetFiles(dir,
-                                     string.IsNullOrEmpty(input.SearchPattern) ? "*.*" : input.SearchPattern,
-                                     SearchOption.AllDirectories)
-                                 .Select(e => new FileInfo(e)))
-                    {
-                        var fileName = file.Name;
-                        if (input.Compress)
-                            fileName = RenameFile(fileName, input.Compress, file);
-
-                        string relativeBlobPath;
-
-                        if (options.PreserveDirectoryStructure)
-                        {
-                            var relativePath = Path.GetRelativePath(dir, file.FullName);
-                            var relativeDirectory = Path.GetDirectoryName(relativePath);
-                            relativeBlobPath = string.IsNullOrEmpty(relativeDirectory) || relativeDirectory == "."
-                                ? fileName
-                                : Path.Combine(relativeDirectory, fileName);
-                        }
-                        else
-                        {
-                            var parentDirectory = Path.GetFileName(Path.GetDirectoryName(file.ToString()));
-                            relativeBlobPath = string.IsNullOrEmpty(input.BlobFolderName)
-                                ? Path.Combine(parentDirectory, fileName)
-                                : fileName;
-                        }
-
-                        var withDir = string.IsNullOrEmpty(input.BlobFolderName)
-                            ? relativeBlobPath
-                            : Path.Combine(input.BlobFolderName, relativeBlobPath);
-
-                        blobName = withDir.Replace("\\", "/");
-
-                        results.Add(file.FullName,
-                            await HandleUpload(input, connection, options, file, blobName, tempDirectory,
+                switch (input.SourceType)
+                {
+                    case UploadSourceType.File:
+                        if (fi == null)
+                            throw new FileNotFoundException($"Source file '{input.SourceFile}' was empty.");
+                        blobName = fi.Name;
+                        if (!string.IsNullOrWhiteSpace(input.BlobName) || input.Compress)
+                            blobName = RenameFile(!string.IsNullOrEmpty(input.BlobName) ? input.BlobName : fi.Name,
+                                input.Compress, fi);
+                        results.Add(input.SourceFile,
+                            await HandleUpload(input, connection, options, fi, blobName, tempDirectory,
                                 cancellationToken));
-                        handledFile = file.FullName;
-                    }
 
-                    if (!results.Any())
-                    {
-                        if (options.ThrowErrorOnFailure)
-                            throw new Exception(@$"No files were found in the directory {dir}.");
-                        else
-                            results.Add(null, @$"No files were found in the directory {dir}.");
-                    }
+                        break;
+                    case UploadSourceType.Directory:
+                        var dir = string.IsNullOrEmpty(input.SourceDirectory) ? null : input.SourceDirectory;
 
-                    break;
-                default:
-                    throw new Exception("Invalid source.");
+                        foreach (var file in Directory.GetFiles(dir,
+                                         string.IsNullOrEmpty(input.SearchPattern) ? "*.*" : input.SearchPattern,
+                                         SearchOption.AllDirectories)
+                                     .Select(e => new FileInfo(e)))
+                        {
+                            var fileName = file.Name;
+                            if (input.Compress)
+                                fileName = RenameFile(fileName, input.Compress, file);
+
+                            string relativeBlobPath;
+
+                            if (options.PreserveDirectoryStructure)
+                            {
+                                var relativePath = Path.GetRelativePath(dir, file.FullName);
+                                var relativeDirectory = Path.GetDirectoryName(relativePath);
+                                relativeBlobPath = string.IsNullOrEmpty(relativeDirectory) || relativeDirectory == "."
+                                    ? fileName
+                                    : Path.Combine(relativeDirectory, fileName);
+                            }
+                            else
+                            {
+                                var parentDirectory = Path.GetFileName(Path.GetDirectoryName(file.ToString()));
+                                relativeBlobPath = string.IsNullOrEmpty(input.BlobFolderName)
+                                    ? Path.Combine(parentDirectory, fileName)
+                                    : fileName;
+                            }
+
+                            var withDir = string.IsNullOrEmpty(input.BlobFolderName)
+                                ? relativeBlobPath
+                                : Path.Combine(input.BlobFolderName, relativeBlobPath);
+
+                            blobName = withDir.Replace("\\", "/");
+
+                            results.Add(file.FullName,
+                                await HandleUpload(input, connection, options, file, blobName, tempDirectory,
+                                    cancellationToken));
+                            handledFile = file.FullName;
+                        }
+
+                        if (!results.Any())
+                        {
+                            if (options.ThrowErrorOnFailure)
+                                throw new Exception(@$"No files were found in the directory {dir}.");
+                            else
+                                results.Add(null, @$"No files were found in the directory {dir}.");
+                        }
+
+                        break;
+                    default:
+                        throw new Exception("Invalid source.");
+                }
             }
-        }
-        catch (Exception ex)
-        {
-            return ex.Handle(options);
-        }
-        finally
-        {
-            CleanupTempDirectory(tempDirectory);
-        }
+            catch (Exception ex)
+            {
+                if (input.SourceType is UploadSourceType.File)
+                {
+                    errors.Add(new Exception(fi == null ? string.Empty : fi.FullName, ex));
+                }
+                else
+                {
+                    errors.Add(new Exception(
+                        $"An exception occured while uploading directory. Last handled file: {handledFile}.", ex));
+                }
+            }
+            finally
+            {
+                CleanupTempDirectory(tempDirectory);
+            }
 
-        return new Result(true, results);
+            return errors.Count != 0 ? throw new AggregateException(errors) : new Result(true, results);
+        }
+        catch (Exception e)
+        {
+            return e.Handle(options);
+        }
     }
 
     private static async Task<string> HandleUpload(Input input, Connection connection, Options options, FileInfo fi,
