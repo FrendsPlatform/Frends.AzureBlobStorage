@@ -93,21 +93,13 @@ public static class ConnectionHandler
     {
         return new BlobServiceClient(
             GetUri(connection.StorageAccountName),
-            new ClientSecretCredential(
-                connection.TenantId,
-                connection.ApplicationId,
-                connection.ClientSecret,
-                new ClientSecretCredentialOptions()));
+            GetOAuth2Credential(connection));
     }
 
     [ExcludeFromCodeCoverage(Justification = "We do not have environment prepared to test this connection")]
     private static BlobServiceClient GetBlobServiceClientWithArcManagedIdentity(Connection connection)
     {
-        {
-            var credentials = new ManagedIdentityCredential();
-
-            return new BlobServiceClient(GetUri(connection.StorageAccountName), credentials);
-        }
+        return new BlobServiceClient(GetUri(connection.StorageAccountName), GetArcManagedIdentityCredential());
     }
 
     [ExcludeFromCodeCoverage(Justification = "We do not have environment prepared to test this connection")]
@@ -115,22 +107,45 @@ public static class ConnectionHandler
         Connection connection,
         CancellationToken cancellationToken)
     {
-        {
-            var credentials = new ManagedIdentityCredential();
-            ClientAssertionCredential assertion = new(
-                connection.TargetTenantId,
-                connection.TargetClientId,
-                async _ =>
-                {
-                    var tokenRequestContext = new TokenRequestContext(connection.Scopes);
-                    var accessToken = await credentials
-                        .GetTokenAsync(tokenRequestContext, cancellationToken).ConfigureAwait(false);
+        return new BlobServiceClient(
+            GetUri(connection.StorageAccountName),
+            GetArcManagedIdentityCrossTenantCredential(connection, cancellationToken));
+    }
 
-                    return accessToken.Token;
-                });
+    private static TokenCredential GetOAuth2Credential(Connection connection)
+    {
+        return new ClientSecretCredential(
+            connection.TenantId,
+            connection.ApplicationId,
+            connection.ClientSecret,
+            new ClientSecretCredentialOptions());
+    }
 
-            return new BlobServiceClient(GetUri(connection.StorageAccountName), assertion);
-        }
+    [ExcludeFromCodeCoverage(Justification = "We do not have environment prepared to test this connection")]
+    private static TokenCredential GetArcManagedIdentityCredential()
+    {
+        return new ManagedIdentityCredential();
+    }
+
+    [ExcludeFromCodeCoverage(Justification = "We do not have environment prepared to test this connection")]
+    private static TokenCredential GetArcManagedIdentityCrossTenantCredential(
+        Connection connection,
+        CancellationToken cancellationToken)
+    {
+        var credentials = new ManagedIdentityCredential();
+        ClientAssertionCredential assertion = new(
+            connection.TargetTenantId,
+            connection.TargetClientId,
+            async _ =>
+            {
+                var tokenRequestContext = new TokenRequestContext(connection.Scopes);
+                var accessToken = await credentials
+                    .GetTokenAsync(tokenRequestContext, cancellationToken).ConfigureAwait(false);
+
+                return accessToken.Token;
+            });
+
+        return assertion;
     }
 
     private static Uri GetUri(string storageAccountName, string sasToken = null)

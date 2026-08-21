@@ -39,6 +39,27 @@ namespace Frends.AzureBlobStorage.DownloadBlob.Tests
             Assert.That(ex.Message, Contains.Substring(CustomErrorMessage));
         }
 
+        [Test]
+        public async Task Should_Return_Failed_Result_When_CopyBlobDir_Is_Missing()
+        {
+            var input = DefaultInput();
+            input.ContainerName = "container";
+            input.BlobName = "blob.txt";
+            input.TargetDirectory = "c:\\temp";
+
+            var options = DefaultOptions();
+            options.CopyBlob = true;
+            options.ThrowErrorOnFailure = false;
+
+            var connection = DefaultConnection();
+            connection.ConnectionString = "UseDevelopmentStorage=true";
+
+            var result = await AzureBlobStorage.DownloadBlob(input, connection, options, CancellationToken.None);
+
+            Assert.That(result.Success, Is.False);
+            Assert.That(result.Error.Message, Contains.Substring(nameof(Options.BlobCopyDir)));
+        }
+
         private static Input DefaultInput() => new();
 
         private static Connection DefaultConnection() => new();
