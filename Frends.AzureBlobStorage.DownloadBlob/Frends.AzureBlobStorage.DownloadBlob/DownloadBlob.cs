@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.ComponentModel;
+using Azure;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Sas;
@@ -77,7 +78,7 @@ public static class AzureBlobStorage
             var encoding = GetEncoding(options.Encoding, options.OtherEncoding);
             CheckAndFixFileEncoding(fullDestinationPath, input.TargetDirectory, fileExtension, encoding);
 
-            var blobCopied = !options.CopyBlob || await CopyBlobAsync(
+            var blobReadyToDelete = !options.CopyBlob || await CopyBlobAsync(
                 blob,
                 connection,
                 input.ContainerName,
@@ -85,10 +86,16 @@ public static class AzureBlobStorage
                 options.BlobCopyDir,
                 cancellationToken);
 
-            if (options.DeleteOriginal && blobCopied)
-                await blob.DeleteIfExistsAsync(DeleteSnapshotsOption.IncludeSnapshots, cancellationToken: cancellationToken);
+            if (options.DeleteOriginal && blobReadyToDelete)
+                await blob.DeleteIfExistsAsync(DeleteSnapshotsOption.IncludeSnapshots,
+                    cancellationToken: cancellationToken);
 
-            return new Result { Success = true, FilePath = fullDestinationPath, Error = null };
+            return new Result
+            {
+                Success = true,
+                FilePath = fullDestinationPath,
+                Error = null
+            };
         }
         catch (Exception ex)
         {
@@ -97,7 +104,7 @@ public static class AzureBlobStorage
     }
 
     private static void CheckAndFixFileEncoding(string fullPath, string directory, string fileExtension,
-    Encoding targetEncoding)
+        Encoding targetEncoding)
     {
         var targetPreamble = targetEncoding.GetPreamble();
         bool preambleMatches = true;
@@ -105,14 +112,17 @@ public static class AzureBlobStorage
         if (targetPreamble.Length > 0)
         {
             var headerBytes = new byte[targetPreamble.Length];
+
             using (var fs = new FileStream(fullPath, FileMode.Open, FileAccess.Read))
             {
                 fs.Read(headerBytes, 0, targetPreamble.Length);
             }
+
             preambleMatches = headerBytes.SequenceEqual(targetPreamble);
         }
 
         Encoding detectedEncoding;
+
         using (var reader = new StreamReader(fullPath, detectEncodingFromByteOrderMarks: true))
         {
             reader.Read();
@@ -180,14 +190,26 @@ public static class AzureBlobStorage
         string sourceBlobName, string blobCopyDir, CancellationToken cancellationToken)
     {
         var requestedBlobName = GetCopyBlobName(sourceBlobName, blobCopyDir);
-        if (string.Equals(NormalizeBlobPath(sourceBlobName), NormalizeBlobPath(requestedBlobName), StringComparison.Ordinal))
-            throw new InvalidOperationException("BlobCopyDir must point to a different blob path than the source blob.");
 
-        var targetBlobName = await GetAvailableCopyBlobNameAsync(connection, containerName, requestedBlobName, cancellationToken);
+        if (string.Equals(NormalizeBlobPath(sourceBlobName), NormalizeBlobPath(requestedBlobName),
+                StringComparison.Ordinal))
+            throw new InvalidOperationException(
+                "BlobCopyDir must point to a different blob path than the source blob.");
+
+        var targetBlobName =
+            await GetAvailableCopyBlobNameAsync(connection, containerName, requestedBlobName, cancellationToken);
         var targetBlob = ConnectionHandler.GetBlobClient(connection, containerName, targetBlobName, cancellationToken);
 
         var sourceUri = GetCopySourceUri(sourceBlob, connection, containerName, sourceBlobName);
-        var operation = await targetBlob.StartCopyFromUriAsync(sourceUri, cancellationToken: cancellationToken);
+        var operation = await targetBlob.StartCopyFromUriAsync(sourceUri,
+            new BlobCopyFromUriOptions
+            {
+                DestinationConditions = new BlobRequestConditions
+                {
+                    IfNoneMatch = ETag.All,
+                },
+            },
+            cancellationToken);
 
         return await WaitForCopyCompletionAsync(targetBlob, operation.Id, cancellationToken);
     }
@@ -244,7 +266,10 @@ public static class AzureBlobStorage
 
     private static string GetBlobFileName(string blobName)
     {
-        var separators = new[] { '/', '\\' };
+        var separators = new[]
+        {
+            '/', '\\'
+        };
         var parts = blobName.Split(separators, StringSplitOptions.RemoveEmptyEntries);
 
         return parts.Length == 0 ? blobName : parts[parts.Length - 1];
@@ -288,9 +313,11 @@ public static class AzureBlobStorage
             return sourceBlob.GenerateSasUri(sasBuilder);
         }
 
-        if (connection.AuthenticationMethod == ConnectionMethod.SasToken && !string.IsNullOrWhiteSpace(connection.SasToken))
+        if (connection.AuthenticationMethod == ConnectionMethod.SasToken &&
+            !string.IsNullOrWhiteSpace(connection.SasToken))
         {
             var normalizedSasToken = connection.SasToken.TrimStart('?');
+
             return string.IsNullOrWhiteSpace(sourceBlob.Uri.Query)
                 ? new Uri($"{sourceBlob.Uri}?{normalizedSasToken}")
                 : sourceBlob.Uri;

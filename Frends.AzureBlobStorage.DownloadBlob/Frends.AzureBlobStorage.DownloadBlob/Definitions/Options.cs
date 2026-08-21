@@ -61,6 +61,7 @@ public class Options
 
     /// <summary>
     /// When <c>true</c>, the original blob is deleted from Azure Blob Storage after the local download and optional copy complete.
+    /// NOTE: If CopyBlob is disabled, you will lose the original blob after download, so use with caution (downloaded file can have changed encoding).
     /// </summary>
     /// <example>false</example>
     [DefaultValue(false)]
