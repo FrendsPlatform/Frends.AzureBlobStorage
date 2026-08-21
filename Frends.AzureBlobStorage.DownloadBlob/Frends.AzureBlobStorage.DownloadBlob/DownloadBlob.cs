@@ -5,6 +5,9 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.ComponentModel;
+using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
+using Azure.Storage.Sas;
 using Frends.AzureBlobStorage.DownloadBlob.Definitions;
 using Frends.AzureBlobStorage.DownloadBlob.Helpers;
 
@@ -30,7 +33,7 @@ public static class AzureBlobStorage
     {
         try
         {
-            ValidationHandler.Run(input, connection);
+            ValidationHandler.Run(input, connection, options);
             var blob = ConnectionHandler.GetBlobClient(connection, input.ContainerName, input.BlobName,
                 cancellationToken);
             var blobFileName = string.IsNullOrWhiteSpace(input.TargetFileName)
@@ -73,6 +76,17 @@ public static class AzureBlobStorage
 
             var encoding = GetEncoding(options.Encoding, options.OtherEncoding);
             CheckAndFixFileEncoding(fullDestinationPath, input.TargetDirectory, fileExtension, encoding);
+
+            var blobCopied = !options.CopyBlob || await CopyBlobAsync(
+                blob,
+                connection,
+                input.ContainerName,
+                input.BlobName,
+                options.BlobCopyDir,
+                cancellationToken);
+
+            if (options.DeleteOriginal && blobCopied)
+                await blob.DeleteIfExistsAsync(DeleteSnapshotsOption.IncludeSnapshots, cancellationToken: cancellationToken);
 
             return new Result { Success = true, FilePath = fullDestinationPath, Error = null };
         }
@@ -160,5 +174,128 @@ public static class AzureBlobStorage
             default:
                 throw new ArgumentOutOfRangeException($"Unknown Encoding type: '{encoding}'.");
         }
+    }
+
+    private static async Task<bool> CopyBlobAsync(BlobClient sourceBlob, Connection connection, string containerName,
+        string sourceBlobName, string blobCopyDir, CancellationToken cancellationToken)
+    {
+        var requestedBlobName = GetCopyBlobName(sourceBlobName, blobCopyDir);
+        if (string.Equals(NormalizeBlobPath(sourceBlobName), NormalizeBlobPath(requestedBlobName), StringComparison.Ordinal))
+            throw new InvalidOperationException("BlobCopyDir must point to a different blob path than the source blob.");
+
+        var targetBlobName = await GetAvailableCopyBlobNameAsync(connection, containerName, requestedBlobName, cancellationToken);
+        var targetBlob = ConnectionHandler.GetBlobClient(connection, containerName, targetBlobName, cancellationToken);
+
+        var sourceUri = GetCopySourceUri(sourceBlob, connection, containerName, sourceBlobName);
+        var operation = await targetBlob.StartCopyFromUriAsync(sourceUri, cancellationToken: cancellationToken);
+
+        return await WaitForCopyCompletionAsync(targetBlob, operation.Id, cancellationToken);
+    }
+
+    private static async Task<bool> WaitForCopyCompletionAsync(BlobClient targetBlob, string copyOperationId,
+        CancellationToken cancellationToken)
+    {
+        while (true)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var properties = await targetBlob.GetPropertiesAsync(cancellationToken: cancellationToken);
+            var copyStatus = properties.Value.CopyStatus;
+
+            if (copyStatus == CopyStatus.Success)
+                return true;
+
+            if (copyStatus != CopyStatus.Pending)
+                throw new InvalidOperationException(
+                    $"Blob copy operation failed with status '{copyStatus}'. CopyId: {copyOperationId}. Description: {properties.Value.CopyStatusDescription}");
+
+            await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
+        }
+    }
+
+    private static string GetCopyBlobName(string sourceBlobName, string blobCopyDir)
+    {
+        var normalizedCopyDir = NormalizeBlobPath(blobCopyDir);
+        var fileName = GetBlobFileName(sourceBlobName);
+
+        return string.IsNullOrEmpty(normalizedCopyDir) ? fileName : $"{normalizedCopyDir}/{fileName}";
+    }
+
+    private static async Task<string> GetAvailableCopyBlobNameAsync(Connection connection, string containerName,
+        string requestedBlobName, CancellationToken cancellationToken)
+    {
+        var normalizedBlobName = NormalizeBlobPath(requestedBlobName);
+        var (directoryPath, fileName, fileExtension) = SplitBlobPath(normalizedBlobName);
+        var candidateBlobName = normalizedBlobName;
+        var increment = 1;
+
+        while (await ConnectionHandler.GetBlobClient(connection, containerName, candidateBlobName, cancellationToken)
+                   .ExistsAsync(cancellationToken))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var incrementedFileName = $"{fileName}({increment}){fileExtension}";
+            candidateBlobName = string.IsNullOrEmpty(directoryPath)
+                ? incrementedFileName
+                : $"{directoryPath}/{incrementedFileName}";
+            increment++;
+        }
+
+        return candidateBlobName;
+    }
+
+    private static string GetBlobFileName(string blobName)
+    {
+        var separators = new[] { '/', '\\' };
+        var parts = blobName.Split(separators, StringSplitOptions.RemoveEmptyEntries);
+
+        return parts.Length == 0 ? blobName : parts[parts.Length - 1];
+    }
+
+    private static string NormalizeBlobPath(string blobPath)
+    {
+        return blobPath.Replace('\\', '/').Trim('/');
+    }
+
+    private static (string DirectoryPath, string FileName, string FileExtension) SplitBlobPath(string blobPath)
+    {
+        var lastSeparatorIndex = blobPath.LastIndexOf('/');
+        var directoryPath = lastSeparatorIndex >= 0 ? blobPath[..lastSeparatorIndex] : string.Empty;
+        var fullFileName = lastSeparatorIndex >= 0 ? blobPath[(lastSeparatorIndex + 1)..] : blobPath;
+        var extensionIndex = fullFileName.LastIndexOf('.');
+
+        if (extensionIndex <= 0)
+            return (directoryPath, fullFileName, string.Empty);
+
+        return (
+            directoryPath,
+            fullFileName[..extensionIndex],
+            fullFileName[extensionIndex..]);
+    }
+
+    private static Uri GetCopySourceUri(BlobClient sourceBlob, Connection connection, string containerName,
+        string sourceBlobName)
+    {
+        if (sourceBlob.CanGenerateSasUri)
+        {
+            var sasBuilder = new BlobSasBuilder
+            {
+                BlobContainerName = containerName,
+                BlobName = sourceBlobName,
+                Resource = "b",
+                ExpiresOn = DateTimeOffset.UtcNow.AddMinutes(15),
+            };
+            sasBuilder.SetPermissions(BlobSasPermissions.Read);
+
+            return sourceBlob.GenerateSasUri(sasBuilder);
+        }
+
+        if (connection.AuthenticationMethod == ConnectionMethod.SasToken && !string.IsNullOrWhiteSpace(connection.SasToken))
+        {
+            var normalizedSasToken = connection.SasToken.TrimStart('?');
+            return string.IsNullOrWhiteSpace(sourceBlob.Uri.Query)
+                ? new Uri($"{sourceBlob.Uri}?{normalizedSasToken}")
+                : sourceBlob.Uri;
+        }
+
+        return sourceBlob.Uri;
     }
 }

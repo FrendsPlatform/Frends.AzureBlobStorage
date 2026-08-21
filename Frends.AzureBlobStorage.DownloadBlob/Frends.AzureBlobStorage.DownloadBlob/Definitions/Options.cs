@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using Frends.AzureBlobStorage.DownloadBlob.Attributes;
 
 namespace Frends.AzureBlobStorage.DownloadBlob.Definitions;
 
@@ -40,4 +41,28 @@ public class Options
     /// <example>Download failed</example>
     [DefaultValue("")]
     public string ErrorMessageOnFailure { get; set; } = string.Empty;
+
+    /// <summary>
+    /// When <c>true</c>, the source blob is copied inside the same Azure Blob Storage container after the local download completes.
+    /// </summary>
+    /// <example>false</example>
+    [DefaultValue(false)]
+    public bool CopyBlob { get; set; }
+
+    /// <summary>
+    /// Directory path inside the same Azure Blob Storage container where the source blob is copied.
+    /// The original blob file name is preserved, unless there is already a file with the same name in the target directory (suffix "(x)" to blob name is added if needed).
+    /// </summary>
+    /// <example>archive\processed</example>
+    [UIHint(nameof(CopyBlob), "", true)]
+    [DisplayFormat(DataFormatString = "Text")]
+    [RequiredIf(nameof(CopyBlob), true, ErrorMessage = $"{nameof(BlobCopyDir)} is required when {nameof(CopyBlob)} is true.")]
+    public string BlobCopyDir { get; set; } = string.Empty;
+
+    /// <summary>
+    /// When <c>true</c>, the original blob is deleted from Azure Blob Storage after the local download and optional copy complete.
+    /// </summary>
+    /// <example>false</example>
+    [DefaultValue(false)]
+    public bool DeleteOriginal { get; set; }
 }

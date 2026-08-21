@@ -1,5 +1,11 @@
 ﻿# Changelog
 
+## [4.1.0] - 2026-08-26
+
+### Added
+
+- Added `Options.CopyBlob`, `Options.BlobCopyDir`, and `Options.DeleteOriginal` to support post-download blob copy and source cleanup in Azure Blob Storage.
+
 ## [4.0.0] - 2026-07-23
 
 ### Changed

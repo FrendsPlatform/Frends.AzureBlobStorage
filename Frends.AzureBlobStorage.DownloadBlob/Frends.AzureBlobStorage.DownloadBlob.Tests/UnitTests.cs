@@ -217,6 +217,64 @@ public class UnitTests
             "Expected UTF-8 BOM at the start of the file.");
     }
 
+    [Test]
+    public async Task DownloadBlobAsync_CopiesBlobToRequestedDirectory()
+    {
+        _options.CopyBlob = true;
+        _options.BlobCopyDir = "archive/processed";
+
+        var result = await AzureBlobStorage.DownloadBlob(_input, _connection, _options, default);
+        var copiedBlob = GetBlobContainer(TestHelper.ConnectionString, _containerName)
+            .GetBlobClient("archive/processed/test-blob.txt");
+
+        Assert.IsTrue(result.Success);
+        Assert.IsTrue(File.Exists(result.FilePath));
+        Assert.IsTrue(await copiedBlob.ExistsAsync());
+
+        var download = await copiedBlob.DownloadAsync();
+        using var reader = new StreamReader(download.Value.Content);
+        var copiedContent = await reader.ReadToEndAsync();
+        Assert.IsTrue(copiedContent.Contains(@"<input>WhatHasBeenSeenCannotBeUnseen</input>"));
+    }
+
+    [Test]
+    public async Task DownloadBlobAsync_CopiesBlobAndDeletesOriginal_WhenRequested()
+    {
+        _options.CopyBlob = true;
+        _options.BlobCopyDir = "archive";
+        _options.DeleteOriginal = true;
+
+        var result = await AzureBlobStorage.DownloadBlob(_input, _connection, _options, default);
+        var container = GetBlobContainer(TestHelper.ConnectionString, _containerName);
+        var originalBlob = container.GetBlobClient(_testBlob);
+        var copiedBlob = container.GetBlobClient("archive/test-blob.txt");
+
+        Assert.IsTrue(result.Success);
+        Assert.IsFalse(await originalBlob.ExistsAsync());
+        Assert.IsTrue(await copiedBlob.ExistsAsync());
+    }
+
+    [Test]
+    public async Task DownloadBlobAsync_RenamesCopiedBlob_WhenTargetBlobAlreadyExists()
+    {
+        _options.CopyBlob = true;
+        _options.BlobCopyDir = "archive/processed";
+
+        var container = GetBlobContainer(TestHelper.ConnectionString, _containerName);
+        await container.GetBlobClient("archive/processed/test-blob.txt").UploadAsync(_testFilePath, overwrite: true);
+        await container.GetBlobClient("archive/processed/test-blob(1).txt").UploadAsync(_testFilePath, overwrite: true);
+
+        var result = await AzureBlobStorage.DownloadBlob(_input, _connection, _options, default);
+        var existingBlob = container.GetBlobClient("archive/processed/test-blob.txt");
+        var firstRenamedBlob = container.GetBlobClient("archive/processed/test-blob(1).txt");
+        var secondRenamedBlob = container.GetBlobClient("archive/processed/test-blob(2).txt");
+
+        Assert.IsTrue(result.Success);
+        Assert.IsTrue(await existingBlob.ExistsAsync());
+        Assert.IsTrue(await firstRenamedBlob.ExistsAsync());
+        Assert.IsTrue(await secondRenamedBlob.ExistsAsync());
+    }
+
     private async Task UploadTestFiles(string containerName)
     {
         var blobServiceClient = new BlobServiceClient(TestHelper.ConnectionString);
